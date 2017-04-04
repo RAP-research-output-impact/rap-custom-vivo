@@ -1,0 +1,5 @@
+custom-vivo/webapp/target/
+custom-vivo/solr/target/war/work/org.vivoweb/vitro-solr/WEB-INF/lib/lucene-queries-4.7.2.jar
+custom-vivo/solr/target/
+custom-vivo/home/target/
+custom-vivo/settings.xml
