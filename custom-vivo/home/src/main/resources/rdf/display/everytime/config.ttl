@@ -1,0 +1,47 @@
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix display: <http://vitro.mannlib.cornell.edu/ontologies/display/1.1#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix vivo: <http://vivoweb.org/ontology/core#> .
+@prefix vitro: <http://vitro.mannlib.cornell.edu/ns/vitro/0.7#> .
+@prefix vitroDisplay: <http://vitro.mannlib.cornell.edu/ontologies/display/1.1#> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix bibo: <http://purl.org/ontology/bibo/> .
+
+@prefix : <http://vitro.mannlib.cornell.edu/ns/vitro/ApplicationConfiguration#> .
+@prefix local: <http://vitro.mannlib.cornell.edu/ns/vitro/siteConfig/> .
+@prefix wos: <http://webofscience.com/ontology/wos#> .
+@prefix rapd: <http://webofscience.com/ontology/rap/display/#> .
+@prefix vdisplay:  <http://vivoweb.org/ontology#> .
+
+
+# Additional listViewConfigsj
+
+
+# Search prohibited
+
+vitroDisplay:SearchIndex
+    rdf:type owl:Thing ;
+    vitroDisplay:excludeClass wos:Address ;
+    vitroDisplay:excludeClass wos:Organization ;
+    vitroDisplay:excludeClass wos:SubOrganization ;
+    vitroDisplay:excludeClass wos:InCitesCount ;
+    vitroDisplay:excludeClass vivo:Authorship ;
+    vitroDisplay:excludeClass vivo:Position ;
+    vitroDisplay:excludeClass vivo:DateTimeValue ;
+    vitroDisplay:excludeClass vivo:DateTimeInterval ;
+    vitroDisplay:excludeClass vivo:AcademicDegree ;
+    vitroDisplay:excludeClass vivo:URLLink ;
+    vitroDisplay:excludeClass <http://vitro.mannlib.cornell.edu/ns/vitro/public#File> ;
+    vitroDisplay:excludeClass <http://vitro.mannlib.cornell.edu/ns/vitro/public#FileByteStream> .
+
+
+#Menu items
+wos:journalAbbr vitro:inPropertyGroupAnnot vdisplay:vitroPropertyGroupoverview .
+
+rapd:metrics
+    a vitro:PropertyGroup ;
+    vitro:displayRank "80"^^xsd:int ;
+    vitro:publicDescriptionAnnot "metrics"^^xsd:string ;
+    rdfs:label "metrics"@en-us .
