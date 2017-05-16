@@ -12,7 +12,6 @@
 @prefix : <http://vitro.mannlib.cornell.edu/ns/vitro/ApplicationConfiguration#> .
 @prefix local: <http://vitro.mannlib.cornell.edu/ns/vitro/siteConfig/> .
 @prefix wos: <http://webofscience.com/ontology/wos#> .
-@prefix rapd: <http://webofscience.com/ontology/rap/display/#> .
 @prefix vdisplay:  <http://vivoweb.org/ontology#> .
 
 
@@ -35,13 +34,3 @@ vitroDisplay:SearchIndex
     vitroDisplay:excludeClass vivo:URLLink ;
     vitroDisplay:excludeClass <http://vitro.mannlib.cornell.edu/ns/vitro/public#File> ;
     vitroDisplay:excludeClass <http://vitro.mannlib.cornell.edu/ns/vitro/public#FileByteStream> .
-
-
-#Menu items
-wos:journalAbbr vitro:inPropertyGroupAnnot vdisplay:vitroPropertyGroupoverview .
-
-rapd:metrics
-    a vitro:PropertyGroup ;
-    vitro:displayRank "80"^^xsd:int ;
-    vitro:publicDescriptionAnnot "metrics"^^xsd:string ;
-    rdfs:label "metrics"@en-us .
