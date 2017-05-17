@@ -1,0 +1,29 @@
+
+.pub-counts {
+    min-width: 20em;
+}
+
+.pub-counts td, .pub-counts th {
+    border: 1px solid #ddd;
+    padding: 5px;
+}
+
+.pub-counts tr:nth-child(even){background-color: #f2f2f2;}
+
+.pub-counts tr:hover {background-color: #ddd;}
+
+.pub-counts th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #3d423d;
+    color: white;
+}
+
+
+#collab-summary a.report-export {
+    float: right;
+    margin-right: 1em;
+    font-variant: small-caps;
+    text-decoration: none;
+}
