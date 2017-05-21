@@ -27,7 +27,7 @@ function collabSummary(response) {
         yearRange = [2015, 2016];
     }
     if (individualLocalName != "org-technical-university-of-denmark") {
-        var msg = "<h2 id=\"collab-summary\">Co-publications: " + response.co_pubs + " total ";
+        var msg = "<h2 id=\"collab-summary\">Co-publications: " + response.summary.coPubTotal + " total ";
         if (response.categories.length > 0) {
             msg += "in " + response.categories.length + " categories ";
         }
@@ -59,17 +59,17 @@ function doSummaryTable(response) {
     <table class="pub-counts">
       <tr>
     `;
-    var orgTotal = response.total_pubs;
+    var orgTotal = response.summary.orgTotal;
     //for(var i in response.org_totals) { orgTotal += response.org_totals[i].count; };
-    var orgTotalCites = response.total_cites;
-    var dtuTotal = response.total_dtu_pubs;
-    var dtuTotalCites = response.total_dtu_cites;
-    html += "<tr><th></th><th>" + response.name + "</th><th>Technical University of Denmark</th></tr>";
-    html += "<tr><td>Publications</td><td>" + orgTotal.toLocaleString() + "</td><td>" + dtuTotal.toLocaleString() + "</td>";
-    html += "<tr><td>Citations</td><td>" + orgTotalCites.toLocaleString() + "</td><td>" + dtuTotalCites.toLocaleString() + "</td>";
+    var orgTotalCites = response.summary.orgCitesTotal;
+    var dtuTotal = response.summary.dtuTotal;
+    var dtuTotalCites = response.summary.dtuCitesTotal;
+    var orgImpact = response.summary.orgImpact.toFixed(1);
+    var dtuImpact = response.summary.dtuImpact.toFixed(1);
+    html += "<tr><th></th><th>" + response.summary.name + "</th><th>Technical University of Denmark</th></tr>";
+    html += "<tr><td>Publications</td><td>" + orgTotal + "</td><td>" + dtuTotal + "</td>";
+    html += "<tr><td>Citations</td><td>" + orgTotalCites + "</td><td>" + dtuTotalCites + "</td>";
     //Impact
-    var orgImpact = (orgTotalCites / orgTotal).toFixed(1);
-    var dtuImpact = (dtuTotalCites / dtuTotal).toFixed(1);
     html += "<tr><td>Impact</td><td>" + orgImpact + "</td><td>" + dtuImpact + "</td>";
 
     var closeHtml = "</table>";
@@ -88,7 +88,7 @@ function doTopCategoryTable(response) {
 
     $.each( response.top_categories, function( key, value ) {
         //console.log(value);
-        var row = "<tr><td>" + value.category + "</td><td>" + value.count.toLocaleString() + "</td></tr>";
+        var row = "<tr><td>" + value.name + "</td><td>" + value.number + "</td></tr>";
         html += row;
     });
     var closeHtml = "</table>";
@@ -110,7 +110,7 @@ function doPubCategoryTable(totals) {
     var closeHtml = "</table>";
     $.each( totals.slice(0, 10), function( key, value ) {
         //console.log(value);
-        var row = "<tr><td>" + value.category + "</td><td>" + value.count.toLocaleString() + "</td></tr>";
+        var row = "<tr><td>" + value.name + "</td><td>" + value.number + "</td></tr>";
         html += row;
     });
     html += closeHtml;
@@ -131,7 +131,7 @@ function doPubCountTable(totals) {
     var closeHtml = "</table>";
     $.each( totals, function( key, value ) {
         //console.log(value);
-        var row = "<tr><td>" + value.year + "</td><td>" + value.count.toLocaleString() + "</td></tr>";
+        var row = "<tr><td>" + value.year + "</td><td>" + value.number + "</td></tr>";
         html += row;
     });
     html += closeHtml;
