@@ -164,13 +164,13 @@ function hasClass(elem, className) {
 document.addEventListener('click', function (e) {
     if (hasClass(e.target, 'report-export')) {
         var html = document.querySelector("table").outerHTML
-        export_table_to_csv(html, "co-publication-" + individualLocalName + ".tsv");
+        exportTable(html, "co-publication-" + individualLocalName + ".tsv");
     }
 }, false);
 
 
 //https://jsfiddle.net/gengns/j1jm2tjx/
-function download_csv(csv, filename) {
+function downloadCsv(csv, filename) {
     var csvFile;
     var downloadLink;
 
@@ -192,25 +192,25 @@ function download_csv(csv, filename) {
     // Add the link to your DOM
     document.body.appendChild(downloadLink);
 
-    // Lanzamos
     downloadLink.click();
 }
 
-function export_table_to_csv(html, filename) {
+function exportTable(html, filename) {
     var csv = [];
-    var rows = document.querySelectorAll("table tr");
-
-    for (var i = 0; i < rows.length; i++) {
-        var row = [], cols = rows[i].querySelectorAll("td, th");
-
-        for (var j = 0; j < cols.length; j++)
-            row.push("\"" + cols[j].innerText + "\"");
-
-        csv.push(row.join("\t"));
+    var sections = document.querySelectorAll("table")
+    for (var sec =0; sec < sections.length; sec++) {
+        var rows = sections[sec].querySelectorAll("tr");
+        for (var i = 0; i < rows.length; i++) {
+            var row = [], cols = rows[i].querySelectorAll("td, th");
+            for (var j = 0; j < cols.length; j++)
+                row.push("\"" + cols[j].innerText + "\"");
+            csv.push(row.join("\t"));
+        }
+        csv.push("\n");
     }
 
     // Download CSV
-    download_csv(csv.join("\n"), filename);
+    downloadCsv(csv.join("\n"), filename);
 }
 
 </script>
