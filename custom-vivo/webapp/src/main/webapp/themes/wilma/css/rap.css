@@ -27,3 +27,28 @@
     font-variant: small-caps;
     text-decoration: none;
 }
+
+
+/*Copub map*/
+
+#copub-map-container {
+    position: relative;
+}
+
+#copub-map-info {
+  padding: 1em;
+  border: 1px solid #2485AE;
+}
+
+#copub-map {
+    min-height: 500px;
+}
+
+#map-org-list li {
+  display:inline;
+  margin: .5em;
+}
+
+#map-org-list li:not(:first-child):before {
+    content: " | ";
+}

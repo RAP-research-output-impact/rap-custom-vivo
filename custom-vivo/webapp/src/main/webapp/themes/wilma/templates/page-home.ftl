@@ -2,13 +2,13 @@
 
 <@widget name="login" include="assets" />
 
-<#-- 
-        With release 1.6, the home page no longer uses the "browse by" class group/classes display. 
+<#--
+        With release 1.6, the home page no longer uses the "browse by" class group/classes display.
         If you prefer to use the "browse by" display, replace the import statement below with the
         following include statement:
-        
+
             <#include "browse-classgroups.ftl">
-            
+
         Also ensure that the homePage.geoFocusMaps flag in the runtime.properties file is commented
         out.
 -->
@@ -22,8 +22,12 @@
             <#include "geoFocusMapScripts.ftl">
         </#if>
         <script type="text/javascript" src="${urls.base}/js/homePageUtils.js?version=x"></script>
+        <script src="${urls.base}/js/d3.min.js"></script>
+        <script src="${urls.theme}/js/topojson.min.js"></script>
+        <script src="${urls.theme}/js/datamaps.world.min.js"></script>
+        <script src="${urls.theme}/js/world-map.min.js"></script>
     </head>
-    
+
     <body class="${bodyClasses!}" onload="${bodyOnload!}">
     <#-- supplies the faculty count to the js function that generates a random row number for the search query -->
         <@lh.facultyMemberCount  vClassGroups! />
@@ -39,35 +43,47 @@
 
             <section id="search-home" role="region">
                 <h3>${i18n().intro_searchvivo} <span class="search-filter-selected">filteredSearch</span></h3>
-        
+
                 <fieldset>
                     <legend>${i18n().search_form}</legend>
-                    <form id="search-homepage" action="${urls.search}" name="search-home" role="search" method="post" > 
+                    <form id="search-homepage" action="${urls.search}" name="search-home" role="search" method="post" >
                         <div id="search-home-field">
                             <input type="text" name="querytext" class="search-homepage" value="" autocapitalize="off" />
                             <input type="submit" value="${i18n().search_button}" class="search" />
                             <input type="hidden" name="classgroup"  value="" autocapitalize="off" />
                         </div>
-                
+
                         <a class="filter-search filter-default" href="#" title="${i18n().intro_filtersearch}">
                             <span class="displace">${i18n().intro_filtersearch}</span>
                         </a>
-                
+
                         <ul id="filter-search-nav">
                             <li><a class="active" href="">${i18n().all_capitalized}</a></li>
-                            <@lh.allClassGroupNames vClassGroups! />  
+                            <@lh.allClassGroupNames vClassGroups! />
                         </ul>
                     </form>
                 </fieldset>
             </section> <!-- #search-home -->
-        
+
         </section> <!-- #intro -->
-        
+
         <@widget name="login" />
-        
+
+        <!-- worldmap -->
+        <section class="home-sections">
+            <h3>Co-publication Worldmap</h3>
+            <div id="copub-map-container">
+                <div id="copub-map"></div>
+                <div id="copub-map-info">
+                    <ul id="map-org-list">
+                    </ul>
+                </div>
+            </div>
+        </section>
+
         <!-- List of research classes: e.g., articles, books, collections, conference papers -->
         <@lh.researchClasses />
-                
+
         <!-- List of four randomly selected faculty members -->
         <@lh.facultyMbrHtml />
 
@@ -78,14 +94,15 @@
             <!-- Map display of researchers' areas of geographic focus. Must be enabled in runtime.properties -->
             <@lh.geographicFocusHtml />
         </#if>
-        
+
         <!-- Statistical information relating to property groups and their classes; displayed horizontally, not vertically-->
         <@lh.allClassGroups vClassGroups! />
+
 
         <#include "footer.ftl">
         <#-- builds a json object that is used by js to render the academic departments section -->
         <@lh.listAcademicDepartments />
-    <script>       
+    <script>
         var i18nStrings = {
             researcherString: '${i18n().researcher}',
             researchersString: '${i18n().researchers}',
@@ -106,9 +123,120 @@
             noDepartmentsFound: '${i18n().no_departments_found}'
         };
         // set the 'limmit search' text and alignment
-        if  ( $('input.search-homepage').css('text-align') == "right" ) {       
+        if  ( $('input.search-homepage').css('text-align') == "right" ) {
              $('input.search-homepage').attr("value","${i18n().limit_search} \u2192");
-        }  
+        }
+
+        //
+        // co-pub world map
+        //
+        var base = "${urls.base}";
+        var profileBase = base + "/individual?uri="
+        var serviceBase = base + "/vds/report/"
+        var mapData = serviceBase + "worldmap/";
+        var countryData = serviceBase + "country/";
+
+        //var pubCounts = loadData("/data.json", prepMapData);
+        var pubCounts = loadData(mapData, prepMapData);
+
+        // See: https://bost.ocks.org/mike/bubble-map/
+        // Create radius for bubles.
+        var radius = d3.scale.sqrt()
+            .domain([1, 500])
+            .range([5, 20]);
+
+        function prepMapData(data) {
+          var out = [];
+          for (var i =0, j = data.summary.length; i < j; i++) {
+            var d = {}
+            var count = data.summary[i].publications;
+            d['centered'] = data.summary[i].code;
+            d['publications'] = count;
+            d['fillKey'] = 'default';
+            d['radius'] = radius(count);
+            out.push(d)
+          }
+          makeMap(out);
+        }
+
+        function makeMap(data) {
+          document.getElementById("copub-map-info").style.visibility = "hidden";
+          var countries = Datamap.prototype.worldTopo.objects.world.geometries;
+          var countryKey = {}
+          for (var i = 0, j = countries.length; i < j; i++) {
+            countryKey[countries[i].id] = countries[i].properties.name;
+          }
+          //var dtucenter = [12.521533, 55.785797]
+          var map = new Datamap({
+            element: document.getElementById("copub-map"),
+            scope: 'world',
+            responsive: false,
+            //mousewheel zoom
+            done: function(datamap) {
+                   datamap.svg.call(d3.behavior.zoom().on("zoom", redraw));
+
+                   function redraw() {
+                        datamap.svg.selectAll("g").attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+                   }
+            },
+            geographyConfig: {
+              popupOnHover: true,
+              highlightOnHover: true,
+              highlightFillColor: '#DCDCDC',
+              highlightBorderColor: 'white',
+              hideHawaiiAndAlaska : true
+            },
+            bublesConfig: {
+                key: null
+            },
+            fills: {
+              defaultFill: '#d6cece',
+              default: '#b20000',
+            },
+            data: data
+          });
+          map.bubbles(data, {
+            popupTemplate: function(geo, data) {
+              var country = countryKey[data.centered];
+              return '<div class="hoverinfo">' + country + ' ' + data.publications + ' co-publications</div>'
+            }
+          });
+
+          //https://stackoverflow.com/a/34958824/758157
+          d3.selectAll(".datamaps-bubble").on('click', function(bubble) {
+            //console.log(bubble);
+            document.getElementById("copub-map-info").style.visibility = "visible";
+            loadData(countryData + bubble.centered, orgList);
+          });
+
+        }
+
+        function orgList(data) {
+          var contentDiv = document.getElementById("map-org-list");
+          contentDiv.innerHTML = "";
+          for (var i =0, j = data.orgs.length; i < j; i++){
+            liHTML = "<li><a href=\"" + profileBase+ data.orgs[i].org + "\">" + data.orgs[i].name + "</a> (" + data.orgs[i].publications + ")</li>";
+            contentDiv.innerHTML += liHTML;
+          }
+        }
+
+
+        function loadData(url, callback) {
+
+          var xhr = new XMLHttpRequest();
+            xhr.open('GET', url );
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.response)
+                    callback(response);
+                }
+                else {
+                    alert('Request failed.  Returned status of ' + xhr.status);
+                }
+            };
+            xhr.send();
+        }
+
     </script>
     </body>
 </html>
