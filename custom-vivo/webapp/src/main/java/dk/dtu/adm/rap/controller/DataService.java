@@ -82,6 +82,93 @@ public class DataService {
         //return Response.status(200).entity(jo.toString()).cacheControl(cc).build();
     }
 
+    @Path("/worldmap")
+    @GET
+    @Produces("application/json")
+    public Response getWorldMap(@Context Request request) {
+        VitroRequest vreq = new VitroRequest(httpRequest);
+
+//        if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
+//            return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
+//        }
+
+        ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
+        namespace = props.getProperty("Vitro.defaultNamespace");
+        String wosDataVersion = props.getProperty("wos.dataVersion");
+        Boolean cacheActive = Boolean.parseBoolean(props.getProperty("wos.cacheActive"));
+
+        //setup storeUtils
+        this.storeUtils = new StoreUtils();
+        this.storeUtils.setRdfService(namespace, vreq.getRDFService());
+
+        ResponseBuilder builder = null;
+        EntityTag etag = new EntityTag(wosDataVersion + "worldmap");
+        if (cacheActive.equals(true) && wosDataVersion != null) {
+            log.info("Etag caching active");
+            builder = request.evaluatePreconditions(etag);
+        }
+
+        // cached resource did change -> serve updated content
+        if (builder == null) {
+            JSONObject jo = new JSONObject();
+            try {
+                jo.put("summary", getWorldwidePubs());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            String outJson = jo.toString();
+            builder = Response.ok(outJson);
+        }
+
+        builder.tag(etag);
+        return builder.build();
+    }
+
+
+    @Path("/country/{cCode}")
+    @GET
+    @Produces("application/json")
+    public Response getCountry(@PathParam("cCode") String cCode, @Context Request request) {
+        VitroRequest vreq = new VitroRequest(httpRequest);
+
+//        if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
+//            return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
+//        }
+
+        ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
+        namespace = props.getProperty("Vitro.defaultNamespace");
+        String wosDataVersion = props.getProperty("wos.dataVersion");
+        Boolean cacheActive = Boolean.parseBoolean(props.getProperty("wos.cacheActive"));
+
+        //setup storeUtils
+        this.storeUtils = new StoreUtils();
+        this.storeUtils.setRdfService(namespace, vreq.getRDFService());
+
+        ResponseBuilder builder = null;
+        EntityTag etag = new EntityTag(wosDataVersion + "country" + cCode);
+        if (cacheActive.equals(true) && wosDataVersion != null) {
+            log.info("Etag caching active");
+            builder = request.evaluatePreconditions(etag);
+        }
+
+        // cached resource did change -> serve updated content
+        if (builder == null) {
+            JSONObject jo = new JSONObject();
+            try {
+                jo.put("orgs", getCoPubsCountry(cCode.toUpperCase()));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            String outJson = jo.toString();
+            builder = Response.ok(outJson);
+        }
+
+        builder.tag(etag);
+        return builder.build();
+    }
+
     private Object getSummary(String orgUri) {
         String rq = "SELECT \n" +
                 "      ?name\n" +
@@ -228,5 +315,51 @@ public class DataService {
         log.debug("Related categories query:\n" + query);
         return this.storeUtils.getFromStoreJSON(query);
     }
+
+    private ArrayList getWorldwidePubs() {
+        log.debug("Querying ofr country codes for copublication");
+        String rq = "    select ?code (COUNT(DISTINCT ?pub) as ?publications)\n" +
+                "    where {\n" +
+                "        ?org a wos:UnifiedOrganization ;\n" +
+                "            wos:countryCode ?code ;\n" +
+                "            vivo:relatedBy ?address .\n" +
+                "      ?address a wos:Address ;\n" +
+                "      vivo:relatedBy ?authorship .\n" +
+                "      ?authorship a vivo:Authorship ;\n" +
+                "      vivo:relates ?pub .\n" +
+                "      ?pub a wos:Publication .\n" +
+                "    }\n" +
+                "    GROUP by ?code\n" +
+                "    ORDER BY DESC(?publications)";
+        ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
+        String query = q2.toString();
+        log.debug("Country pubs query:\n" + query);
+        return this.storeUtils.getFromStoreJSON(query);
+    }
+
+    private ArrayList getCoPubsCountry(String countryCode) {
+        log.debug("Running query to find copubs by country and org");
+        String rq = "   select ?org ?name (COUNT(DISTINCT ?pub) as ?publications)\n" +
+                "    where {\n" +
+                "        ?org a wos:UnifiedOrganization ;\n" +
+                "             rdfs:label ?name ;\n" +
+                "            wos:countryCode ?countryCode ;\n" +
+                "            vivo:relatedBy ?address .\n" +
+                "      ?address a wos:Address ;\n" +
+                "      vivo:relatedBy ?authorship .\n" +
+                "      ?authorship a vivo:Authorship ;\n" +
+                "      vivo:relates ?pub .\n" +
+                "      ?pub a wos:Publication .\n" +
+                "    FILTER (?org != d:org-technical-university-of-denmark)\n" +
+                "    }\n" +
+                "    GROUP BY ?org ?name\n" +
+                "    ORDER BY DESC(?publications)";
+        ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
+        q2.setLiteral("countryCode", countryCode);
+        String query = q2.toString();
+        log.debug("Related categories query:\n" + query);
+        return this.storeUtils.getFromStoreJSON(query);
+    }
+
 
 }
