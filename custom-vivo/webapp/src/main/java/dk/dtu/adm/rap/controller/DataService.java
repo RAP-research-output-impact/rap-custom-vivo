@@ -88,9 +88,9 @@ public class DataService {
     public Response getWorldMap(@Context Request request) {
         VitroRequest vreq = new VitroRequest(httpRequest);
 
-//        if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
-//            return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
-//        }
+        if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
+            return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
+        }
 
         ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
         namespace = props.getProperty("Vitro.defaultNamespace");
@@ -132,9 +132,9 @@ public class DataService {
     public Response getCountry(@PathParam("cCode") String cCode, @Context Request request) {
         VitroRequest vreq = new VitroRequest(httpRequest);
 
-//        if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
-//            return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
-//        }
+        if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
+            return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
+        }
 
         ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
         namespace = props.getProperty("Vitro.defaultNamespace");
