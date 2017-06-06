@@ -328,6 +328,7 @@ public class DataService {
                 "      ?authorship a vivo:Authorship ;\n" +
                 "      vivo:relates ?pub .\n" +
                 "      ?pub a wos:Publication .\n" +
+                "    FILTER (?org != d:org-technical-university-of-denmark)\n" +
                 "    }\n" +
                 "    GROUP by ?code\n" +
                 "    ORDER BY DESC(?publications)";
