@@ -71,7 +71,7 @@
 
         <!-- worldmap -->
         <section class="home-sections">
-            <h3>Co-publication Worldmap</h3>
+            <h2>Co-publication Worldmap</h2>
             <div id="copub-map-container">
                 <div id="copub-map"></div>
                 <div id="copub-map-info">
@@ -136,14 +136,13 @@
         var mapData = serviceBase + "worldmap/";
         var countryData = serviceBase + "country/";
 
-        //var pubCounts = loadData("/data.json", prepMapData);
         var pubCounts = loadData(mapData, prepMapData);
 
         // See: https://bost.ocks.org/mike/bubble-map/
         // Create radius for bubles.
         var radius = d3.scale.sqrt()
-            .domain([1, 500])
-            .range([5, 20]);
+            .domain([0, 4000])
+            .range([0, 20]);
 
         function prepMapData(data) {
           var out = [];
