@@ -1,6 +1,7 @@
 package dk.dtu.adm.rap.controller;
 
 import com.hp.hpl.jena.query.ParameterizedSparqlString;
+import com.hp.hpl.jena.vocabulary.XSD;
 import dk.dtu.adm.rap.utils.StoreUtils;
 import edu.cornell.mannlib.vedit.beans.LoginStatusBean;
 import edu.cornell.mannlib.vitro.webapp.config.ConfigurationProperties;
@@ -318,11 +319,13 @@ public class DataService {
 
     private ArrayList getWorldwidePubs() {
         log.debug("Querying ofr country codes for copublication");
-        String rq = "    select ?code (COUNT(DISTINCT ?pub) as ?publications)\n" +
+        String rq = "select ?code (COUNT(DISTINCT ?pub) as ?publications)\n" +
                 "    where {\n" +
                 "        ?org a wos:UnifiedOrganization ;\n" +
-                "            wos:countryCode ?code ;\n" +
+                "            obo:RO_0001025 ?country ;\n" +
                 "            vivo:relatedBy ?address .\n" +
+                "      ?country a vivo:Country ;\n" +
+                "               geo:codeISO3 ?code .\n" +
                 "      ?address a wos:Address ;\n" +
                 "      vivo:relatedBy ?authorship .\n" +
                 "      ?authorship a vivo:Authorship ;\n" +
@@ -331,7 +334,7 @@ public class DataService {
                 "    FILTER (?org != d:org-technical-university-of-denmark)\n" +
                 "    }\n" +
                 "    GROUP by ?code\n" +
-                "    ORDER BY DESC(?publications)";
+                "    ORDER BY DESC(?publications)" ;
         ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
         String query = q2.toString();
         log.debug("Country pubs query:\n" + query);
@@ -340,21 +343,23 @@ public class DataService {
 
     private ArrayList getCoPubsCountry(String countryCode) {
         log.debug("Running query to find copubs by country and org");
-        String rq = "   select ?org ?name (COUNT(DISTINCT ?pub) as ?publications)\n" +
-                "    where {\n" +
-                "        ?org a wos:UnifiedOrganization ;\n" +
-                "             rdfs:label ?name ;\n" +
-                "            wos:countryCode ?countryCode ;\n" +
-                "            vivo:relatedBy ?address .\n" +
-                "      ?address a wos:Address ;\n" +
-                "      vivo:relatedBy ?authorship .\n" +
-                "      ?authorship a vivo:Authorship ;\n" +
-                "      vivo:relates ?pub .\n" +
-                "      ?pub a wos:Publication .\n" +
-                "    FILTER (?org != d:org-technical-university-of-denmark)\n" +
-                "    }\n" +
-                "    GROUP BY ?org ?name\n" +
-                "    ORDER BY DESC(?publications)";
+        String rq = "select ?org ?name (COUNT(DISTINCT ?pub) as ?publications)" +
+                "where {\n" +
+                "  ?org a wos:UnifiedOrganization ;\n" +
+                "       rdfs:label ?name ;\n" +
+                "       vivo:relatedBy ?address ;\n" +
+                "       obo:RO_0001025 ?country .\n" +
+                "  ?country a vivo:Country ;\n" +
+                "           geo:codeISO3 ?countryCode^^<http://www.w3.org/2001/XMLSchema#string> .\n" +
+                "  ?address a wos:Address ;\n" +
+                "           vivo:relatedBy ?authorship .\n" +
+                "  ?authorship a vivo:Authorship ;\n" +
+                "              vivo:relates ?pub .\n" +
+                "  ?pub a wos:Publication .\n" +
+                "  FILTER (?org != d:org-technical-university-of-denmark)\n" +
+                "}\n" +
+                "GROUP BY ?org ?name \n" +
+                "ORDER BY DESC(?publications)";
         ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
         q2.setLiteral("countryCode", countryCode);
         String query = q2.toString();

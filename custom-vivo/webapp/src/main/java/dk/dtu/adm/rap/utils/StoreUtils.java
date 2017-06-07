@@ -127,6 +127,8 @@ public class StoreUtils {
         q2.setNsPrefix("wos", "http://webofscience.com/ontology/wos#");
         q2.setNsPrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
         q2.setNsPrefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
+        q2.setNsPrefix("geo", "http://aims.fao.org/aos/geopolitical.owl#");
+        q2.setNsPrefix("obo", "http://purl.obolibrary.org/obo/");
         q2.setNsPrefix("d", this.namespace);
         q2.setCommandText(raw);
         return q2;
