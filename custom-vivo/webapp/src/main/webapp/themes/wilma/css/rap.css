@@ -1,4 +1,10 @@
 
+.home-sections h2 {
+    padding: 35px 0 12px 24px;
+    border-bottom: none;
+    color: #2485AE;
+}
+
 .pub-counts {
     min-width: 20em;
 }
@@ -51,4 +57,26 @@
 
 #map-org-list li:not(:first-child):before {
     content: " | ";
+}
+
+
+/*https://stephanwagner.me/only-css-loading-spinner*/
+@keyframes spinner {
+  to {transform: rotate(360deg);}
+}
+
+.spinner:before {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  top: 25%;
+  left: 50%;
+  width: 10em;
+  height: 10em;
+  margin-top: -10px;
+  margin-left: -10px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  border-top-color: #333;
+  animation: spinner .6s linear infinite;
 }

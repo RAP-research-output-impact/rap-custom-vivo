@@ -81,22 +81,6 @@
             </div>
         </section>
 
-        <!-- List of research classes: e.g., articles, books, collections, conference papers -->
-        <@lh.researchClasses />
-
-        <!-- List of four randomly selected faculty members -->
-        <@lh.facultyMbrHtml />
-
-        <!-- List of randomly selected academic departments -->
-        <@lh.academicDeptsHtml />
-
-        <#if geoFocusMapsEnabled >
-            <!-- Map display of researchers' areas of geographic focus. Must be enabled in runtime.properties -->
-            <@lh.geographicFocusHtml />
-        </#if>
-
-        <!-- Statistical information relating to property groups and their classes; displayed horizontally, not vertically-->
-        <@lh.allClassGroups vClassGroups! />
 
 
         <#include "footer.ftl">
@@ -130,6 +114,7 @@
         //
         // co-pub world map
         //
+        $('#copub-map-container').addClass('spinner');
         var base = "${urls.base}";
         var profileBase = base + "/individual?uri="
         var serviceBase = base + "/vds/report/"
@@ -207,7 +192,7 @@
             document.getElementById("copub-map-info").style.visibility = "visible";
             loadData(countryData + bubble.centered, orgList);
           });
-
+          $('#copub-map-container').removeClass('spinner');
         }
 
         function orgList(data) {
