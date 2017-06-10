@@ -13,8 +13,8 @@
         PREFIX fn:   &lt;http://www.w3.org/2005/xpath-functions#&gt;
         PREFIX tmp: &lt;http://localhost/display#&gt;
 
-        SELECT DISTINCT 
-            ?authorship 
+        SELECT DISTINCT
+            ?authorship
             ?name
             ?address
             ?person
@@ -49,7 +49,6 @@
             ?authorship rdfs:label ?name .
             ?authorship tmp:org ?orgName .
             ?authorship tmp:person ?person .
-            ?authorship tmp:unifiedOrgURI ?o .
 
         } WHERE {
             {
@@ -64,7 +63,7 @@
                 ?subject ?property ?authorship .
                 ?authorship a core:Authorship .
                 {
-                    select ?authorship ?o (group_concat(distinct ?org ; separator = ", ") as ?orgName)
+                    select ?authorship (group_concat(distinct ?org ; separator = ", ") as ?orgName)
                     where {
                         ?subject ?property ?authorship .
                         ?authorship a core:Authorship .
@@ -74,7 +73,7 @@
                         ?o a wos:UnifiedOrganization .
                         ?o rdfs:label ?org .
                     }
-                    GROUP BY ?authorship ?o
+                    GROUP BY ?authorship
                     ORDER BY ?org
                 }
             } UNION {
