@@ -80,3 +80,34 @@
   border-top-color: #333;
   animation: spinner .6s linear infinite;
 }
+
+.pub-ids {
+  /*font-variant: small-caps;*/
+}
+
+.pub-id-link {
+  margin-right: 1em;
+}
+
+.pub-ids .counts {
+  float:right;
+  margin-right: 1em;
+}
+
+
+.wos-badge {
+  margin: 0 5px 5px 0;
+  background-color: #ff8100;
+  font-size: 16px;
+  display: inline-block;
+  min-width: 10px;
+  padding: 3px 7px;
+  color: #fff;
+  vertical-align: middle;
+  border-radius: 10px;
+}
+
+a.wos-badge {
+ text-decoration: none;
+ color: #fff;
+}
