@@ -49,6 +49,9 @@
                 <img id="uriIcon" title="${individual.uri}" src="${urls.images}/individual/uriIcon.gif" alt="${i18n().uri_icon}"/>
             </span>
         </div>
+        <#include "individual-contactInfo.ftl">
+        <!-- Websites -->
+        <#include "individual-webpage.ftl">
         <!-- orcid -->
         <#assign orcid = propertyGroups.getProperty(orcidProp)!>
         <#if orcid?has_content>
@@ -56,9 +59,6 @@
             <div class="person-contact"><img src="../images/orcid.png"><a href="http://orcid.org/${orcid.statements[0].value}" target="_blank">${orcid.statements[0].value}</a></div>
           </#if>
         </#if>
-        <#include "individual-contactInfo.ftl">
-        <!-- Websites -->
-        <#include "individual-webpage.ftl">
     </section>
 
     <section id="individual-info" ${infoClass!} role="region">

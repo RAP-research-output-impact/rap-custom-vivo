@@ -110,3 +110,7 @@ a.wos-badge {
  text-decoration: none;
  color: #fff;
 }
+
+.person-contact img {
+  margin-right: .25em;
+}
