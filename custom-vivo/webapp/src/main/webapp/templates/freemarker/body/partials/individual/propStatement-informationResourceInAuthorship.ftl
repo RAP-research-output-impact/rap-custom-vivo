@@ -1,9 +1,9 @@
 <#-- $This file is distributed under the terms of the license in /doc/license.txt$ -->
 
 <#-- Custom object property statement view for faux property "authors". See the PropertyConfig.n3 file for details.
-    
+
      This template must be self-contained and not rely on other variables set for the individual page, because it
-     is also used to generate the property statement during a deletion.  
+     is also used to generate the property statement during a deletion.
  -->
 
 <#import "lib-sequence.ftl" as s>
@@ -19,7 +19,7 @@
     <#elseif statement.authorship??>
         	<#-- <a href="${profileUrl(statement.uri("authorship"))}" title="${i18n().author_name}">${statement.name}</a> -->
             ${statement.name}
-            <#if statement.address??>, ${statement.address}</#if>
+            <#if statement.address??>, ${statement.address} <#else>${statement.rawOrg!}</#if>
             <#if statement.ouri??>  <a href="${profileUrl(statement.uri("ouri"))}">view</a></#if>
             <#-- ${statement.name}</a><#if statement.address??>, ${statement.address}</#if> -->
     <#else>
