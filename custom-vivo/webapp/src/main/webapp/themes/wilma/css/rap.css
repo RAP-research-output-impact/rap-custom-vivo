@@ -82,7 +82,8 @@
 }
 
 .pub-ids {
-  /*font-variant: small-caps;*/
+  font-variant: small-caps;
+  font-size: small;
 }
 
 .pub-id-link {
@@ -90,8 +91,6 @@
 }
 
 .pub-ids .counts {
-  float:right;
-  margin-right: 1em;
 }
 
 

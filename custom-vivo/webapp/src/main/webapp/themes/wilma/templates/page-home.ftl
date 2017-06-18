@@ -70,7 +70,7 @@
         <@widget name="login" />
 
         <!-- worldmap -->
-        <section class="home-sections">
+        <section class="home-sections" id="worldmap">
             <h2>Co-publication Worldmap</h2>
             <div id="copub-map-container">
                 <div id="copub-map"></div>
@@ -126,21 +126,28 @@
         // See: https://bost.ocks.org/mike/bubble-map/
         // Create radius for bubles.
         var radius = d3.scale.sqrt()
-            .domain([0, 4000])
-            .range([0, 20]);
+            .domain([1, 5000])
+            .range([5, 20]);
 
         function prepMapData(data) {
           var out = [];
           for (var i =0, j = data.summary.length; i < j; i++) {
             var d = {}
             var count = data.summary[i].publications;
-            d['centered'] = data.summary[i].code;
-            d['publications'] = count;
-            d['fillKey'] = 'default';
-            d['radius'] = radius(count);
-            out.push(d)
+            if (count > 0) {
+                d['centered'] = data.summary[i].code;
+                d['publications'] = count;
+                d['fillKey'] = 'default';
+                d['radius'] = radius(count);
+                out.push(d)
+            };
           }
-          makeMap(out);
+          if (out.length > 0) {
+            makeMap(out);
+          } else {
+            $('#copub-map-container').removeClass('spinner');
+            $('#worldmap').hide();
+          }
         }
 
         function makeMap(data) {
