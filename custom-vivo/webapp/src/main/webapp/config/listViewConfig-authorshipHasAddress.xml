@@ -15,18 +15,22 @@
 
         SELECT DISTINCT
             ?authorship
-            ?name
-            ?addressNumber
-            ?person
+            ?org
+            ?orgName
+            ?fullAddress
+            ?number
         WHERE {
             ?subject ?property ?authorship .
-            ?authorship rdfs:label ?name .
-             OPTIONAL { ?authorship core:rank ?rank }
-            OPTIONAL { ?authorship tmp:addr ?addressNumber }
+            ?authorship tmp:full ?fullAddress .
+            ?authorship tmp:number ?number .
+            OPTIONAL {
+                ?authorship tmp:org ?org .
+                ?org rdfs:label ?orgName .
+            }
         <critical-data-required>
             FILTER ( bound(?authorship) )
         </critical-data-required>
-        } ORDER BY ?rank (fn:lower-case(?name))
+        } ORDER BY ?number
     </query-select>
 
     <query-construct>
@@ -40,38 +44,31 @@
 
         CONSTRUCT {
             ?subject ?property ?authorship .
-
-            ?authorship a core:Authorship .
-            ?authorship core:rank ?rank .
-            ?authorship rdfs:label ?name .
-            ?authorship tmp:addr ?addrs .
+            ?authorship tmp:org ?org .
+            ?authorship tmp:number ?number .
+            ?authorship tmp:full ?fullAddress .
+            ?org rdfs:label ?orgName .
 
         } WHERE {
             {
                 ?subject ?property ?authorship .
-                ?authorship a core:Authorship
-            } UNION {
+                ?authorship a core:Authorship .
+                ?authorship core:relates ?address .
+                ?address a wos:Address ;
+                        rdfs:label ?fullAddress ;
+                        wos:sequenceNumber ?number .
+            }
+            UNION{
                 ?subject ?property ?authorship .
                 ?authorship a core:Authorship .
-                ?authorship core:rank ?rank .
-                ?authorship rdfs:label ?name .
-            } UNION {
-                ?subject ?property ?authorship .
-                ?authorship a core:Authorship .
-                {
-                    select ?authorship (group_concat(distinct ?number ; separator = ", ") as ?addrs)
-                    where {
-                        ?subject ?property ?authorship .
-                        ?authorship a core:Authorship .
-                        ?authorship core:relates ?address .
-                        ?address a wos:Address .
-                        ?address wos:sequenceNumber ?number.
-                    }
-                    GROUP BY ?authorship
-                }
+                ?authorship core:relates ?address .
+                ?address a wos:Address ;
+                        core:relates ?org .
+                ?org a wos:UnifiedOrganization ;
+                    rdfs:label ?orgName .
             }
         }
     </query-construct>
 
-    <template>propStatement-informationResourceInAuthorship.ftl</template>
+    <template>propStatement-informationResourceAddressNumber.ftl</template>
 </list-view-config>
