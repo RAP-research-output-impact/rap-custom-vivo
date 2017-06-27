@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- $This file is distributed under the terms of the license in /doc/license.txt$ -->
+
+<!-- See guidelines at https://wiki.duraspace.org/x/eYXVAw -->
+
+<list-view-config>
+    <query-select>
+        PREFIX rdfs:  &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+        PREFIX vivo:  &lt;http://vivoweb.org/ontology/core#&gt;
+        PREFIX foaf:  &lt;http://xmlns.com/foaf/0.1/&gt;
+        PREFIX vitro: &lt;http://vitro.mannlib.cornell.edu/ns/vitro/0.7#&gt;
+        PREFIX vcard:  &lt;http://www.w3.org/2006/vcard/ns#&gt;
+        PREFIX fn:   &lt;http://www.w3.org/2005/xpath-functions#&gt;
+        PREFIX tmp: &lt;http://localhost/display#&gt;
+        PREFIX wos: &lt;http://webofscience.com/ontology/wos#&gt;
+
+        SELECT DISTINCT
+            ?grant
+            ?grantName
+            ?grantId
+            ?org
+            ?funderName
+            ?funderOrg
+        WHERE {
+            ?subject ?property ?grant .
+            ?grant rdfs:label ?grantName .
+            OPTIONAL {?grant wos:grantId ?grantId }
+            ?grant tmp:funder ?funderName ;
+                  tmp:funderOrg ?funderOrg .
+        <critical-data-required>
+            FILTER ( bound(?grant) )
+        </critical-data-required>
+        } ORDER BY ?grantName
+    </query-select>
+
+    <query-construct>
+        PREFIX vivo: &lt;http://vivoweb.org/ontology/core#&gt;
+        PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+        PREFIX foaf:  &lt;http://xmlns.com/foaf/0.1/&gt;
+        PREFIX vitro: &lt;http://vitro.mannlib.cornell.edu/ns/vitro/0.7#&gt;
+        PREFIX vcard:  &lt;http://www.w3.org/2006/vcard/ns#&gt;
+        PREFIX wos: &lt;http://webofscience.com/ontology/wos#&gt;
+        PREFIX tmp: &lt;http://localhost/display#&gt;
+
+        CONSTRUCT {
+            ?subject ?property ?grant .
+            ?grant a wos:Grant ;
+                rdfs:label ?grantName ;
+                wos:grantId ?grantId ;
+                tmp:funderOrg ?org ;
+                tmp:funder ?funderName .
+
+        } WHERE {
+            {
+                ?subject ?property ?grant .
+                ?grant a wos:Grant ;
+                    rdfs:label ?grantName ;
+                    vivo:relates ?org .
+                OPTIONAL {?grant wos:grantId ?grantId }
+                ?org a wos:Funder ;
+                    rdfs:label ?funderName .
+            }
+        }
+    </query-construct>
+
+    <template>propStatement-pubHasGrant.ftl</template>
+</list-view-config>
