@@ -186,7 +186,7 @@ public class DataService {
                 "  ?org rdfs:label ?name .\n" +
                 "  OPTIONAL {  ?org vivo:overview ?overview }\n" +
                 "{\n" +
-                "    SELECT (COUNT(?pub) as ?coPubTotal) " +
+                "    SELECT (COUNT(DISTINCT ?pub) as ?coPubTotal) " +
                 "   WHERE {\n" +
                 "    ?org a foaf:Organization ; \n" +
                 "       vivo:relatedBy ?address .\n" +
