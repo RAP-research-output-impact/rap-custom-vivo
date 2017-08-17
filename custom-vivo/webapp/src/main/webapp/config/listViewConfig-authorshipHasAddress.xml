@@ -14,21 +14,21 @@
         PREFIX tmp: &lt;http://localhost/display#&gt;
 
         SELECT DISTINCT
-            ?authorship
+            ?address
             ?org
             ?orgName
             ?fullAddress
             ?number
         WHERE {
-            ?subject ?property ?authorship .
-            ?authorship tmp:full ?fullAddress .
-            ?authorship tmp:number ?number .
+            ?subject ?property ?address .
+            ?address tmp:full ?fullAddress .
+            ?address tmp:number ?number .
             OPTIONAL {
-                ?authorship tmp:org ?org .
+                ?address tmp:org ?org .
                 ?org rdfs:label ?orgName .
             }
         <critical-data-required>
-            FILTER ( bound(?authorship) )
+            FILTER ( bound(?address) )
         </critical-data-required>
         } ORDER BY ?number
     </query-select>
@@ -43,27 +43,24 @@
         PREFIX tmp: &lt;http://localhost/display#&gt;
 
         CONSTRUCT {
-            ?subject ?property ?authorship .
-            ?authorship tmp:org ?org .
-            ?authorship tmp:number ?number .
-            ?authorship tmp:full ?fullAddress .
+            ?subject ?property ?address .
+            ?address tmp:org ?org .
+            ?address tmp:number ?number .
+            ?address tmp:full ?fullAddress .
             ?org rdfs:label ?orgName .
 
         } WHERE {
             {
-                ?subject ?property ?authorship .
-                ?authorship a core:Authorship .
-                ?authorship core:relates ?address .
+                ?subject ?property ?address .
                 ?address a wos:Address ;
                         rdfs:label ?fullAddress ;
                         wos:sequenceNumber ?number .
             }
             UNION{
-                ?subject ?property ?authorship .
-                ?authorship a core:Authorship .
-                ?authorship core:relates ?address .
+                ?subject ?property ?address .
                 ?address a wos:Address ;
-                        core:relates ?org .
+                        core:relates ?org ;
+                        wos:sequenceNumber ?number .
                 ?org a wos:UnifiedOrganization ;
                     rdfs:label ?orgName .
             }

@@ -44,7 +44,7 @@ local:addressContext a :ConfigContext ;
     :hasConfiguration local:addressConfig ;
     :configContextFor vivo:relatedBy ;
     :qualifiedByDomain  wos:Publication ;
-    :qualifiedBy      vivo:Authorship .
+    :qualifiedBy      wos:Address .
 
 local:addressConfig a :ObjectPropertyDisplayConfig ;
     :listViewConfigFile "listViewConfig-authorshipHasAddress.xml"^^xsd:string ;

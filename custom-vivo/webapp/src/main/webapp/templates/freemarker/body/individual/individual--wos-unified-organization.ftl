@@ -64,8 +64,16 @@ function doSummaryTable(response) {
     var orgTotalCites = response.summary.orgCitesTotal;
     var dtuTotal = response.summary.dtuTotal;
     var dtuTotalCites = response.summary.dtuCitesTotal;
-    var orgImpact = response.summary.orgImpact.toFixed(1);
-    var dtuImpact = response.summary.dtuImpact.toFixed(1);
+    if (response.summary.orgImpact) {
+        var orgImpact = response.summary.orgImpact.toFixed(1);
+    } else {
+        var orgImpact = null;
+    }
+    if (response.summary.dtuImpact) {
+        var dtuImpact = response.summary.dtuImpact.toFixed(1);
+    } else {
+        var dtuImpact = null ;
+    }
     html += "<tr><th></th><th>" + response.summary.name + "</th><th>Technical University of Denmark</th></tr>";
     html += "<tr><td>Publications</td><td>" + orgTotal + "</td><td>" + dtuTotal + "</td>";
     html += "<tr><td>Citations</td><td>" + orgTotalCites + "</td><td>" + dtuTotalCites + "</td>";

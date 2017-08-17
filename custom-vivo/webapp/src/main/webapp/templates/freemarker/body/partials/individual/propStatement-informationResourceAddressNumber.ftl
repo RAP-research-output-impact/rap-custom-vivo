@@ -4,6 +4,6 @@
     <#if statement.org??>
         ${statement.number}) <a href="${profileUrl(statement.uri("org"))}">${statement.orgName}</a>
     <#else>
-        ${statement.fullAddress}
+        ${statement.number}) ${statement.fullAddress}
     </#if>
 </#macro>

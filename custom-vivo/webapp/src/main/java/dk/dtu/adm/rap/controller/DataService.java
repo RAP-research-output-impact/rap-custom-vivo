@@ -191,8 +191,6 @@ public class DataService {
                 "    ?org a foaf:Organization ; \n" +
                 "       vivo:relatedBy ?address .\n" +
                 "   ?address a wos:Address ;\n" +
-                "       vivo:relatedBy ?authorship .\n" +
-                "   ?authorship a vivo:Authorship ;\n" +
                 "       vivo:relates ?pub .\n" +
                 "   ?pub a wos:Publication .\n" +
                 "   }\n" +
@@ -203,9 +201,7 @@ public class DataService {
                 "      ?org a foaf:Organization ;\n" +
                 "          vivo:relatedBy ?address .\n" +
                 "      ?address a wos:Address ;\n" +
-                "         vivo:relatedBy ?authorship .\n" +
-                "      ?authorship a vivo:Authorship ;\n" +
-                "          vivo:relates ?pub .\n" +
+                "         vivo:relates ?pub .\n" +
                 "      ?pub a wos:Publication ;\n" +
                 "           wos:hasCategory ?cat .\n" +
                 "      }\n" +
@@ -300,9 +296,7 @@ public class DataService {
                 "?org a foaf:Organization ; \n" +
                 "       vivo:relatedBy ?address . \n" +
                 "?address a wos:Address ; \n" +
-                "       vivo:relatedBy ?authorship .\n" +
-                "?authorship a vivo:Authorship ;\n" +
-                "           vivo:relates ?pub . \n" +
+                "       vivo:relates ?pub .\n" +
                 "?pub a wos:Publication ; \n" +
                 "    vivo:hasPublicationVenue ?venue ; \n" +
                 "    wos:hasCategory ?category . \n" +
@@ -327,8 +321,6 @@ public class DataService {
                 "      ?country a vivo:Country ;\n" +
                 "               geo:codeISO3 ?code .\n" +
                 "      ?address a wos:Address ;\n" +
-                "      vivo:relatedBy ?authorship .\n" +
-                "      ?authorship a vivo:Authorship ;\n" +
                 "      vivo:relates ?pub .\n" +
                 "      ?pub a wos:Publication .\n" +
                 "    FILTER (?org != d:org-technical-university-of-denmark)\n" +
@@ -352,9 +344,7 @@ public class DataService {
                 "  ?country a vivo:Country ;\n" +
                 "           geo:codeISO3 ?countryCode^^<http://www.w3.org/2001/XMLSchema#string> .\n" +
                 "  ?address a wos:Address ;\n" +
-                "           vivo:relatedBy ?authorship .\n" +
-                "  ?authorship a vivo:Authorship ;\n" +
-                "              vivo:relates ?pub .\n" +
+                "           vivo:relates ?pub .\n" +
                 "  ?pub a wos:Publication .\n" +
                 "  FILTER (?org != d:org-technical-university-of-denmark)\n" +
                 "}\n" +
