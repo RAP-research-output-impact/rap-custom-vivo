@@ -41,17 +41,34 @@ vitroDisplay:SearchIndex
 # Faux property
 
 local:grantContext a :ConfigContext ;
-    :hasConfiguration local:addressConfig ;
+    :hasConfiguration local:grantConfig ;
     :configContextFor vivo:relatedBy ;
     :qualifiedByDomain  wos:Publication ;
     :qualifiedBy      wos:Grant .
 
-local:addressConfig a :ObjectPropertyDisplayConfig ;
+local:grantConfig a :ObjectPropertyDisplayConfig ;
     :listViewConfigFile "listViewConfig-pubHasGrant.xml"^^xsd:string ;
     rdfs:label "grants"@en-US ;
     :displayName "grants" ;
     # display immediately after authors
     vitro:displayRankAnnot  15 ;
+    vitro:hiddenFromDisplayBelowRoleLevelAnnot role:public ;
+    vitro:prohibitedFromUpdateBelowRoleLevelAnnot role:curator ;
+    :propertyGroup vdisplay:vitroPropertyGroupoverview .
+
+
+local:addressContext a :ConfigContext ;
+    :hasConfiguration local:addressConfig ;
+    :configContextFor vivo:relatedBy ;
+    :qualifiedByDomain  wos:Publication ;
+    :qualifiedBy      wos:Address .
+
+local:addressConfig a :ObjectPropertyDisplayConfig ;
+    :listViewConfigFile "listViewConfig-authorshipHasAddress.xml"^^xsd:string ;
+    rdfs:label "address"@en-US ;
+    :displayName "addresses" ;
+    # display immediately after authors
+    vitro:displayRankAnnot  11 ;
     vitro:hiddenFromDisplayBelowRoleLevelAnnot role:public ;
     vitro:prohibitedFromUpdateBelowRoleLevelAnnot role:curator ;
     :propertyGroup vdisplay:vitroPropertyGroupoverview .

@@ -15,12 +15,11 @@
      next statement --->
 <#macro showAuthorship statement>
     <#if statement.person??>
-            <a href="${profileUrl(statement.uri("person"))}">${statement.name}</a><#if statement.address??>, ${statement.address}</#if><#if statement.ouri??>  <a href="${profileUrl(statement.uri("ouri"))}">view</a></#if>
+            <a href="${profileUrl(statement.uri("person"))}">${statement.name}</a><#if statement.addressNumber??><sup>${statement.addressNumber}</sup></#if>
     <#elseif statement.authorship??>
         	<#-- <a href="${profileUrl(statement.uri("authorship"))}" title="${i18n().author_name}">${statement.name}</a> -->
             ${statement.name}
-            <#if statement.address??>, ${statement.address} <#else>${statement.rawOrg!}</#if>
-            <#if statement.ouri??>  <a href="${profileUrl(statement.uri("ouri"))}">view</a></#if>
+            <#if statement.addressNumber??><sup>${statement.addressNumber}</sup></#if>
             <#-- ${statement.name}</a><#if statement.address??>, ${statement.address}</#if> -->
     <#else>
         <#-- This shouldn't happen, but we must provide for it -->
