@@ -69,6 +69,7 @@ public class DataService {
                 jo.put("categories", getRelatedPubCategories(uri));
                 jo.put("org_totals", getSummaryPubCount(uri));
                 jo.put("top_categories", getTopCategories(uri));
+                jo.put("by_department", getCoPubsByDepartment(uri));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -82,6 +83,7 @@ public class DataService {
 
         //return Response.status(200).entity(jo.toString()).cacheControl(cc).build();
     }
+
 
     @Path("/worldmap")
     @GET
@@ -304,6 +306,41 @@ public class DataService {
                 "}\n" +
                 "GROUP BY ?category ?label\n" +
                 "ORDER BY DESC(?number) ?label";
+        ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
+        q2.setIri("org", orgUri);
+        String query = q2.toString();
+        log.debug("Related categories query:\n" + query);
+        return this.storeUtils.getFromStoreJSON(query);
+    }
+
+    private ArrayList getCoPubsByDepartment(String orgUri) {
+        log.debug("Running copub by department query");
+        String rq = "" +
+                "SELECT DISTINCT ?dtuSubOrgName ?otherOrgs (COUNT(DISTINCT ?pub) as ?number)\n" +
+                "WHERE {\n" +
+                "\t?pub a wos:Publication ;\n" +
+                "\t\tvivo:relatedBy ?dtuAddress .\n" +
+                "\t?dtuAddress a wos:Address ;\n" +
+                "\t\tvivo:relates ?dtuSubOrg, d:org-technical-university-of-denmark.\n" +
+                "\t?dtuSubOrg a wos:SubOrganization ;\n" +
+                "\t\twos:subOrganizationName ?dtuSubOrgName .\n" +
+                "\t{\n" +
+                "\t\tselect ?pub  (group_concat(distinct ?subOrgName ; separator = \", \") as ?otherOrgs)\n" +
+                "\t\twhere {\n" +
+                "\t\t\t?org a foaf:Organization ;\n" +
+                "\t\t\t\tvivo:relatedBy ?address .\n" +
+                "\t\t\t?address a wos:Address ;\n" +
+                "\t\t\t\tvivo:relates ?subOrg .\n" +
+                "\t\t\t?subOrg a wos:SubOrganization ;\n" +
+                "\t\t\t\twos:subOrganizationName ?subOrgName .\n" +
+                "\t\t\t?pub a wos:Publication ;\n" +
+                "\t\t\t\tvivo:relatedBy ?address, ?dtuAddress .\n" +
+                "\t\t}\n" +
+                "\t\tGROUP BY ?pub\n" +
+                "\t}\n" +
+                "\t}\n" +
+                "\tGROUP BY ?dtuSubOrgName ?otherOrgs\n" +
+                "\tORDER BY ?dtuSubOrgName ?otherOrgs";
         ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
         q2.setIri("org", orgUri);
         String query = q2.toString();

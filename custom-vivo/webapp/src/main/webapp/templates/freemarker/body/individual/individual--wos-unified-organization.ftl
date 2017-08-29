@@ -40,6 +40,9 @@ function collabSummary(response) {
         if (response.top_categories.length != 0) {
             doTopCategoryTable(response);
         }
+        if (response.by_department.length > 0) {
+            doDepartmentTable(response.by_department);
+        }
         if (response.categories.length > 0) {
             doPubCategoryTable(response.categories);
         }
@@ -120,6 +123,35 @@ function doPubCategoryTable(totals) {
         //console.log(value);
         var row = "<tr><td>" + value.name + "</td><td>" + value.number + "</td></tr>";
         html += row;
+    });
+    html += closeHtml;
+    $("#individual-info").append(html);
+}
+
+
+function doDepartmentTable(totals) {
+    var html = `
+    <hr/>
+    <h2>Co-publications by department</h2>
+    <table class="pub-counts">
+      <tr>
+        <th>DTU department</th>
+        <th>Number</th>
+        <th>External department</th>
+      </tr>
+    `;
+
+    var closeHtml = "</table>";
+    var last = null;
+    $.each( totals, function( key, value ) {
+        //console.log(value);
+        var row = "<tr><td>";
+        if (value.dtuSubOrgName != last) {
+            row += value.dtuSubOrgName;
+        }
+        row +=  "</td><td>" + value.number + "</td><td>" + value.otherOrgs + "</td></tr>";
+        html += row;
+        last = value.dtuSubOrgName;
     });
     html += closeHtml;
     $("#individual-info").append(html);
