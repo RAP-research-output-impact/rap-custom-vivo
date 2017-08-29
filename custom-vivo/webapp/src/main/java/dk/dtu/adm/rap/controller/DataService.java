@@ -318,7 +318,7 @@ public class DataService {
         String rq = "" +
                 "SELECT DISTINCT ?dtuSubOrgName ?otherOrgs (COUNT(DISTINCT ?pub) as ?number)\n" +
                 "WHERE {\n" +
-                "\t?pub a wos:Publication ;\n" +
+                "?pub a wos:Publication ;\n" +
                 "\t\tvivo:relatedBy ?dtuAddress .\n" +
                 "\t?dtuAddress a wos:Address ;\n" +
                 "\t\tvivo:relates ?dtuSubOrg, d:org-technical-university-of-denmark.\n" +
