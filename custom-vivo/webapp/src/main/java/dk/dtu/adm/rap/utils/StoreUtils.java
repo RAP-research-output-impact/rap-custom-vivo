@@ -2,8 +2,10 @@ package dk.dtu.adm.rap.utils;
 
 import com.hp.hpl.jena.query.*;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import edu.cornell.mannlib.vitro.webapp.rdfservice.RDFService;
+import edu.cornell.mannlib.vitro.webapp.rdfservice.RDFServiceException;
 import edu.cornell.mannlib.vitro.webapp.rdfservice.impl.RDFServiceUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -92,6 +94,16 @@ public class StoreUtils {
         return outRows;
     }
 
+    public Model getModelFromStore(String constructQuery) {
+        Model results = ModelFactory.createDefaultModel();
+        try {
+            rdfService.sparqlConstructQuery(constructQuery, results);
+        } catch (RDFServiceException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
     public ArrayList getFromStoreJSON(String selectQuery) {
         final ArrayList<JSONObject> outRows = new ArrayList<JSONObject>();
         try {
@@ -124,11 +136,13 @@ public class StoreUtils {
         ParameterizedSparqlString q2 = new ParameterizedSparqlString();
         q2.setNsPrefix("foaf", "http://xmlns.com/foaf/0.1/");
         q2.setNsPrefix("vivo", "http://vivoweb.org/ontology/core#");
+        q2.setNsPrefix("bibo", "http://purl.org/ontology/bibo/");
         q2.setNsPrefix("wos", "http://webofscience.com/ontology/wos#");
         q2.setNsPrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
         q2.setNsPrefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
         q2.setNsPrefix("geo", "http://aims.fao.org/aos/geopolitical.owl#");
         q2.setNsPrefix("obo", "http://purl.obolibrary.org/obo/");
+        q2.setNsPrefix("tmp", "http://localhost/tmp");
         q2.setNsPrefix("d", this.namespace);
         q2.setCommandText(raw);
         return q2;
