@@ -25,7 +25,7 @@
         <script src="${urls.base}/js/d3.min.js"></script>
         <script src="${urls.theme}/js/topojson.min.js"></script>
         <script src="${urls.theme}/js/datamaps.world.min.js"></script>
-        <script src="${urls.theme}/js/world-map.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/datamaps/0.5.8/datamaps.world.hires.min.js"></script>
     </head>
 
     <body class="${bodyClasses!}" onload="${bodyOnload!}">
