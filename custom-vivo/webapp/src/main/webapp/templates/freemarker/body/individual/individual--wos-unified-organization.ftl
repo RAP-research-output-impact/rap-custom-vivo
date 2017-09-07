@@ -138,7 +138,7 @@ function doDepartmentTable(totals, orgName) {
         <th>DTU department</th>
         <th>Number</th>
         <th>`;
-    html += orgName + ' department';
+    html += 'orgName '+ ' department';
     html += `</th>
       </tr>
     `;
@@ -146,11 +146,12 @@ function doDepartmentTable(totals, orgName) {
     var closeHtml = "</table>";
     var last = null;
     $.each( totals, function( key, value ) {
-        //console.log(value);
-        var row = "<tr><td>";
         if (value.dtuSubOrgName != last) {
-            row += value.dtuSubOrgName;
+            var row = "<tr class=\"copubdept-head\"><td>";
+            row += value.dtuSubOrgName + "</td><td></td><td><a class=\"view-dept\">Show details</a></td></tr>"
+            html += row
         }
+        var row = "<tr class=\"copubdept-child\"><td>";
         row +=  "</td><td>" + value.number + "</td><td>" + value.otherOrgs + "</td></tr>";
         html += row;
         last = value.dtuSubOrgName;
@@ -207,6 +208,15 @@ document.addEventListener('click', function (e) {
     if (hasClass(e.target, 'report-export')) {
         var html = document.querySelector("table").outerHTML
         exportTable(html, "co-publication-" + individualLocalName + ".tsv");
+    } else if (hasClass(e.target, 'view-dept')) {
+        $(e.target).parents('tr').next('.copubdept-child').toggle();
+        label = $(e.target);
+        if(label.html()=="Show details"){
+            label.html('Hide detals');
+        }else{
+            label.html('Show details');
+        }
+        return false;
     }
 }, false);
 

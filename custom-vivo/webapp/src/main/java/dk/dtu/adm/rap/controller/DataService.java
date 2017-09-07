@@ -349,7 +349,7 @@ public class DataService {
     }
 
     private ArrayList getWorldwidePubs() {
-        log.debug("Querying ofr country codes for copublication");
+        log.debug("Querying for country codes for copublication");
         String rq = "select ?code (COUNT(DISTINCT ?pub) as ?publications)\n" +
                 "    where {\n" +
                 "        ?org a wos:UnifiedOrganization ;\n" +

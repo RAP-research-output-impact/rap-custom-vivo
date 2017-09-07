@@ -118,3 +118,8 @@ a.wos-badge {
 span.org-enhanced {
   margin-left: 2em;
 }
+
+
+tr.copubdept-child {
+  display: none;
+}
