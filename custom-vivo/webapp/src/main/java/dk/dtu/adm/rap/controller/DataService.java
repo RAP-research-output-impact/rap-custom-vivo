@@ -316,7 +316,7 @@ public class DataService {
     private ArrayList getCoPubsByDepartment(String orgUri) {
         log.debug("Running copub by department query");
         String rq = "" +
-                "SELECT DISTINCT ?dtuSubOrgName ?otherOrgs (COUNT(DISTINCT ?pub) as ?number)\n" +
+                "SELECT DISTINCT ?dtuSubOrg ?dtuSubOrgName ?otherOrgs (COUNT(DISTINCT ?pub) as ?number)\n" +
                 "WHERE {\n" +
                 "?pub a wos:Publication ;\n" +
                 "\t\tvivo:relatedBy ?dtuAddress .\n" +
@@ -339,8 +339,8 @@ public class DataService {
                 "\t\tGROUP BY ?pub\n" +
                 "\t}\n" +
                 "\t}\n" +
-                "\tGROUP BY ?dtuSubOrgName ?otherOrgs\n" +
-                "\tORDER BY ?dtuSubOrgName ?otherOrgs";
+                "\tGROUP BY ?dtuSubOrg ?dtuSubOrgName ?otherOrgs\n" +
+                "\tORDER BY ?dtuSubOrgName ?number\n";
         ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
         q2.setIri("org", orgUri);
         String query = q2.toString();
