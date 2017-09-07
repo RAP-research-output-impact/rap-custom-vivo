@@ -209,7 +209,7 @@ document.addEventListener('click', function (e) {
         var html = document.querySelector("table").outerHTML
         exportTable(html, "co-publication-" + individualLocalName + ".tsv");
     } else if (hasClass(e.target, 'view-dept')) {
-        $(e.target).parents('tr').next('.copubdept-child').toggle();
+        $(e.target).parents('tr').nextUntil('.copubdept-head').toggle();
         label = $(e.target);
         if(label.html()=="Show details"){
             label.html('Hide detals');
@@ -256,7 +256,7 @@ function exportTable(html, filename) {
             var row = [], cols = rows[i].querySelectorAll("td, th");
             for (var j = 0; j < cols.length; j++)
                 row.push("\"" + cols[j].innerText + "\"");
-            csv.push(row.join("\t"));
+                csv.push(row.join("\t"));
         }
         csv.push("\n");
     }
