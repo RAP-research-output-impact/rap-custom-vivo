@@ -9,6 +9,7 @@ import edu.cornell.mannlib.vitro.webapp.rdfservice.RDFServiceException;
 import edu.cornell.mannlib.vitro.webapp.rdfservice.impl.RDFServiceUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -55,6 +56,39 @@ public class StoreUtils {
                         }
                     }
                     //outItem = new JSONObject(thisItem);
+                    outRows.add(thisItem);
+                }
+            } finally {
+                qexec.close();
+            }
+        } catch (QueryParseException e) {
+            log.warn(e);
+            return outRows;
+        }
+        return outRows;
+    }
+
+    public ArrayList getFromModelJSON(String selectQuery, Model tmpModel) throws JSONException {
+        ArrayList<JSONObject> outRows = new ArrayList<JSONObject>();
+        try {
+            QueryExecution qexec = QueryExecutionFactory.create(selectQuery, tmpModel);
+            try {
+                ResultSet result = qexec.execSelect();
+                while ( result.hasNext() ) {
+                    JSONObject thisItem = new JSONObject();
+                    QuerySolution soln = result.nextSolution();
+                    Iterator iter = soln.varNames();
+                    while(iter.hasNext()) {
+                        String name = (String)iter.next();
+                        RDFNode val = soln.get(name);
+                        if(val != null) {
+                            if (val.isLiteral()) {
+                                thisItem.put(name, val.asLiteral().getValue());
+                            } else {
+                                thisItem.put(name, val.asResource().getURI());
+                            }
+                        }
+                    }
                     outRows.add(thisItem);
                 }
             } finally {

@@ -1,13 +1,14 @@
 package dk.dtu.adm.rap.controller;
 
 import com.hp.hpl.jena.query.ParameterizedSparqlString;
-import com.hp.hpl.jena.vocabulary.XSD;
+import com.hp.hpl.jena.rdf.model.Model;
 import dk.dtu.adm.rap.utils.StoreUtils;
 import edu.cornell.mannlib.vedit.beans.LoginStatusBean;
 import edu.cornell.mannlib.vitro.webapp.config.ConfigurationProperties;
 import edu.cornell.mannlib.vitro.webapp.controller.VitroRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -22,6 +23,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 @Path("/report/")
@@ -74,6 +76,93 @@ public class DataService {
                 e.printStackTrace();
             }
 
+            String outJson = jo.toString();
+            builder = Response.ok(outJson);
+        }
+
+        builder.tag(etag);
+        return builder.build();
+
+        //return Response.status(200).entity(jo.toString()).cacheControl(cc).build();
+    }
+
+
+    @Path("/org/{vid}/by-dept")
+    @GET
+    @Produces("application/json")
+    public Response getCoPubByDept(@PathParam("vid") String vid, @Context Request request) {
+        VitroRequest vreq = new VitroRequest(httpRequest);
+
+        if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
+            return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
+        }
+
+        ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
+        namespace = props.getProperty("Vitro.defaultNamespace");
+        String wosDataVersion = props.getProperty("wos.dataVersion");
+        Boolean cacheActive = Boolean.parseBoolean(props.getProperty("wos.cacheActive"));
+        String uri = namespace + vid;
+
+        //setup storeUtils
+        this.storeUtils = new StoreUtils();
+        this.storeUtils.setRdfService(namespace, vreq.getRDFService());
+
+        ResponseBuilder builder = null;
+        EntityTag etag = new EntityTag(wosDataVersion + uri);
+        if (cacheActive.equals(true) && wosDataVersion != null) {
+            log.info("Etag caching active");
+            builder = request.evaluatePreconditions(etag);
+        }
+
+        // cached resource did change -> serve updated content
+        if (builder == null) {
+            Model tmpModel = deptModel(uri);
+            String rq = getQuery("SELECT ?d ?name (COUNT(DISTINCT ?p) as ?num)\n" +
+                    "WHERE {\n" +
+                    "?d a tmp:Dtu ;\n" +
+                    "tmp:name ?name ;\n" +
+                    "tmp:related ?org .\n" +
+                    "?org tmp:pub ?p .\n" +
+                    "\n" +
+                    "}\n" +
+                    "GROUP BY ?d ?name\n" +
+                    "ORDER BY DESC(?num) ?name");
+            log.debug("Dept query:\n" + rq);
+            ArrayList<HashMap> depts = this.storeUtils.getFromModel(rq, tmpModel);
+            JSONArray out = new JSONArray();
+            for (HashMap dept: depts) {
+                String deptUri = dept.get("d").toString();
+                String exOrgRq = "SELECT ?org ?name (COUNT(DISTINCT ?p) as ?num)\n" +
+                        "WHERE {\n" +
+                        "?org a tmp:Ext ;\n" +
+                        "tmp:name ?name ;\n" +
+                        "tmp:pub ?p .\n" +
+                        "?d a tmp:Dtu ;\n" +
+                        "tmp:related ?org .\n" +
+                        "\n" +
+                        "}\n" +
+                        "GROUP BY ?org ?name\n" +
+                        "ORDER BY DESC(?num) ?name";
+                ParameterizedSparqlString q2 = this.storeUtils.getQuery(exOrgRq);
+                q2.setIri("d", deptUri);
+                String exOrgQuery = q2.toString();
+                log.debug("External Dept query:\n" + exOrgQuery);
+                ArrayList<HashMap> subOrgs = null;
+                try {
+                    subOrgs = this.storeUtils.getFromModelJSON(exOrgQuery, tmpModel);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                dept.put("sub_orgs", new JSONArray(subOrgs));
+                out.put(dept);
+            }
+            JSONObject jo = new JSONObject();
+            try {
+                jo.put("summary", getSummary(uri));
+                jo.put("departments", out);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             String outJson = jo.toString();
             builder = Response.ok(outJson);
         }
@@ -252,7 +341,7 @@ public class DataService {
 
     private ArrayList getSummaryPubCount(final String orgUri) {
         log.debug("Running summary pub count query");
-        final ArrayList outArray = new ArrayList<String>();
+        final ArrayList<String> outArray = new ArrayList<String>();
         String rq = "" +
                 "select ?number ?year\n" +
                 "where {\n" +
@@ -392,6 +481,45 @@ public class DataService {
         String query = q2.toString();
         log.debug("Related categories query:\n" + query);
         return this.storeUtils.getFromStoreJSON(query);
+    }
+
+
+    private Model deptModel(String externalOrgUri) {
+        String rq = "CONSTRUCT {\n" +
+                "?dtuSubOrg a tmp:Dtu ;\n" +
+                "tmp:name ?dtuSubOrgName ;\n" +
+                "tmp:related ?externalSubOrg .\n" +
+                "?externalSubOrg a tmp:Ext ;\n" +
+                "tmp:name ?externalSubOrgName ;\n" +
+                "tmp:pub ?pub ;\n" +
+                "tmp:related ?dtuSubOrg .\n" +
+                "}\n" +
+                "WHERE {\n" +
+                "?pub a wos:Publication ;\n" +
+                "vivo:relatedBy ?dtuAddress, ?otherAddress .\n" +
+                "?dtuAddress a wos:Address ;\n" +
+                "vivo:relates ?dtuSubOrg, d:org-technical-university-of-denmark .\n" +
+                "?otherAddress a wos:Address ;\n" +
+                "vivo:relates ?externalSubOrg, ?uOrg .\n" +
+                "?uOrg a wos:UnifiedOrganization ;\n" +
+                "rdfs:label ?unifiedName .\n" +
+                "?dtuSubOrg a wos:SubOrganization ;\n" +
+                "vivo:relatedBy ?dtuAddress  ;\n" +
+                "wos:subOrganizationName ?dtuSubOrgName .\n" +
+                "?externalSubOrg a wos:SubOrganization ;\n" +
+                "vivo:relatedBy ?otherAddress ;\n" +
+                "wos:subOrganizationName ?externalSubOrgName ." +
+                "}";
+        ParameterizedSparqlString query = this.storeUtils.getQuery(rq);
+        query.setIri("?uOrg", externalOrgUri);
+        String raw = query.toString();
+        log.debug("Dept Model query:\n" + rq);
+        return this.storeUtils.getModelFromStore(raw);
+    }
+
+    private String getQuery(String raw) {
+        ParameterizedSparqlString ps = this.storeUtils.getQuery(raw);
+        return ps.toString();
     }
 
 

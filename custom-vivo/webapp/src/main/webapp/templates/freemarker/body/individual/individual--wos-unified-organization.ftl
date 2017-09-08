@@ -16,6 +16,7 @@
 var base = "${urls.base}";
 var vds = base + '/vds/report/org/' + individualLocalName;
 var vdsOrgs = base + '/vds/report/org/' + individualLocalName + "/orgs";
+var byDeptUrl = base + '/vds/report/org/' + individualLocalName + "/by-dept";
 loadPubInfo(vds, collabSummary);
 
 function collabSummary(response) {
@@ -43,11 +44,17 @@ function collabSummary(response) {
         if (response.categories.length > 0) {
             doPubCategoryTable(response.categories);
         }
-        if (response.by_department.length > 0) {
-            doDepartmentTable(response.by_department, response.summary.name);
-        }
+        loadPubInfo(byDeptUrl, byDeptReport)
     };
 }
+
+
+function byDeptReport(response) {
+    if (response.departments.length > 0) {
+        doDepartmentTable(response.departments, response.summary.name);
+    }
+}
+
 
 function doCategories(response) {
 	console.log(response.categories);
@@ -129,7 +136,7 @@ function doPubCategoryTable(totals) {
 }
 
 
-function doDepartmentTable(totals, orgName) {
+function doDepartmentTable(totals, name) {
     var html = `
     <hr/>
     <h2>Co-publications by department</h2>
@@ -138,7 +145,7 @@ function doDepartmentTable(totals, orgName) {
         <th>DTU department</th>
         <th>Number</th>
         <th>`;
-    html += 'orgName '+ ' department';
+    html += name + ' department';
     html += `</th>
       </tr>
     `;
@@ -146,15 +153,17 @@ function doDepartmentTable(totals, orgName) {
     var closeHtml = "</table>";
     var last = null;
     $.each( totals, function( key, value ) {
-        if (value.dtuSubOrgName != last) {
+        if (value.name != last) {
             var row = "<tr class=\"copubdept-head\"><td>";
-            row += value.dtuSubOrgName + "</td><td></td><td><a class=\"view-dept\">Show details</a></td></tr>"
+            row += value.name + "</td><td class=\"dtu-dept-num\">" + value.num + "</td><td><a class=\"view-dept\">Show details</a></td></tr>"
             html += row
         }
-        var row = "<tr class=\"copubdept-child\"><td>";
-        row +=  "</td><td>" + value.number + "</td><td>" + value.otherOrgs + "</td></tr>";
-        html += row;
-        last = value.dtuSubOrgName;
+        $.each( value.sub_orgs, function( k2, subOrg ) {
+            var row = "<tr class=\"copubdept-child\"><td>";
+            row +=  "</td><td>" + subOrg.num + "</td><td>" + subOrg.name + "</td></tr>";
+            html += row;
+        });
+        last = value.name;
     });
     html += closeHtml;
     $("#individual-info").append(html);
