@@ -117,7 +117,7 @@ public class DataService {
         // cached resource did change -> serve updated content
         if (builder == null) {
             Model tmpModel = deptModel(uri);
-            String rq = getQuery("SELECT ?name (COUNT(DISTINCT ?p) as ?num)\n" +
+            String rq = getQuery("SELECT ?d ?name (COUNT(DISTINCT ?p) as ?num)\n" +
                     "WHERE {\n" +
                     "?d a tmp:Dtu ;\n" +
                     "tmp:name ?name ;\n" +
@@ -125,7 +125,7 @@ public class DataService {
                     "?org tmp:pub ?p .\n" +
                     "\n" +
                     "}\n" +
-                    "GROUP BY ?name\n" +
+                    "GROUP BY ?d ?name\n" +
                     "ORDER BY DESC(?num) ?name");
             log.debug("Dept query:\n" + rq);
             ArrayList<HashMap> depts = this.storeUtils.getFromModel(rq, tmpModel);
