@@ -117,6 +117,7 @@ public class DataService {
             log.info("Etag caching active");
             builder = request.evaluatePreconditions(etag);
         }
+        String orgName = this.storeUtils.getFromStore(getQuery("SELECT ?name where { <" + uri + "> rdfs:label ?name }")).get(0).get("name").toString();
 
         // cached resource did change -> serve updated content
         if (builder == null) {
@@ -144,6 +145,7 @@ public class DataService {
             JSONObject jo = new JSONObject();
             try {
                 //jo.put("summary", getSummary(uri));
+                jo.put("name", orgName);
                 jo.put("departments", out);
             } catch (JSONException e) {
                 e.printStackTrace();

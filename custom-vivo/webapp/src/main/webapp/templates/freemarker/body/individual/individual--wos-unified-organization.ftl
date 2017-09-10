@@ -52,7 +52,7 @@ function collabSummary(response) {
 
 function byDeptReport(response) {
     if (response.departments.length > 0) {
-        doDepartmentTable(response.departments, "TMP");
+        doDepartmentTable(response.departments, response.name);
     }
 }
 
