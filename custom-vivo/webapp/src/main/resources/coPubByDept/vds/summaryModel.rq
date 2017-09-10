@@ -25,6 +25,6 @@ WHERE {
            vivo:relates ?pub .
   ?pub a wos:Publication ;
        vivo:relatedBy ?address, ?address2 .
-  OPTIONAL { ?dso wos:preferredName ?dPrefName }
-  OPTIONAL { ?so wos:preferredName ?soPrefName }
+  #OPTIONAL { ?dso wos:preferredName ?dPrefName }
+  #OPTIONAL { ?so wos:preferredName ?soPrefName }
 }
