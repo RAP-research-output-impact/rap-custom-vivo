@@ -52,7 +52,7 @@ function collabSummary(response) {
 
 function byDeptReport(response) {
     if (response.departments.length > 0) {
-        doDepartmentTable(response.departments, response.summary.name);
+        doDepartmentTable(response.departments, "TMP");
     }
 }
 
@@ -155,8 +155,8 @@ function doDepartmentTable(totals, name) {
     var last = null;
     $.each( totals, function( key, value ) {
         if (value.name != last) {
-            link = "<a href=\"" + base + "/individual?uri=" + value.d + "\">" + value.name + "</a>";
-            var coPubLink = "<a href=\"" + base + "/copubs-by-dept/" + value.d.split("/")[4] + "?collab=" + individualLocalName + "\" target=\"copubdept\">" +  value.num + "</a>";
+            link = "<a href=\"" + base + "/individual?uri=" + value.org + "\">" + value.name + "</a>";
+            var coPubLink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + "\" target=\"copubdept\">" +  value.num + "</a>";
             //link = value.name;
             var row = "<tr class=\"copubdept-head\"><td>";
             row += value.name + "</td><td class=\"dtu-dept-num\">" + coPubLink + "</td><td><a class=\"view-dept\">Show details</a></td></tr>"
@@ -164,7 +164,7 @@ function doDepartmentTable(totals, name) {
         }
         $.each( value.sub_orgs, function( k2, subOrg ) {
             var row = "<tr class=\"copubdept-child\"><td>";
-            row +=  "</td><td>" + subOrg.num + "</td><td>" + subOrg.name + "</td></tr>";
+            row +=  "</td><td>" + subOrg.total + "</td><td>" + subOrg.name + "</td></tr>";
             html += row;
         });
         last = value.name;

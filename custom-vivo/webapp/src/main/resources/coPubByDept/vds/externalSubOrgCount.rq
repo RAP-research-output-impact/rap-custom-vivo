@@ -1,0 +1,11 @@
+SELECT DISTINCT ?name (COUNT(DISTINCT ?pub) as ?total)
+WHERE {
+    VALUES ?dtuOrg { ?org }
+    ?dtuOrg a tmp:Dtu ;
+            tmp:relates ?pub .
+    ?exSubOrg a tmp:External ;
+            tmp:name ?name ;
+            tmp:relates ?pub
+}
+GROUP BY ?name
+ORDER BY DESC(?total) ?name

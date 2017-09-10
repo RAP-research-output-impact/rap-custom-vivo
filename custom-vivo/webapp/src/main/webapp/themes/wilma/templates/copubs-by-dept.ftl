@@ -1,7 +1,7 @@
 
-<h2>Co-publications by Department</h2>
+<h2>Co-publications by Department DTU and ${collabOrg}</h2>
 
-<h3>${mainOrg} and ${collabOrg}</h3>
+<h3>${mainOrg}</h3>
 <div>${pubs?size} total co-publications</div>
 <hr/>
 
