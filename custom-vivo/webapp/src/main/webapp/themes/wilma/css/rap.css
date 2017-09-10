@@ -124,6 +124,9 @@ tr.copubdept-child {
   display: none;
 }
 
+div.copubdept-pubmeta {
+  margin-bottom: 1.5em;
+}
 
 ul.copubdept {
   margin-top: .5em;

@@ -13,19 +13,20 @@ CONSTRUCT {
 WHERE {
     VALUES ?org { orgList }
     ?org a wos:SubOrganization ;
-        vivo:relatedBy ?addr .
-    ?addr a wos:Address ;
+        vivo:relatedBy ?address .
+    ?address a wos:Address ;
         vivo:relates ?pub .
     ?collab a wos:UnifiedOrganization ;
         vivo:relatedBy ?address2 .
     ?address2 a wos:Address ;
         vivo:relates ?pub .
     ?subOrg a wos:SubOrganization ;
-        rdfs:label ?subOrgName ;
+        wos:subOrganizationName ?subOrgName ;
         vivo:relatedBy ?address2 .
     ?pub a wos:Publication ;
         rdfs:label ?title ;
-        vivo:dateTimeValue ?dtv .
+        vivo:dateTimeValue ?dtv ;
+        vivo:relatedBy ?address, ?address2 .
     ?dtv vivo:dateTime ?date .
     OPTIONAL {
         ?pub wos:wosId ?wosId ;

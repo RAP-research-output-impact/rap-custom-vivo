@@ -12,7 +12,7 @@ WHERE {
     {
         SELECT ?p (group_concat(distinct ?subOrgName ; separator = ";") as ?subOrgs)
         WHERE {
-            ?pub a wos:Publication ;
+            ?p a wos:Publication ;
                 tmp:relates ?so .
             ?so a tmp:SubOrg ;
                 rdfs:label ?subOrgName

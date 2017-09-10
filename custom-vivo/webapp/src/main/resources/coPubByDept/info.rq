@@ -2,7 +2,7 @@ SELECT DISTINCT ?org ?name
 WHERE {
         VALUES ?targetOrg {  ?dtuOrg }
         ?targetOrg a wos:SubOrganization ;
-                        rdfs:label ?label .
+                wos:subOrganizationName ?label .
         OPTIONAL {
                 ?targetOrg wos:preferredName ?pName .
                 ?addOrg a wos:SubOrganization ;

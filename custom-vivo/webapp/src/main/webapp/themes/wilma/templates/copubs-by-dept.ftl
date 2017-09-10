@@ -2,10 +2,11 @@
 <h2>Co-publications by Department</h2>
 
 <h3>${mainOrg} and ${collabOrg}</h3>
+<div>${pubs?size} total co-publications</div>
 <hr/>
 
  <#list pubs as pub>
- <div>
+ <div class="copubdept-pubmeta">
     <h6><a href="${profileUrl(pub.p)}"">${pub.title}</a>&nbsp;<span class="listDateTime">${pub.date[0..9]}</span></h6>
     <div class="pub-ids">
         <#if pub.doi?has_content>
