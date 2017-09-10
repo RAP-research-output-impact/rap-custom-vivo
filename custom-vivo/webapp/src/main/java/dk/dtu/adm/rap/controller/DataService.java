@@ -120,9 +120,11 @@ public class DataService {
             String rq = getQuery("SELECT ?d ?name (COUNT(DISTINCT ?p) as ?num)\n" +
                     "WHERE {\n" +
                     "?d a tmp:Dtu ;\n" +
-                    "tmp:name ?name ;\n" +
+                    "tmp:name ?label ;\n" +
                     "tmp:related ?org .\n" +
                     "?org tmp:pub ?p .\n" +
+                    "OPTIONAL {?d tmp:pname ?pName }\n" +
+                    "BIND( if(bound(?pName),?pName,?label) as ?name )" +
                     "\n" +
                     "}\n" +
                     "GROUP BY ?d ?name\n" +
@@ -488,6 +490,7 @@ public class DataService {
         String rq = "CONSTRUCT {\n" +
                 "?dtuSubOrg a tmp:Dtu ;\n" +
                 "tmp:name ?dtuSubOrgName ;\n" +
+                "tmp:pname ?pName ;\n" +
                 "tmp:related ?externalSubOrg .\n" +
                 "?externalSubOrg a tmp:Ext ;\n" +
                 "tmp:name ?externalSubOrgName ;\n" +
@@ -508,7 +511,8 @@ public class DataService {
                 "wos:subOrganizationName ?dtuSubOrgName .\n" +
                 "?externalSubOrg a wos:SubOrganization ;\n" +
                 "vivo:relatedBy ?otherAddress ;\n" +
-                "wos:subOrganizationName ?externalSubOrgName ." +
+                "wos:subOrganizationName ?externalSubOrgName \n." +
+                "OPTIONAL { ?dtuSubOrg wos:preferredName ?pName }" +
                 "}";
         ParameterizedSparqlString query = this.storeUtils.getQuery(rq);
         query.setIri("?uOrg", externalOrgUri);

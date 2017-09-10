@@ -1,0 +1,36 @@
+CONSTRUCT {
+    ?pub a wos:Publication ;
+        rdfs:label ?title ;
+        tmp:pubDate ?date ;
+        wos:wosId ?wosId ;
+        wos:referenceCount ?refCount ;
+        wos:citationCount ?citeCount ;
+        bibo:doi ?doi ;
+        tmp:relates ?subOrg .
+    ?subOrg a tmp:SubOrg ;
+        rdfs:label ?subOrgName .
+}
+WHERE {
+    VALUES ?org { orgList }
+    ?org a wos:SubOrganization ;
+        vivo:relatedBy ?addr .
+    ?addr a wos:Address ;
+        vivo:relates ?pub .
+    ?collab a wos:UnifiedOrganization ;
+        vivo:relatedBy ?address2 .
+    ?address2 a wos:Address ;
+        vivo:relates ?pub .
+    ?subOrg a wos:SubOrganization ;
+        rdfs:label ?subOrgName ;
+        vivo:relatedBy ?address2 .
+    ?pub a wos:Publication ;
+        rdfs:label ?title ;
+        vivo:dateTimeValue ?dtv .
+    ?dtv vivo:dateTime ?date .
+    OPTIONAL {
+        ?pub wos:wosId ?wosId ;
+            wos:referenceCount ?refCount ;
+            wos:citationCount ?citeCount .
+    }
+    OPTIONAL { ?pub bibo:doi ?doi }
+ }

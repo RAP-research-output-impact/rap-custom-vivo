@@ -13,6 +13,7 @@
 
 <script>
 //co-publication report
+var orgLocalName = individualLocalName;
 var base = "${urls.base}";
 var vds = base + '/vds/report/org/' + individualLocalName;
 var vdsOrgs = base + '/vds/report/org/' + individualLocalName + "/orgs";
@@ -154,8 +155,11 @@ function doDepartmentTable(totals, name) {
     var last = null;
     $.each( totals, function( key, value ) {
         if (value.name != last) {
+            link = "<a href=\"" + base + "/individual?uri=" + value.d + "\">" + value.name + "</a>";
+            var coPubLink = "<a href=\"" + base + "/copubs-by-dept/" + value.d.split("/")[4] + "?collab=" + individualLocalName + "\" target=\"copubdept\">" +  value.num + "</a>";
+            //link = value.name;
             var row = "<tr class=\"copubdept-head\"><td>";
-            row += value.name + "</td><td class=\"dtu-dept-num\">" + value.num + "</td><td><a class=\"view-dept\">Show details</a></td></tr>"
+            row += value.name + "</td><td class=\"dtu-dept-num\">" + coPubLink + "</td><td><a class=\"view-dept\">Show details</a></td></tr>"
             html += row
         }
         $.each( value.sub_orgs, function( k2, subOrg ) {

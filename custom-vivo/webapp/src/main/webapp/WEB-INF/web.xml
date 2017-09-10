@@ -1485,6 +1485,15 @@
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
+
+  <servlet>
+    <servlet-name>CoPubsByDeptController</servlet-name>
+    <servlet-class>dk.dtu.adm.rap.controller.CoPubsByDept</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CoPubsByDeptController</servlet-name>
+    <url-pattern>/copubs-by-dept/*</url-pattern>
+  </servlet-mapping>
   
   <!-- ==================== mime types ============================== -->
   
