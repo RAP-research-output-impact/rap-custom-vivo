@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,6 +23,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import dk.dtu.adm.rap.search.SearchFacet;
+import dk.dtu.adm.rap.search.SearchFacetCategory;
 import edu.cornell.mannlib.vitro.webapp.application.ApplicationUtils;
 import edu.cornell.mannlib.vitro.webapp.beans.ApplicationBean;
 import edu.cornell.mannlib.vitro.webapp.beans.Individual;
@@ -71,10 +74,14 @@ public class PagedSearchController extends FreemarkerHttpServlet {
     private static final String PARAM_HITS_PER_PAGE = "hitsPerPage";
     private static final String PARAM_CLASSGROUP = "classgroup";
     private static final String PARAM_RDFTYPE = "type";
-    private static final String PARAM_QUERY_TEXT = "querytext";
+    // RAP make this field public
+    public static final String PARAM_QUERY_TEXT = "querytext";
+    public static final String FACET_FIELD_PREFIX = "facet_";
 
     protected static final Map<Format,Map<Result,String>> templateTable;
-
+    // RAP
+    protected static final Map<String, String> facetPublicNameTable;
+    
     protected enum Format { 
         HTML, XML, CSV; 
     }
@@ -85,6 +92,7 @@ public class PagedSearchController extends FreemarkerHttpServlet {
     
     static{
         templateTable = setupTemplateTable();
+        facetPublicNameTable = setUpFacetPublicNameTable();
     }
          
     /**
@@ -181,17 +189,17 @@ public class PagedSearchController extends FreemarkerHttpServlet {
                 log.error("Search response was null");                                
                 return doFailedSearch(I18n.text(vreq, "error_in_search_request"), queryText, format, vreq);
             }
-            
+
             SearchResultDocumentList docs = response.getResults();	    
             // RAP
-	    List<SearchFacetField> ffs = response.getFacetFields();
+            List<SearchFacetField> ffs = response.getFacetFields();
             for(SearchFacetField ff : ffs) {
                 log.info("Search facet field: " + ff.getName());
-		List<Count> counts = ff.getValues();
-		for(Count count : counts) {
+                List<Count> counts = ff.getValues();
+                for(Count count : counts) {
                     log.info("    " + count.getName() + "(" + count.getCount() + ")");
-		}
-	    }
+                }
+            }
 
             if (docs == null) {
                 log.error("Document list for a search was null");                
@@ -255,7 +263,9 @@ public class PagedSearchController extends FreemarkerHttpServlet {
             if( wasHtmlRequested ){                                
                 if ( !classGroupFilterRequested && !typeFilterRequested ) {
                     // Search request includes no ClassGroup and no type, so add ClassGroup search refinement links.
-                    body.put("classGroupLinks", getClassGroupsLinks(vreq, grpDao, docs, response, queryText));                            
+                    body.put("classGroupLinks", getClassGroupsLinks(vreq, grpDao, docs, response, queryText));
+                    // RAP
+                    body.put("facets", getFacetLinks(vreq, response, queryText));
                 } else if ( classGroupFilterRequested && !typeFilterRequested ) {
                     // Search request is for a ClassGroup, so add rdf:type search refinement links
                     // but try to filter out classes that are subclasses
@@ -353,6 +363,45 @@ public class PagedSearchController extends FreemarkerHttpServlet {
         	return I18n.text(vreq, "invalid_search_term") ;
         
         return null;
+    }
+    
+    /**
+     * Get the links to the facet categories for the individuals in the documents
+     */
+    private static List<SearchFacet> getFacetLinks(VitroRequest request, 
+            SearchResponse response, String querytext) {
+        List<SearchFacet> searchFacets = new ArrayList<SearchFacet>();
+        for(SearchFacetField ff : response.getFacetFields()) {
+            if (ff.getValues().isEmpty()) {
+                continue;
+            }
+            String publicName = facetPublicNameTable.get(ff.getName());
+            if(publicName == null) {
+                log.info("Facet field named " + ff.getName() + " not present in table.");
+                continue; // not a facet we know (or presumably care) about
+            }
+            SearchFacet sf = new SearchFacet();
+            sf.setFieldName(ff.getName());
+            sf.setPublicName(publicName);
+            for(Count value : ff.getValues()) {
+                String name = value.getName();
+                String label = name;
+                if(name.startsWith("http://")) {
+                    IndividualDao iDao = request.getWebappDaoFactory()
+                            .getIndividualDao();
+                    Individual ind = iDao.getIndividualByURI(name);
+                    if(ind != null) {
+                        label = ind.getRdfsLabel();
+                    }
+                }
+                SearchFacetCategory category = new SearchFacetCategory(
+                        querytext, sf, label, name, value.getCount());
+                sf.getCategories().add(category);
+            }
+            searchFacets.add(sf);
+            log.info("Added facet " + sf.getPublicName() + " to template.");
+        }       
+        return searchFacets;
     }
 
     /**
@@ -503,12 +552,27 @@ public class PagedSearchController extends FreemarkerHttpServlet {
         }else{ 
             //When no filtering is set, we want ClassGroup facets
         	query.addFacetFields(VitroSearchTermNames.CLASSGROUP_URI).setFacetLimit(-1);
-		query.addFacetFields("publicationYear").setFacetLimit(-1);
-        }                        
-        
+        	// RAP 
+		    addRAPFacetFields(query, vreq);
+        }                                
         log.debug("Query = " + query.toString());
         return query;
     }   
+    
+    // RAP
+    protected static void addRAPFacetFields(SearchQuery query, VitroRequest vreq) {
+        for(String facetField : facetPublicNameTable.keySet()) {
+            query.addFacetFields(facetField).setFacetLimit(-1);    
+        }        
+        Enumeration<String> parameterNames = vreq.getParameterNames();
+        while(parameterNames.hasMoreElements()) {
+            String parameterName = parameterNames.nextElement();
+            if(parameterName.startsWith(FACET_FIELD_PREFIX)) {
+                String parameterValue = vreq.getParameter(parameterName);
+                query.addFilterQuery(parameterName + ":\"" + parameterValue + "\"");        
+            }
+        }        
+    }
     
     public static class VClassGroupSearchLink extends LinkTemplateModel {        
         long count = 0;
@@ -516,7 +580,6 @@ public class PagedSearchController extends FreemarkerHttpServlet {
             super(classgroup.getPublicName(), "/search", PARAM_QUERY_TEXT, querytext, PARAM_CLASSGROUP, classgroup.getURI());
             this.count = count;
         }
-        
         public String getCount() { return Long.toString(count); }
     }
     
@@ -697,6 +760,13 @@ public class PagedSearchController extends FreemarkerHttpServlet {
             log.error("getTemplate() must not have a null format or result.");
             return templateTable.get(Format.HTML).get(Result.ERROR);
         }
+    }
+    
+    //RAP
+    protected static Map<String, String> setUpFacetPublicNameTable() {
+        Map<String, String> facetPublicNames = new HashMap<String, String>();
+        facetPublicNames.put("facet_wos-category_ss", "Subject categories");
+        return facetPublicNames;
     }
     
     protected static Map<Format,Map<Result,String>> setupTemplateTable(){

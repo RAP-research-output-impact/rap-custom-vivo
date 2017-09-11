@@ -3,3 +3,5 @@ custom-vivo/solr/target/war/work/org.vivoweb/vitro-solr/WEB-INF/lib/lucene-queri
 custom-vivo/solr/target/
 custom-vivo/home/target/
 custom-vivo/settings.xml
+.classpath
+.project
