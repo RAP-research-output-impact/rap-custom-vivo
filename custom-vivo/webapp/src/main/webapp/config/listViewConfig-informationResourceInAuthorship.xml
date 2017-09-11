@@ -13,19 +13,16 @@
         PREFIX fn:   &lt;http://www.w3.org/2005/xpath-functions#&gt;
         PREFIX tmp: &lt;http://localhost/display#&gt;
 
-        SELECT DISTINCT 
-            ?authorship 
+        SELECT DISTINCT
+            ?authorship
             ?name
-            ?address
+            ?addressNumber
             ?person
-            ?ouri
         WHERE {
             ?subject ?property ?authorship .
             ?authorship rdfs:label ?name .
-            OPTIONAL { ?authorship tmp:person ?person }
-            OPTIONAL { ?authorship core:rank ?rank }
-            OPTIONAL { ?authorship tmp:org ?address }
-            OPTIONAL { ?authorship tmp:unifiedOrgURI ?ouri }
+             OPTIONAL { ?authorship core:rank ?rank }
+            OPTIONAL { ?authorship tmp:addr ?addressNumber }
         <critical-data-required>
             FILTER ( bound(?authorship) )
         </critical-data-required>
@@ -47,9 +44,7 @@
             ?authorship a core:Authorship .
             ?authorship core:rank ?rank .
             ?authorship rdfs:label ?name .
-            ?authorship tmp:org ?orgName .
-            ?authorship tmp:person ?person .
-            ?authorship tmp:unifiedOrgURI ?o .
+            ?authorship tmp:addr ?addrs .
 
         } WHERE {
             {
@@ -64,24 +59,16 @@
                 ?subject ?property ?authorship .
                 ?authorship a core:Authorship .
                 {
-                    select ?authorship ?o (group_concat(distinct ?org ; separator = ", ") as ?orgName)
+                    select ?authorship (group_concat(distinct ?number ; separator = ", ") as ?addrs)
                     where {
                         ?subject ?property ?authorship .
                         ?authorship a core:Authorship .
                         ?authorship core:relates ?address .
                         ?address a wos:Address .
-                        ?address core:relates ?o .
-                        ?o a wos:UnifiedOrganization .
-                        ?o rdfs:label ?org .
+                        ?address wos:sequenceNumber ?number .
                     }
-                    GROUP BY ?authorship ?o
-                    ORDER BY ?org
+                    GROUP BY ?authorship
                 }
-            } UNION {
-                ?subject ?property ?authorship .
-                ?authorship a core:Authorship .
-                ?authorship core:relates ?person .
-                ?person a foaf:Person .
             }
         }
     </query-construct>

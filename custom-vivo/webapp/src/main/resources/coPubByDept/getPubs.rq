@@ -1,0 +1,24 @@
+SELECT ?p ?title ?date ?doi ?wosId ?refCount ?citeCount ?subOrgs
+WHERE {
+    ?p a wos:Publication ;
+        rdfs:label ?title ;
+        tmp:pubDate ?date .
+    OPTIONAL { ?p bibo:doi ?doi }
+    OPTIONAL {
+        ?p wos:wosId ?wosId ;
+           wos:referenceCount ?refCount ;
+           wos:citationCount ?citeCount .
+    }
+    {
+        SELECT ?p (group_concat(distinct ?subOrgName ; separator = ";") as ?subOrgs)
+        WHERE {
+            ?p a wos:Publication ;
+                tmp:relates ?so .
+            ?so a tmp:SubOrg ;
+                rdfs:label ?subOrgName
+        }
+        GROUP BY ?p
+        ORDER BY ?subOrgName
+    }
+}
+ORDER BY DESC(?date)

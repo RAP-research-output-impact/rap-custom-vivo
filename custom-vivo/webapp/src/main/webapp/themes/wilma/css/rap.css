@@ -1,0 +1,136 @@
+
+.home-sections h2 {
+    padding: 35px 0 12px 24px;
+    border-bottom: none;
+    color: #2485AE;
+}
+
+.pub-counts {
+    min-width: 20em;
+}
+
+.pub-counts td, .pub-counts th {
+    border: 1px solid #ddd;
+    padding: 5px;
+}
+
+.pub-counts tr:nth-child(even){background-color: #f2f2f2;}
+
+.pub-counts tr:hover {background-color: #ddd;}
+
+.pub-counts th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #3d423d;
+    color: white;
+}
+
+
+#collab-summary a.report-export {
+    float: right;
+    margin-right: 1em;
+    font-variant: small-caps;
+    text-decoration: none;
+}
+
+
+/*Copub map*/
+
+#copub-map-container {
+    position: relative;
+}
+
+#copub-map-info {
+  padding: 1em;
+  border: 1px solid #2485AE;
+}
+
+#copub-map {
+    min-height: 500px;
+}
+
+#map-org-list li {
+  display:inline;
+  margin: .5em;
+}
+
+#map-org-list li:not(:first-child):before {
+    content: " | ";
+}
+
+
+/*https://stephanwagner.me/only-css-loading-spinner*/
+@keyframes spinner {
+  to {transform: rotate(360deg);}
+}
+
+.spinner:before {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  top: 25%;
+  left: 50%;
+  width: 10em;
+  height: 10em;
+  margin-top: -10px;
+  margin-left: -10px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  border-top-color: #333;
+  animation: spinner .6s linear infinite;
+}
+
+.pub-ids {
+  font-variant: small-caps;
+  font-size: small;
+}
+
+.pub-id-link {
+  margin-right: 1em;
+}
+
+.pub-ids .counts {
+}
+
+
+.wos-badge {
+  margin: 0 5px 5px 0;
+  background-color: #ff8100;
+  font-size: 16px;
+  display: inline-block;
+  min-width: 10px;
+  padding: 3px 7px;
+  color: #fff;
+  vertical-align: middle;
+  border-radius: 10px;
+}
+
+a.wos-badge {
+ text-decoration: none;
+ color: #fff;
+}
+
+.person-contact img {
+  margin-right: .25em;
+}
+
+span.org-enhanced {
+  margin-left: 2em;
+}
+
+
+tr.copubdept-child {
+  display: none;
+}
+
+div.copubdept-pubmeta {
+  margin-bottom: 1.5em;
+}
+
+ul.copubdept {
+  margin-top: .5em;
+  font-size: .9em;
+  margin-left: 3em;
+  list-style-type: square;
+}

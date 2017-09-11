@@ -1,0 +1,29 @@
+CONSTRUCT {
+    ?dso a tmp:Dtu ;
+        tmp:name ?dName ;
+        tmp:prefName ?dPrefName ;
+        tmp:relates ?pub .
+    ?so a tmp:External ;
+        tmp:name ?name ;
+        tmp:prefName ?soPrefName ;
+        tmp:relates ?pub .
+}
+WHERE {
+  ?externalOrg a wos:UnifiedOrganization ;
+      vivo:relatedBy ?address .
+  ?address a wos:Address ;
+           vivo:relates ?pub .
+  ?pub a wos:Publication ;
+       vivo:relatedBy ?address, ?address2 .
+  ?address2 a wos:Address ;
+            vivo:relates ?pub .
+  d:org-technical-university-of-denmark vivo:relatedBy ?address2 .
+  ?dso a wos:SubOrganization ;
+       wos:subOrganizationName ?dName ;
+       vivo:relatedBy ?address2 .
+  ?so a wos:SubOrganization ;
+      wos:subOrganizationName ?name ;
+      vivo:relatedBy ?address .
+  #OPTIONAL { ?dso wos:preferredName ?dPrefName }
+  #OPTIONAL { ?so wos:preferredName ?soPrefName }
+}

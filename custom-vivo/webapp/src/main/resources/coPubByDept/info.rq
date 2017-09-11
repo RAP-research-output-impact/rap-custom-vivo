@@ -1,0 +1,12 @@
+SELECT DISTINCT ?org ?name
+WHERE {
+        ?targetOrg a wos:SubOrganization ;
+                wos:subOrganizationName ?label .
+        OPTIONAL {
+                ?targetOrg wos:preferredName ?pName .
+                ?addOrg a wos:SubOrganization ;
+                        wos:preferredName ?pName .
+        }
+        bind( if(bound(?pName),?pName,?label) as ?name )
+        bind( if(bound(?addOrg),?addOrg,?targetOrg) as ?org )
+}

@@ -1,0 +1,10 @@
+SELECT ?org ?name (COUNT(DISTINCT ?pub) as ?num)
+WHERE {
+    ?org a tmp:Dtu ;
+        tmp:name ?label ;
+        tmp:relates ?pub .
+    OPTIONAL { ?org tmp:prefName ?pName }
+    BIND( if(bound(?pName),?pName,?label) as ?name )
+}
+GROUP BY ?org ?name
+ORDER BY DESC(?num) ?name
