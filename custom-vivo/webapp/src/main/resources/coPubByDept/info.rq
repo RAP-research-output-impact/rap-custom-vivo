@@ -1,6 +1,5 @@
 SELECT DISTINCT ?org ?name
 WHERE {
-        VALUES ?targetOrg {  ?dtuOrg }
         ?targetOrg a wos:SubOrganization ;
                 wos:subOrganizationName ?label .
         OPTIONAL {

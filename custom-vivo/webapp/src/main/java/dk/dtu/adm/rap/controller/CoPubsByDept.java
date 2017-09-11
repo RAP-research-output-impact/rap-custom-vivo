@@ -59,7 +59,7 @@ public class CoPubsByDept extends FreemarkerHttpServlet {
 
         String getOrgs = readQuery(ORG_INFO_QUERY);
         ParameterizedSparqlString orgsRq = this.storeUtils.getQuery(getOrgs);
-        orgsRq.setIri("dtuOrg", orgUri);
+        orgsRq.setIri("targetOrg", orgUri);
         String rq = orgsRq.toString();
         log.debug("Meta query:\n" + rq);
         ArrayList<HashMap> meta = this.storeUtils.getFromStore(rq);
@@ -78,15 +78,11 @@ public class CoPubsByDept extends FreemarkerHttpServlet {
 
     private Model getPubModel(ArrayList<HashMap> meta, String collabUri) {
         String rq = readQuery(PUB_MODEL_QUERY);
-
-        String orgString = "";
-        for (HashMap row: meta) {
-            orgString += "<" + row.get("org") + "> ";
-        }
-        String fullQuery = rq.replace("orgList", orgString).replace("?collab", "<" + collabUri + ">");
-        String processedQuery = getQuery(fullQuery);
-        log.debug("Pubs query:\n " + processedQuery);
-        return this.storeUtils.getModelFromStore(processedQuery);
+        ParameterizedSparqlString prq = this.storeUtils.getQuery(rq);
+        prq.setIri("org", meta.get(0).get("org").toString());
+        prq.setIri("collab", collabUri);
+        log.debug("Pubs query:\n " + prq.toString());
+        return this.storeUtils.getModelFromStore(prq.toString());
     }
 
     private ArrayList<HashMap> getPubs(Model pubModel) {
