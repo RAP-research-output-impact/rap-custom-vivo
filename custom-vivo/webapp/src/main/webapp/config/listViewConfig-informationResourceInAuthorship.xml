@@ -65,10 +65,8 @@
                         ?authorship a core:Authorship .
                         ?authorship core:relates ?address .
                         ?address a wos:Address .
-                        ?address wos:sequenceNumber ?num
-                        (BIND(xsd:integer(?num) as ?number)
+                        ?address wos:sequenceNumber ?number .
                     }
-                    ORDER BY ?number
                     GROUP BY ?authorship
                 }
             }

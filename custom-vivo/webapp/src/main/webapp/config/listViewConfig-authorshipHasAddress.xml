@@ -12,6 +12,7 @@
         PREFIX vcard:  &lt;http://www.w3.org/2006/vcard/ns#&gt;
         PREFIX fn:   &lt;http://www.w3.org/2005/xpath-functions#&gt;
         PREFIX tmp: &lt;http://localhost/display#&gt;
+        PREFIX xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt;
 
         SELECT DISTINCT
             ?address
@@ -27,10 +28,11 @@
                 ?address tmp:org ?org .
                 ?org rdfs:label ?orgName .
             }
+            BIND (xsd:integer(?number) as ?num)
         <critical-data-required>
             FILTER ( bound(?address) )
         </critical-data-required>
-        } ORDER BY ?number
+        } ORDER BY ?num
     </query-select>
 
     <query-construct>
@@ -60,7 +62,7 @@
                 ?subject ?property ?address .
                 ?address a wos:Address ;
                         core:relates ?org ;
-                        wos:sequenceNumber ?number .
+                        wos:sequenceNumber ?num .
                 ?org a wos:UnifiedOrganization ;
                     rdfs:label ?orgName .
             }
