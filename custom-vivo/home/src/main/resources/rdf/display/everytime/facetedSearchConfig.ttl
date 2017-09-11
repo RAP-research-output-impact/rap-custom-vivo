@@ -1,0 +1,19 @@
+@prefix : <http://vitro.mannlib.cornell.edu/ns/vitro/ApplicationSetup#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+:documentModifier_facet_wos-category
+    a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.SelectQueryDocumentModifier> ,
+            <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.DocumentModifier> ;
+    rdfs:label "Web of Science Category document modifier" ;
+    :hasTargetField "facet_wos-category" ;
+    :hasTypeRestriction "http://purl.obolibrary.org/obo/IAO_0000030";
+    :hasSelectQuery """
+        PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> 
+	PREFIX wos: <http://webofscience.com/ontology/wos#> 
+        SELECT DISTINCT ?category
+        WHERE {
+            ?uri wos:hasCategory ?category .
+	    ?category a wos:Category .
+        }
+    """ .
