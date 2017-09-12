@@ -766,6 +766,14 @@ public class PagedSearchController extends FreemarkerHttpServlet {
     protected static Map<String, String> setUpFacetPublicNameTable() {
         Map<String, String> facetPublicNames = new HashMap<String, String>();
         facetPublicNames.put("facet_wos-category_ss", "Subject categories");
+        facetPublicNames.put("facet_document-type_ss", "Document types");
+        facetPublicNames.put("facet_research-area_ss", "Research areas");
+        facetPublicNames.put("facet_publication-year_ss", "Publication years");
+        facetPublicNames.put("facet_organization-enhanced_ss", "Organi.-Enhanced");
+        facetPublicNames.put("facet_journal_ss", "Journals");
+        facetPublicNames.put("facet_conference_ss", "Conferences");
+        facetPublicNames.put("facet_country_ss", "Countries");
+        facetPublicNames.put("facet_funding-agency_ss", "Funding Agencies");
         return facetPublicNames;
     }
     
