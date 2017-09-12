@@ -397,8 +397,12 @@ public class PagedSearchController extends FreemarkerHttpServlet {
                         label = ind.getRdfsLabel();
                     }
                 }
+                // need a fresh copy of the params because we're gonna modify it
+                ParamMap facetParams = getFacetParamMap(request);
+                facetParams.put(PagedSearchController.PARAM_QUERY_TEXT, querytext);
+                facetParams.put(ff.getName(), name);
                 SearchFacetCategory category = new SearchFacetCategory(
-                        querytext, sf, label, name, value.getCount());
+                        label, facetParams, value.getCount());
                 sf.getCategories().add(category);
             }
             searchFacets.add(sf);
@@ -566,17 +570,27 @@ public class PagedSearchController extends FreemarkerHttpServlet {
     protected static void addRAPFacetFields(SearchQuery query, VitroRequest vreq) {
         for(String facetField : facetPublicNameTable.keySet()) {
             query.addFacetFields(facetField).setFacetLimit(-1);    
-        }        
+        }
+        ParamMap facetParams = getFacetParamMap(vreq);
+        for(String parameterName : facetParams.keySet()) {
+            String parameterValue = facetParams.get(parameterName);
+            if(!parameterValue.isEmpty()) {
+                query.addFilterQuery(parameterName + ":\"" + parameterValue + "\"");
+            }    
+        }
+    }
+    
+    private static ParamMap getFacetParamMap(VitroRequest vreq) {
+        ParamMap map = new ParamMap();
         Enumeration<String> parameterNames = vreq.getParameterNames();
         while(parameterNames.hasMoreElements()) {
             String parameterName = parameterNames.nextElement();
             if(parameterName.startsWith(FACET_FIELD_PREFIX)) {
                 String parameterValue = vreq.getParameter(parameterName);
-                if(!parameterValue.isEmpty()) {
-                    query.addFilterQuery(parameterName + ":\"" + parameterValue + "\"");
-                }
-            }
-        }        
+                map.put(parameterName, parameterValue);
+            }    
+        }
+        return map;
     }
     
     public static class VClassGroupSearchLink extends LinkTemplateModel {        
