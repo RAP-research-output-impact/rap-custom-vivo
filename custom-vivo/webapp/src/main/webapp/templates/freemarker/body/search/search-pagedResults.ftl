@@ -30,10 +30,10 @@
     <#-- Refinement links -->
 
     <#if facets?has_content>
-        <div class="searchTOC">
+        <div class="searchTOC" style="width:200px;">
 	    <#list facets as facet>
                 <h4>${facet.publicName}</h4>
-                <ul>           
+                <ul style="width:200px; max-height: 30ex; overflow-y: auto; overflow-x: hidden;">           
                 <#list facet.categories as category>
                     <li><a href="${category.url}" title="${category.text}">${category.text}</a><span>(${category.count})</span></li>
                 </#list>
