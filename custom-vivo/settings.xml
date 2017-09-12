@@ -5,9 +5,9 @@
         <profile>
             <id>defaults</id>
             <properties>
-                <app-name>rap</app-name>
-                <vivo-dir>C:/Users/Brian Lowe/Documents/var/local/vitrofiles/rap</vivo-dir>
-                <tomcat-dir>C:/Users/Brian Lowe/Documents/var/local/tomcat</tomcat-dir>
+                <app-name>vivo</app-name>
+                <vivo-dir>/var/lib/vivo</vivo-dir>
+                <tomcat-dir>/var/lib/tomcat8</tomcat-dir>
                 <default-theme>wilma</default-theme>
             </properties>
         </profile>
