@@ -112,7 +112,7 @@
         SELECT DISTINCT ?conference
         WHERE {
             ?uri vivo:hasPublicationVenue ?conference .
-	    ?journal a wos:Conference .
+	    ?conference a wos:Conference .
         }
     """ .
 
