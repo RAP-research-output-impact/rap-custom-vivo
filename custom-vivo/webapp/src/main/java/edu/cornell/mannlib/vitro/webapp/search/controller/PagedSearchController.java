@@ -569,7 +569,9 @@ public class PagedSearchController extends FreemarkerHttpServlet {
             String parameterName = parameterNames.nextElement();
             if(parameterName.startsWith(FACET_FIELD_PREFIX)) {
                 String parameterValue = vreq.getParameter(parameterName);
-                query.addFilterQuery(parameterName + ":\"" + parameterValue + "\"");        
+                if(parameterValue != null) {
+                    query.addFilterQuery(parameterName + ":\"" + parameterValue + "\"");
+                }
             }
         }        
     }
