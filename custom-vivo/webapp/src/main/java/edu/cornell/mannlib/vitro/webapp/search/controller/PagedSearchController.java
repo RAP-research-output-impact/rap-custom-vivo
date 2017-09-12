@@ -173,7 +173,7 @@ public class PagedSearchController extends FreemarkerHttpServlet {
                 return doFailedSearch(badQueryMsg, queryText, format, vreq);
             }
                 
-            SearchQuery query = getQuery(queryText, hitsPerPage, startIndex, vreq);            
+            SearchQuery query = getQuery(queryText, hitsPerPage, startIndex, vreq);        
             SearchEngine search = ApplicationUtils.instance().getSearchEngine();
             SearchResponse response = null;           
             
@@ -191,16 +191,6 @@ public class PagedSearchController extends FreemarkerHttpServlet {
             }
 
             SearchResultDocumentList docs = response.getResults();	    
-            // RAP
-            List<SearchFacetField> ffs = response.getFacetFields();
-            for(SearchFacetField ff : ffs) {
-                log.info("Search facet field: " + ff.getName());
-                List<Count> counts = ff.getValues();
-                for(Count count : counts) {
-                    log.info("    " + count.getName() + "(" + count.getCount() + ")");
-                }
-            }
-
             if (docs == null) {
                 log.error("Document list for a search was null");                
                 return doFailedSearch(I18n.text(vreq, "error_in_search_request"), queryText,format, vreq);
@@ -372,12 +362,14 @@ public class PagedSearchController extends FreemarkerHttpServlet {
             SearchResponse response, String querytext) {
         List<SearchFacet> searchFacets = new ArrayList<SearchFacet>();
         for(SearchFacetField ff : response.getFacetFields()) {
-            if (ff.getValues().isEmpty()) {
+            if ( (!ff.getName().startsWith(FACET_FIELD_PREFIX)) 
+	            || ff.getValues().isEmpty() ) {
                 continue;
             }
             String publicName = facetPublicNameTable.get(ff.getName());
             if(publicName == null) {
-                log.info("Facet field named " + ff.getName() + " not present in table.");
+                log.warn("Facet field named " + ff.getName() 
+		         + " not present in table.");
                 continue; // not a facet we know (or presumably care) about
             }
             SearchFacet sf = new SearchFacet();
@@ -406,7 +398,7 @@ public class PagedSearchController extends FreemarkerHttpServlet {
                 sf.getCategories().add(category);
             }
             searchFacets.add(sf);
-            log.info("Added facet " + sf.getPublicName() + " to template.");
+            log.debug("Added facet " + sf.getPublicName() + " to template.");
         }       
         return searchFacets;
     }
@@ -558,9 +550,9 @@ public class PagedSearchController extends FreemarkerHttpServlet {
             //with type filtering we don't have facets.            
         }else{ 
             //When no filtering is set, we want ClassGroup facets
-        	query.addFacetFields(VitroSearchTermNames.CLASSGROUP_URI).setFacetLimit(-1);
-        	// RAP 
-		    addRAPFacetFields(query, vreq);
+            query.addFacetFields(VitroSearchTermNames.CLASSGROUP_URI).setFacetLimit(-1);
+            // RAP 
+            addRAPFacetFields(query, vreq);
         }                                
         log.debug("Query = " + query.toString());
         return query;
@@ -578,6 +570,7 @@ public class PagedSearchController extends FreemarkerHttpServlet {
                 query.addFilterQuery(parameterName + ":\"" + parameterValue + "\"");
             }    
         }
+	query.setFacetMinCount(1);
     }
     
     private static ParamMap getFacetParamMap(VitroRequest vreq) {
