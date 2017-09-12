@@ -384,6 +384,9 @@ public class PagedSearchController extends FreemarkerHttpServlet {
             sf.setFieldName(ff.getName());
             sf.setPublicName(publicName);
             for(Count value : ff.getValues()) {
+                if(value.getCount() < 1) {
+                    continue;
+                }
                 String name = value.getName();
                 String label = name;
                 if(name.startsWith("http://")) {
@@ -569,7 +572,7 @@ public class PagedSearchController extends FreemarkerHttpServlet {
             String parameterName = parameterNames.nextElement();
             if(parameterName.startsWith(FACET_FIELD_PREFIX)) {
                 String parameterValue = vreq.getParameter(parameterName);
-                if(parameterValue != null) {
+                if(!parameterValue.isEmpty()) {
                     query.addFilterQuery(parameterName + ":\"" + parameterValue + "\"");
                 }
             }
