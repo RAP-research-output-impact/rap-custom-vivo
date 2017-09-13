@@ -172,7 +172,7 @@
             ?uri vivo:relatedBy ?grant .
 	    ?grant a vivo:Grant .
 	    ?grant vivo:relates ?subject .
-	    ?suject a wos:Funder .
+	    ?subject a wos:Funder .
         }
     """ .
 
