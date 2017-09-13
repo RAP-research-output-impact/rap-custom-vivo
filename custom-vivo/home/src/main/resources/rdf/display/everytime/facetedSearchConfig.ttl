@@ -2,6 +2,11 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+# make sure that LabelsAcrossContext nodes applies only to normal vivo:Relationships 
+# and not to things like wos:Address that also use relates/relatedBy
+:extension_forContextNodes
+    :hasTypeRestriction "http://vivoweb.org/ontology/core#Relationship" .
+
 :documentModifier_facet_wos-category
     a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.SelectQueryDocumentModifier> ,
             <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.DocumentModifier> ;
