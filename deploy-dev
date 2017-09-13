@@ -2,7 +2,7 @@
 
 if [ `id -u` -gt 0 ]
 then
-     echo "please use: sudo ./build.sh" >&2
+     echo "please use: sudo ./deploy-dev" >&2
      exit 1
 fi
 export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
