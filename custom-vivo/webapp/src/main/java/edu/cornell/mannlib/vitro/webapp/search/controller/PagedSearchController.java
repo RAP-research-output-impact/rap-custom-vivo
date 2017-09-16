@@ -250,18 +250,17 @@ public class PagedSearchController extends FreemarkerHttpServlet {
             }
             
             /* Add ClassGroup and type refinement links to body */
-            if( wasHtmlRequested ){                                
+            if( wasHtmlRequested ){
+                body.put("facets", getFacetLinks(vreq, response, queryText));
                 if ( !classGroupFilterRequested && !typeFilterRequested ) {
                     // Search request includes no ClassGroup and no type, so add ClassGroup search refinement links.
                     body.put("classGroupLinks", getClassGroupsLinks(vreq, grpDao, docs, response, queryText));
                     // RAP
-                    body.put("facets", getFacetLinks(vreq, response, queryText));
                 } else if ( classGroupFilterRequested && !typeFilterRequested ) {
                     // Search request is for a ClassGroup, so add rdf:type search refinement links
                     // but try to filter out classes that are subclasses
                     body.put("classLinks", getVClassLinks(vclassDao, docs, response, queryText));                       
                     pagingLinkParams.put(PARAM_CLASSGROUP, classGroupParam);
-
                 } else {
                     //search request is for a class so there are no more refinements
                     pagingLinkParams.put(PARAM_RDFTYPE, typeParam);
@@ -552,8 +551,8 @@ public class PagedSearchController extends FreemarkerHttpServlet {
             //When no filtering is set, we want ClassGroup facets
             query.addFacetFields(VitroSearchTermNames.CLASSGROUP_URI).setFacetLimit(-1);
             // RAP 
-            addRAPFacetFields(query, vreq);
-        }                                
+        }  
+        addRAPFacetFields(query, vreq);
         log.debug("Query = " + query.toString());
         return query;
     }   
