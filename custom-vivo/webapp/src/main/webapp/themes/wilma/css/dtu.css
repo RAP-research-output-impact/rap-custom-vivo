@@ -5,7 +5,7 @@
 /* HEADER ------>  */
 #branding {
     position: relative;
-/*  width: 970px; */
+    width: 100%;
     height: 114px;
     margin: 0 auto;
 }
@@ -89,7 +89,7 @@ ul#header-nav a {
 /* FOOTER------>  */
 footer {
     clear: both;
-/*  width: 970px; */
+    width: 100%;
     height: 60px;
     margin: 0 auto;
     font-size: .7em;
@@ -158,13 +158,13 @@ article.property {
     color: #eeeeee;
     padding: 5px;
 }
-td.dtu-redbot-4 a:link,
-td.dtu-redbot-4 a:visited {
+td.dtu-redbot-3 a:link,
+td.dtu-redbot-3 a:visited {
     color: #eeeeee;
     text-decoration: none;
     font-size: 10px;
 }
-td.dtu-redbot-4 a:hover {
+td.dtu-redbot-3 a:hover {
     color: #cccccc;
     font-size: 10px;
 }
@@ -200,7 +200,7 @@ div#dtu-home {
     clear: both;
     margin: 0 auto;
     background: #fff;
-/*  width: 970px; */
+    width: 100%;
     padding: 0px;
     min-height: 689px;
 }
@@ -352,3 +352,16 @@ div.wos-cited {
     display: inline-block;
     vertical-align: middle;
 }
+#info-message div {
+    font-size: 24px;
+    vertical-align: middle;
+    line-height: 120px;
+    font-weight: bold;
+}
+#info-message img {
+    vertical-align: middle;
+    margin-left: 20px;
+}
+#info-message-spacer {
+    height: 300px;
+}   
