@@ -18,7 +18,18 @@ var base = "${urls.base}";
 var vds = base + '/vds/report/org/' + individualLocalName;
 var vdsOrgs = base + '/vds/report/org/' + individualLocalName + "/orgs";
 var byDeptUrl = base + '/vds/report/org/' + individualLocalName + "/by-dept";
+info_message("Loading Co-publication report");
 loadPubInfo(vds, collabSummary);
+
+function info_message(msg) {
+    $("section#individual-info").append("<div id=\"info-message\"><div>" + msg + "<img src=\"${urls.theme}/images/loading.gif\"/></div>" +
+                                        "<div id=\"info-message-spacer\"></div><div id=\"info-message-spacer\"></div></div>");
+}
+
+function info_message_reset() {
+    $("div#info-message").html ("");
+    $("section#individual-info").append("<div id=\"info-message-spacer\"></div>");
+}
 
 function collabSummary(response) {
     var yearRange = [];
@@ -54,6 +65,7 @@ function byDeptReport(response) {
     if (response.departments.length > 0) {
         doDepartmentTable(response.departments, response.name);
     }
+    info_message_reset();
 }
 
 
@@ -195,8 +207,7 @@ function doPubCountTable(totals) {
 }
 
 function loadPubInfo(url, callback) {
-
-	var xhr = new XMLHttpRequest();
+    var xhr = new XMLHttpRequest();
     xhr.open('GET', url );
     xhr.onload = function() {
         if (xhr.status === 200) {
@@ -225,7 +236,7 @@ document.addEventListener('click', function (e) {
         $(e.target).parents('tr').nextUntil('.copubdept-head').toggle();
         label = $(e.target);
         if(label.html()=="Show details"){
-            label.html('Hide detals');
+            label.html('Hide details');
         }else{
             label.html('Show details');
         }
