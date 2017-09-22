@@ -1495,6 +1495,19 @@
     <url-pattern>/copubs-by-dept/*</url-pattern>
   </servlet-mapping>
   
+  <servlet>
+    <servlet-name>StaticTemplateController</servlet-name>
+    <servlet-class>dk.dtu.adm.rap.controller.StaticTemplateController</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>StaticTemplateController</servlet-name>
+    <url-pattern>/aboutProject</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>StaticTemplateController</servlet-name>
+    <url-pattern>/copub</url-pattern>
+  </servlet-mapping>
+  
   <!-- ==================== mime types ============================== -->
   
   <mime-mapping>
