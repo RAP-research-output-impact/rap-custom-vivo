@@ -4,3 +4,4 @@ custom-vivo/solr/target/
 custom-vivo/home/target/
 .classpath
 .project
+custom-vivo/settings-local.xml
