@@ -19,6 +19,7 @@ var vds = base + '/vds/report/org/' + individualLocalName;
 var vdsOrgs = base + '/vds/report/org/' + individualLocalName + "/orgs";
 var byDeptUrl = base + '/vds/report/org/' + individualLocalName + "/by-dept";
 loadPubInfo(vds, collabSummary);
+$('#overview').addClass('spinner');
 
 function collabSummary(response) {
     var yearRange = [];
@@ -94,6 +95,7 @@ function doSummaryTable(response) {
     var closeHtml = "</table>";
     html += closeHtml;
     $("#individual-info").append(html);
+    $('#overview').removeClass('spinner');
 }
 
 function doTopCategoryTable(response) {
