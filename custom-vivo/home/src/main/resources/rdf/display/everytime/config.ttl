@@ -28,12 +28,15 @@ vitroDisplay:SearchIndex
     vitroDisplay:excludeClass wos:Organization ;
     vitroDisplay:excludeClass wos:SubOrganization ;
     vitroDisplay:excludeClass wos:InCitesCount ;
+    vitroDisplay:excludeClass wos:Funder ;
+    vitroDisplay:excludeClass wos:Grant ;
     vitroDisplay:excludeClass vivo:Authorship ;
     vitroDisplay:excludeClass vivo:Position ;
     vitroDisplay:excludeClass vivo:DateTimeValue ;
     vitroDisplay:excludeClass vivo:DateTimeInterval ;
     vitroDisplay:excludeClass vivo:AcademicDegree ;
     vitroDisplay:excludeClass vivo:URLLink ;
+    vitroDisplay:excludeClass vivo:GeopoliticalEntity ;
     vitroDisplay:excludeClass <http://vitro.mannlib.cornell.edu/ns/vitro/public#File> ;
     vitroDisplay:excludeClass <http://vitro.mannlib.cornell.edu/ns/vitro/public#FileByteStream> .
 
