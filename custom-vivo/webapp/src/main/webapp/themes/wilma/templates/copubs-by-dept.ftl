@@ -26,7 +26,7 @@
      </#if>
      <#if pub.dtuSubOrg?has_content>
           <ul class="copubdept">
-            <li>DTU, ${mainOrg}</li>
+            <li>${mainOrg}</li>
           <#list pub.dtuSubOrg as so>
                 <#if so.authors?has_content>
                     <ul class="authors">
