@@ -116,7 +116,7 @@
         //
         $('#copub-map-container').addClass('spinner');
         var base = "${urls.base}";
-        var profileBase = base + "/individual?uri="
+        var profileBase = base + "/display/"
         var serviceBase = base + "/vds/report/"
         var mapData = serviceBase + "worldmap/";
         var countryData = serviceBase + "country/";
@@ -206,7 +206,7 @@
           var contentDiv = document.getElementById("map-org-list");
           contentDiv.innerHTML = "";
           for (var i =0, j = data.orgs.length; i < j; i++){
-            liHTML = "<li><a href=\"" + profileBase+ data.orgs[i].org + "\">" + data.orgs[i].name + "</a> (" + data.orgs[i].publications + ")</li>";
+            liHTML = "<li><a href=\"" + profileBase + data.orgs[i].org .split("/")[4] + "\">" + data.orgs[i].name + "</a> (" + data.orgs[i].publications + ")</li>";
             contentDiv.innerHTML += liHTML;
           }
         }
