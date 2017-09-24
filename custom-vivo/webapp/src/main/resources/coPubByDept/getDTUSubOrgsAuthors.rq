@@ -1,0 +1,12 @@
+SELECT ?subOrgName (group_concat(distinct ?auName ; separator = ";") as ?authors)
+WHERE {
+    ?p a wos:Publication ;
+        tmp:relates ?so, ?au .
+    ?so a tmp:DtuSubOrg ;
+        tmp:name ?subOrgName .
+    ?au a tmp:Authorship ;
+        tmp:name ?auName ;
+        tmp:relates ?so .
+}
+GROUP BY ?subOrgName
+ORDER BY ?subOrgName

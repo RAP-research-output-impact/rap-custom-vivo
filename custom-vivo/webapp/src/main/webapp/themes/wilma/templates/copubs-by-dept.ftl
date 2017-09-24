@@ -1,5 +1,4 @@
-
-<h2>Co-publications by Department DTU and ${collabOrg}</h2>
+<h2>Co-publications by Department - DTU and ${collabOrg}</h2>
 
 <h3>${mainOrg}</h3>
 <div>${pubs?size} total co-publications</div>
@@ -25,13 +24,32 @@
             </span>
         </div>
      </#if>
-    <div>
-        <ul class="copubdept">
-        <#list pub.subOrgs?split(";") as dept>
-            <li>${dept}</li>
-        </#list>
+     <#if pub.dtuSubOrg?has_content>
+          <ul class="copubdept">
+            <li>DTU, ${mainOrg}</li>
+          <#list pub.dtuSubOrg as so>
+                <#if so.authors?has_content>
+                    <ul class="authors">
+                        <#list so.authors?split(";") as au>
+                            <li>${au}</li>
+                        </#list>
+                    </ul>
+                </#if>
+          </#list>
         </ul>
-    </div>
+      </#if>
+      <#list pub.subOrg as so>
+        <ul class="copubdept">
+            <li>${so.subOrgName}</li>
+            <#if so.authors?has_content>
+                <ul class="authors">
+                    <#list so.authors?split(";") as au>
+                        <li>${au}</li>
+                    </#list>
+                </ul>
+            </#if>
+        </ul>
+      </#list>
 </div>
  </#list>
 
