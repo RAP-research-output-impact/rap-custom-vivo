@@ -4,7 +4,6 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.hp.hpl.jena.query.ParameterizedSparqlString;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.tdb.store.Hash;
 import dk.dtu.adm.rap.utils.StoreUtils;
 import edu.cornell.mannlib.vitro.webapp.config.ConfigurationProperties;
 import edu.cornell.mannlib.vitro.webapp.controller.VitroRequest;
@@ -31,6 +30,8 @@ public class CoPubsByDept extends FreemarkerHttpServlet {
     private static final String ORG_INFO_QUERY = "coPubByDept/info.rq";
     private static final String PUB_MODEL_QUERY = "coPubByDept/getModel.rq";
     private static final String PUB_META_QUERY = "coPubByDept/getPubs.rq";
+    private static final String SUBORG_AUTHORS_QUERY = "coPubByDept/getSubOrgsAuthors.rq";
+    private static final String DTU_SUBORG_AUTHORS_QUERY = "coPubByDept/getDTUSubOrgsAuthors.rq";
 
     @Override
     protected ResponseValues processRequest(VitroRequest vreq) {
@@ -67,7 +68,6 @@ public class CoPubsByDept extends FreemarkerHttpServlet {
 
         Model pubsModel = getPubModel(meta, collabUri);
         ArrayList<HashMap> pubs = getPubs(pubsModel);
-
         Map<String, Object> body = new HashMap<String, Object>();
         body.put("mainOrg", preferredName);
         body.put("collabOrg", collabName);
@@ -89,8 +89,35 @@ public class CoPubsByDept extends FreemarkerHttpServlet {
         String rq = readQuery(PUB_META_QUERY);
         String processedRq =  getQuery(rq);
         log.debug("Pubs meta query:\n " + processedRq);
-        return this.storeUtils.getFromModel(processedRq, pubModel);
+        ArrayList<HashMap> out = new ArrayList<HashMap>();
+        for (HashMap pub: this.storeUtils.getFromModel(processedRq, pubModel)) {
+            ArrayList<HashMap> thisSubOrg = getSubOrgAuthors(pub.get("p").toString(), pubModel);
+            pub.put("subOrg", thisSubOrg);
+            ArrayList<HashMap> thisDTUSubOrg = getDTUSubOrgAuthors(pub.get("p").toString(), pubModel);
+            pub.put("dtuSubOrg", thisDTUSubOrg);
+            out.add(pub);
+        }
+        return out;
     }
+
+    private ArrayList<HashMap> getSubOrgAuthors(String pubUri, Model pubModel) {
+        String rq = readQuery(SUBORG_AUTHORS_QUERY);
+        ParameterizedSparqlString prq = this.storeUtils.getQuery(rq);
+        prq.setIri("p", pubUri);
+        String q = prq.toString();
+        log.debug("Suborg meta query:\n " + q);
+        return this.storeUtils.getFromModel(q, pubModel);
+    }
+
+    private ArrayList<HashMap> getDTUSubOrgAuthors(String pubUri, Model pubModel) {
+        String rq = readQuery(DTU_SUBORG_AUTHORS_QUERY);
+        ParameterizedSparqlString prq = this.storeUtils.getQuery(rq);
+        prq.setIri("p", pubUri);
+        String q = prq.toString();
+        log.debug("DTU_Suborg meta query:\n " + q);
+        return this.storeUtils.getFromModel(q, pubModel);
+    }
+
 
     private String getQuery(String raw) {
         ParameterizedSparqlString ps = this.storeUtils.getQuery(raw);
