@@ -127,20 +127,22 @@ public class DataService {
             ArrayList<HashMap> depts = this.storeUtils.getFromModel(getQuery(rq), tmpModel);
             JSONArray out = new JSONArray();
             for (HashMap dept: depts) {
-                String deptUri = dept.get("org").toString();
-                String exOrgRq = getQuery(readQuery("coPubByDept/vds/externalSubOrgCount.rq"));
-                ParameterizedSparqlString q2 = this.storeUtils.getQuery(exOrgRq);
-                q2.setIri("org", deptUri);
-                String exOrgQuery = q2.toString();
-                log.debug("External Dept query:\n" + exOrgQuery);
-                ArrayList<HashMap> subOrgs = null;
-                try {
-                    subOrgs = this.storeUtils.getFromModelJSON(exOrgQuery, tmpModel);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                if ( dept.get("org") != null ) {
+                    String deptUri = dept.get("org").toString();
+                    String exOrgRq = getQuery(readQuery("coPubByDept/vds/externalSubOrgCount.rq"));
+                    ParameterizedSparqlString q2 = this.storeUtils.getQuery(exOrgRq);
+                    q2.setIri("org", deptUri);
+                    String exOrgQuery = q2.toString();
+                    log.debug("External Dept query:\n" + exOrgQuery);
+                    ArrayList<HashMap> subOrgs = null;
+                    try {
+                        subOrgs = this.storeUtils.getFromModelJSON(exOrgQuery, tmpModel);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    dept.put("sub_orgs", new JSONArray(subOrgs));
+                    out.put(dept);
                 }
-                dept.put("sub_orgs", new JSONArray(subOrgs));
-                out.put(dept);
             }
             JSONObject jo = new JSONObject();
             try {
