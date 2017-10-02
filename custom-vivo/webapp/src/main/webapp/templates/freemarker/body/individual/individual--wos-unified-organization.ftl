@@ -169,7 +169,6 @@ function doDepartmentTable(totals, name) {
             var clink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + "&collabSub=" + subOrg.uri.split("/")[4] + "&collabSubName=" + encodeURIComponent(subOrg.name) + "\" target=\"copubdept\">" +  subOrg.total + "</a>";
             row +=  "</td><td>" + clink + "</td><td>" + subOrg.name + "</td></tr>";
             html += row;
-            console.debug(coPubLink);
         });
         last = value.name;
     });
