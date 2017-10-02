@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by ted on 9/10/17.
+ * Individual copublication report display.
  */
 public class CoPubsByDept extends FreemarkerHttpServlet {
     private String TEMPLATE = "copubs-by-dept.ftl";
@@ -53,6 +53,15 @@ public class CoPubsByDept extends FreemarkerHttpServlet {
 
         String collab = vreq.getParameter("collab");
         String collabUri = namespace + collab ;
+        String collabSubOrg;
+        String collabSubName;
+        try {
+            collabSubOrg = vreq.getParameter("collabSub");
+            collabSubName = vreq.getParameter("collabSubName");
+        } catch (Exception e) {
+            collabSubOrg = null;
+            collabSubName = null;
+        }
         ParameterizedSparqlString collabRq = this.storeUtils.getQuery("SELECT ?name WHERE { ?collab rdfs:label ?name }");
         collabRq.setIri("collab", collabUri);
         ArrayList<HashMap> collabOrgInfo = this.storeUtils.getFromStore(collabRq.toString());
@@ -66,21 +75,25 @@ public class CoPubsByDept extends FreemarkerHttpServlet {
         ArrayList<HashMap> meta = this.storeUtils.getFromStore(rq);
         String preferredName = meta.get(0).get("name").toString();
 
-        Model pubsModel = getPubModel(meta, collabUri);
+        Model pubsModel = getPubModel(meta, collabUri, collabSubOrg);
         ArrayList<HashMap> pubs = getPubs(pubsModel);
         Map<String, Object> body = new HashMap<String, Object>();
         body.put("mainOrg", preferredName);
         body.put("collabOrg", collabName);
+        body.put("collabSubName", collabSubName);
         body.put("name", preferredName);
         body.put("pubs", pubs);
         return new TemplateResponseValues(TEMPLATE, body);
     }
 
-    private Model getPubModel(ArrayList<HashMap> meta, String collabUri) {
+    private Model getPubModel(ArrayList<HashMap> meta, String collabUri, String collabSubOrg) {
         String rq = readQuery(PUB_MODEL_QUERY);
         ParameterizedSparqlString prq = this.storeUtils.getQuery(rq);
         prq.setIri("org", meta.get(0).get("org").toString());
         prq.setIri("collab", collabUri);
+        if (collabSubOrg != null && !collabSubOrg.isEmpty()) {
+            prq.setIri("subOrg", namespace + collabSubOrg);
+        }
         log.debug("Pubs query:\n " + prq.toString());
         return this.storeUtils.getModelFromStore(prq.toString());
     }

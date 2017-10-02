@@ -166,9 +166,10 @@ function doDepartmentTable(totals, name) {
         }
         $.each( value.sub_orgs, function( k2, subOrg ) {
             var row = "<tr class=\"copubdept-child\"><td>";
-            var coPubLink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + "\" target=\"copubdept\">" +  subOrg.total + "</a>";
-            row +=  "</td><td>" + coPubLink + "</td><td>" + subOrg.name + "</td></tr>";
+            var clink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + "&collabSub=" + subOrg.uri.split("/")[4] + "&collabSubName=" + encodeURIComponent(subOrg.name) + "\" target=\"copubdept\">" +  subOrg.total + "</a>";
+            row +=  "</td><td>" + clink + "</td><td>" + subOrg.name + "</td></tr>";
             html += row;
+            console.debug(coPubLink);
         });
         last = value.name;
     });
