@@ -131,7 +131,8 @@ function doPubCategoryTable(totals) {
     var closeHtml = "</table>";
     $.each( totals.slice(0, 10), function( key, value ) {
         //console.log(value);
-        var row = "<tr><td>" + value.name + "</td><td>" + value.number + "</td></tr>";
+        var coPubLink = "<a href=\"" + base + "/copubs-by-category/" + value.category.split("/")[4] + "?collab=" + individualLocalName + "\" target=\"copubcategory\">" +  value.number + "</a>";
+        var row = "<tr><td>" + value.name + "</td><td>" + coPubLink + "</td></tr>";
         html += row;
     });
     html += closeHtml;

@@ -323,7 +323,7 @@ public class DataService {
         String query = q2.toString();
         log.debug("Summary pub count query:\n" + query);
         ArrayList summary = this.storeUtils.getFromStoreJSON(query);
-        return summary.get(0);
+        return (summary.isEmpty() ? null : summary.get(0));
     }
 
     private ArrayList getSummaryPubCount(final String orgUri) {
