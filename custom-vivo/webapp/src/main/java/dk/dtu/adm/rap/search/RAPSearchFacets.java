@@ -35,11 +35,19 @@ public class RAPSearchFacets {
     }
     
     public static List<SearchFacet> getSearchFacets() {
-        return new ArrayList<SearchFacet>(searchFacets);
+        ArrayList<SearchFacet> facets = new ArrayList<SearchFacet>();
+        for(SearchFacet sf : searchFacets) {
+            facets.add(new SearchFacet(sf.getFieldName(), sf.getPublicName()));
+        }
+        return facets;
     }
     
     public static List<SearchFacetAsText> getSearchFacetsAsText() {
-        return new ArrayList<SearchFacetAsText>(searchFacetsAsText);
+        ArrayList<SearchFacetAsText> facets = new ArrayList<SearchFacetAsText>();
+        for(SearchFacetAsText sf : searchFacetsAsText) {
+            facets.add(new SearchFacetAsText(sf.getFieldName(), sf.getPublicName()));
+        }
+        return facets;
     }
     
     public static SearchFacet getSearchFacetByFieldName(String fieldName) {
