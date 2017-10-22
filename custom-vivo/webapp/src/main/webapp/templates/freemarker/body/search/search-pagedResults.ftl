@@ -2,6 +2,23 @@
 
 <#-- Template for displaying paged search results -->
 
+<#if classGroupURI?has_content>
+  <h2>
+    <form action="" method="GET">
+        <input type="text" name="querytext" value="${querytext}" />
+	<strong>AND</strong>
+	<select name="facetAsText">
+            <#list facetsAsText as fat>
+                <option value="${fat.fieldName}">${fat.publicName}</option>
+	    </#list>
+	</select>
+	<input type="text" name="facetTextValue"/>
+	<input type="hidden" name="classgroup" value="${classGroupURI}" />
+	<input type="submit" value="Go"/>
+    </form>
+  </h2>
+</#if>
+
 <h2 class="searchResultsHeader">
 <#escape x as x?html>
     ${i18n().search_results_for} '${querytext}'

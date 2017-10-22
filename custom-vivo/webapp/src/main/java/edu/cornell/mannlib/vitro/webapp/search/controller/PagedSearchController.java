@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import dk.dtu.adm.rap.search.RAPSearchFacets;
 import dk.dtu.adm.rap.search.SearchFacet;
 import dk.dtu.adm.rap.search.SearchFacetCategory;
 import edu.cornell.mannlib.vitro.webapp.application.ApplicationUtils;
@@ -77,10 +79,12 @@ public class PagedSearchController extends FreemarkerHttpServlet {
     // RAP make this field public
     public static final String PARAM_QUERY_TEXT = "querytext";
     public static final String FACET_FIELD_PREFIX = "facet_";
+    public static final String PARAM_FACET_AS_TEXT = "facetAsText";
+    public static final String PARAM_FACET_TEXT_VALUE = "facetTextValue";
 
     protected static final Map<Format,Map<Result,String>> templateTable;
     // RAP
-    protected static final Map<String, String> facetPublicNameTable;
+    //protected static final Map<String, String> facetPublicNameTable;
     
     protected enum Format { 
         HTML, XML, CSV; 
@@ -92,7 +96,6 @@ public class PagedSearchController extends FreemarkerHttpServlet {
     
     static{
         templateTable = setupTemplateTable();
-        facetPublicNameTable = setUpFacetPublicNameTable();
     }
          
     /**
@@ -167,11 +170,14 @@ public class PagedSearchController extends FreemarkerHttpServlet {
             String queryText = vreq.getParameter(PARAM_QUERY_TEXT);  
             log.debug("Query text is \""+ queryText + "\""); 
 
-
-            String badQueryMsg = badQueryText( queryText, vreq );
-            if( badQueryMsg != null ){
-                return doFailedSearch(badQueryMsg, queryText, format, vreq);
+// RAP: allow empty searches
+            if(queryText == null) {
+                queryText = "";
             }
+//            String badQueryMsg = badQueryText( queryText, vreq );
+//            if( badQueryMsg != null ){
+//                return doFailedSearch(badQueryMsg, queryText, format, vreq);
+//            }
                 
             SearchQuery query = getQuery(queryText, hitsPerPage, startIndex, vreq);        
             SearchEngine search = ApplicationUtils.instance().getSearchEngine();
@@ -236,8 +242,10 @@ public class PagedSearchController extends FreemarkerHttpServlet {
             if (!StringUtils.isEmpty(classGroupParam)) {
                 VClassGroup grp = grpDao.getGroupByURI(classGroupParam);
                 classGroupFilterRequested = true;
-                if (grp != null && grp.getPublicName() != null)
+                if (grp != null && grp.getPublicName() != null) {
+                    body.put("classGroupURI", grp.getURI());
                     body.put("classGroupName", grp.getPublicName());
+                }
             }
             
             String typeParam = vreq.getParameter(PARAM_RDFTYPE);
@@ -251,11 +259,12 @@ public class PagedSearchController extends FreemarkerHttpServlet {
             
             /* Add ClassGroup and type refinement links to body */
             if( wasHtmlRequested ){
+                // RAP
                 body.put("facets", getFacetLinks(vreq, response, queryText));
+                body.put("facetsAsText", RAPSearchFacets.getSearchFacetsAsText());
                 if ( !classGroupFilterRequested && !typeFilterRequested ) {
                     // Search request includes no ClassGroup and no type, so add ClassGroup search refinement links.
                     body.put("classGroupLinks", getClassGroupsLinks(vreq, grpDao, docs, response, queryText));
-                    // RAP
                 } else if ( classGroupFilterRequested && !typeFilterRequested ) {
                     // Search request is for a ClassGroup, so add rdf:type search refinement links
                     // but try to filter out classes that are subclasses
@@ -360,20 +369,18 @@ public class PagedSearchController extends FreemarkerHttpServlet {
     private static List<SearchFacet> getFacetLinks(VitroRequest request, 
             SearchResponse response, String querytext) {
         List<SearchFacet> searchFacets = new ArrayList<SearchFacet>();
-        for(SearchFacetField ff : response.getFacetFields()) {
-            if ( (!ff.getName().startsWith(FACET_FIELD_PREFIX)) 
-	            || ff.getValues().isEmpty() ) {
+        for(SearchFacet sf : RAPSearchFacets.getSearchFacets()) {
+            SearchFacetField ff = null;
+            for (SearchFacetField sff : response.getFacetFields()) {
+                if(!sff.getValues().isEmpty() 
+                        && sff.getName().equals(sf.getFieldName())) {
+                    ff = sff;
+                    break;
+                }
+            }
+            if(ff == null) {
                 continue;
             }
-            String publicName = facetPublicNameTable.get(ff.getName());
-            if(publicName == null) {
-                log.warn("Facet field named " + ff.getName() 
-		         + " not present in table.");
-                continue; // not a facet we know (or presumably care) about
-            }
-            SearchFacet sf = new SearchFacet();
-            sf.setFieldName(ff.getName());
-            sf.setPublicName(publicName);
             for(Count value : ff.getValues()) {
                 if(value.getCount() < 1) {
                     continue;
@@ -519,6 +526,21 @@ public class PagedSearchController extends FreemarkerHttpServlet {
     }       
 
     private SearchQuery getQuery(String queryText, int hitsPerPage, int startIndex, VitroRequest vreq) {
+        // RAP: AND in search terms for specific "facet as text" field
+        String facetAsText = vreq.getParameter(PARAM_FACET_AS_TEXT);
+        if(facetAsText != null) {
+            SearchFacet textFacet = RAPSearchFacets.getSearchFacetByFieldName(facetAsText);
+            if(textFacet != null && textFacet.isFacetAsText()) {
+                String textValue = vreq.getParameter(PARAM_FACET_TEXT_VALUE);
+                if(textValue != null) {
+                    queryText += " AND " + textFacet.getFieldName() + ":\"" 
+                            + textValue.replaceAll(Pattern.quote("\""), "") + "\"";                    
+                }
+            }
+        }
+        
+        log.info("query text is " + queryText);
+        
         // Lowercase the search term to support wildcard searches: The search engine applies no text
         // processing to a wildcard search term.
         SearchQuery query = ApplicationUtils.instance().getSearchEngine().createQuery(queryText);
@@ -557,10 +579,9 @@ public class PagedSearchController extends FreemarkerHttpServlet {
         return query;
     }   
     
-    // RAP
     protected static void addRAPFacetFields(SearchQuery query, VitroRequest vreq) {
-        for(String facetField : facetPublicNameTable.keySet()) {
-            query.addFacetFields(facetField).setFacetLimit(-1);    
+        for(SearchFacet facet : RAPSearchFacets.getSearchFacets()) {
+            query.addFacetFields(facet.getFieldName()).setFacetLimit(-1);    
         }
         ParamMap facetParams = getFacetParamMap(vreq);
         for(String parameterName : facetParams.keySet()) {
@@ -569,7 +590,7 @@ public class PagedSearchController extends FreemarkerHttpServlet {
                 query.addFilterQuery(parameterName + ":\"" + parameterValue + "\"");
             }    
         }
-	query.setFacetMinCount(1);
+	    query.setFacetMinCount(1);
     }
     
     private static ParamMap getFacetParamMap(VitroRequest vreq) {
@@ -773,21 +794,6 @@ public class PagedSearchController extends FreemarkerHttpServlet {
         }
     }
     
-    //RAP
-    protected static Map<String, String> setUpFacetPublicNameTable() {
-        Map<String, String> facetPublicNames = new HashMap<String, String>();
-        facetPublicNames.put("facet_wos-category_ss", "Subject categories");
-        facetPublicNames.put("facet_document-type_ss", "Document types");
-        facetPublicNames.put("facet_research-area_ss", "Research areas");
-        facetPublicNames.put("facet_publication-year_ss", "Publication years");
-        facetPublicNames.put("facet_organization-enhanced_ss", "Organi.-Enhanced");
-        facetPublicNames.put("facet_journal_ss", "Journals");
-        facetPublicNames.put("facet_conference_ss", "Conferences");
-        facetPublicNames.put("facet_country_ss", "Countries");
-        facetPublicNames.put("facet_funding-agency_ss", "Funding Agencies");
-        return facetPublicNames;
-    }
-    
     protected static Map<Format,Map<Result,String>> setupTemplateTable(){
         Map<Format,Map<Result,String>> table = new HashMap<>();
         
@@ -805,8 +811,7 @@ public class PagedSearchController extends FreemarkerHttpServlet {
         resultsToTemplates.put(Result.ERROR, "search-xmlError.ftl");
 
         // resultsToTemplates.put(Result.BAD_QUERY, "search-xmlBadQuery.ftl");        
-        table.put(Format.XML, Collections.unmodifiableMap(resultsToTemplates));
-        
+        table.put(Format.XML, Collections.unmodifiableMap(resultsToTemplates));      
         
         // set up CSV format
         resultsToTemplates = new HashMap<Result,String>();
