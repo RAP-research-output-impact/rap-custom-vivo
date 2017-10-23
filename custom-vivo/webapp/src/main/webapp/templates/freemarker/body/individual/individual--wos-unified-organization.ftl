@@ -20,15 +20,37 @@ var vdsOrgs = base + '/vds/report/org/' + individualLocalName + "/orgs";
 var byDeptUrl = base + '/vds/report/org/' + individualLocalName + "/by-dept";
 loadPubInfo(vds, collabSummary);
 $('#overview').addClass('spinner');
+addDateSelector();
 
-function collabSummary(response) {
+function addDateSelector() {
+    var startYearSelectorHtml = "<p>Start year <select id=\"startYear\" name=\"startYear\"></select></p>";
+    $("section#individual-info").append(startYearSelectorHtml);
+    document.getElementById("startYear").addEventListener('change', function() {
+           alert(this.value);
+           loadPubInfoByStartYear(vds, this.value, collabSummary);
+    }, false);
+
+}
+
+function collabSummary(response, startYear) {
     var yearRange = [];
     if (response.org_totals != []) {
-        for(var i in response.org_totals) { yearRange.push(response.org_totals[i].year) };
+        for(var i in response.org_totals) {
+	    if(response.org_totals[i].year >= startYear) {
+	        yearRange.push(response.org_totals[i].year) 
+	    }
+	};
         yearRange.sort()
     } else {
-        yearRange = [2015, 2016];
+        yearRange = [startYear, 2016];
     }
+    if(startYear < 0) {
+        for(var i in yearRange) {
+            $("#startYear").append("<option value=\"" + yearRange[i] + "\");\">" + yearRange[i] + "</option>");
+        }
+    }
+    $("collab-summary").remove();
+
     if (individualLocalName != "org-technical-university-of-denmark") {
         var msg = "<h2 id=\"collab-summary\">Co-publications: " + response.summary.coPubTotal + " total ";
         if (response.categories.length > 0) {
@@ -65,7 +87,9 @@ function doCategories(response) {
 
 
 function doSummaryTable(response) {
+    $("summaryTable").remove();
     var html = `
+    <div id="summaryTable">
     <hr/>
     <h2>Overview</h2>
     <table class="pub-counts">
@@ -92,14 +116,16 @@ function doSummaryTable(response) {
     //Impact
     html += "<tr><td>Impact</td><td>" + orgImpact + "</td><td>" + dtuImpact + "</td>";
 
-    var closeHtml = "</table>";
+    var closeHtml = "</table></div>";
     html += closeHtml;
     $("#individual-info").append(html);
     $('#overview').removeClass('spinner');
 }
 
 function doTopCategoryTable(response) {
+    $("topCategoryTable").remove();
     var html = `
+    <div id="topCategoryTable">
     <hr/>
     <h2>Top research subjects</h2>
     <table class="pub-counts">
@@ -112,13 +138,15 @@ function doTopCategoryTable(response) {
         var row = "<tr><td>" + value.name + "</td><td>" + value.number + "</td></tr>";
         html += row;
     });
-    var closeHtml = "</table>";
+    var closeHtml = "</table></div>";
     html += closeHtml;
     $("#individual-info").append(html);
 }
 
 function doPubCategoryTable(totals) {
+    $("pubCategoryTable").remove();
     var html = `
+    <div id="pubCategoryTable">
     <hr/>
     <h2>Co-publications by category. Top 10</h2>
     <table class="pub-counts">
@@ -128,7 +156,7 @@ function doPubCategoryTable(totals) {
       </tr>
     `;
 
-    var closeHtml = "</table>";
+    var closeHtml = "</table></div>";
     $.each( totals.slice(0, 10), function( key, value ) {
         //console.log(value);
         var coPubLink = "<a href=\"" + base + "/copubs-by-category/" + value.category.split("/")[4] + "?collab=" + individualLocalName + "\" target=\"copubcategory\">" +  value.number + "</a>";
@@ -141,7 +169,9 @@ function doPubCategoryTable(totals) {
 
 
 function doDepartmentTable(totals, name) {
+    $("departmentTable").remove();
     var html = `
+    <div id="departmentTable">
     <hr/>
     <h2>Co-publications by department</h2>
     <table class="pub-counts">
@@ -154,7 +184,7 @@ function doDepartmentTable(totals, name) {
       </tr>
     `;
 
-    var closeHtml = "</table>";
+    var closeHtml = "</table></div>";
     var last = null;
     $.each( totals, function( key, value ) {
         if (value.name != last) {
@@ -178,7 +208,9 @@ function doDepartmentTable(totals, name) {
 }
 
 function doPubCountTable(totals) {
+    $("pubCountTable").remove();
     var html = `
+    <div id="pubCountTable">
     <hr/>
     <h2>Total publications per year</h2>
     <table class="pub-counts">
@@ -188,7 +220,7 @@ function doPubCountTable(totals) {
       </tr>
     `;
 
-    var closeHtml = "</table>";
+    var closeHtml = "</table></div>";
     $.each( totals, function( key, value ) {
         //console.log(value);
         var row = "<tr><td>" + value.year + "</td><td>" + value.number + "</td></tr>";
@@ -199,13 +231,17 @@ function doPubCountTable(totals) {
 }
 
 function loadPubInfo(url, callback) {
+    loadPubInfoByStartYear(url, -1, callback);
+}
 
-	var xhr = new XMLHttpRequest();
+function loadPubInfoByStartYear(url, startYear, callback) {
+
+    var xhr = new XMLHttpRequest();
     xhr.open('GET', url );
     xhr.onload = function() {
         if (xhr.status === 200) {
-            var response = JSON.parse(xhr.response)
-            callback(response);
+            var response = JSON.parse(xhr.response);
+            callback(response, startYear);
         }
         else {
             alert('Request failed.  Returned status of ' + xhr.status);
