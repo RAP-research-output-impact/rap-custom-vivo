@@ -5,3 +5,4 @@ custom-vivo/home/target/
 .classpath
 .project
 custom-vivo/settings-local.xml
+**/arch/
