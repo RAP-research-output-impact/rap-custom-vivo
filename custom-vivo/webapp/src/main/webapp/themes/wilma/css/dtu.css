@@ -247,37 +247,55 @@ table#home-box td {
     font-size: 12px;
     text-decoration: none;
 }
-div.searchTOC {    
-    margin-bottom: 1.5em; 
-    float:right;
-    margin-right:35px;
-    margin-left:45px;
-    width: 220px;
-    text-align:center;
-/*    border: 1px solid #dde4e3;*/
-    padding-top:4px;
-    color: #fff;
-    background: #5e6363; 
+table.searchTOC {
+    margin-left: 1px;
+    margin-right: 6px;
+    width: 300px;
+    float: left;
+    padding: 2px;
+    background: #e2e2e0;
+}
+.searchTOC-box {
+    background: #e2e2e0;
+    padding: 5px;
+    width: 300px;
+    height: 100%;
+    float: left;
+}
+table.searchTOC td {
+    padding: 2px;
+    background: #e2e2e0;
+}
+.searchTOC h4.hitCount {
+    color: black;
+    background: #e2e2e0;
+    text-align: center;
+}
+.searchTOC-header {
+    color: #666666;
+    background: #e2e2e0;
+    text-align: center;
+    font-size: 12px;
 }
 .searchTOC h4 {    
-    color: #fff;
+    color: black;
     padding: .2em 0 .2em 0;
+    text-align: left;
 }
 .searchTOC ul {
-    width: 218px;
-    border: 1px solid #dde4e3;
-    background: #f1f2ee;
+    background: #e2e2e0;
     padding: 0;
     margin-top: 1px;
     text-align: left;
 }
 .searchTOC ul li {
+    background: #e2e2e0;
     border-bottom: none;
     display: block;
-    font-size: 14px;
-    margin-left: 20px;
+    font-size: 12px;
+    margin-left: 10px;
     padding: 0;
-    width: 200px;
+    width: 288px;
 }
 .searchTOC ul li:hover {
     background-color:#f7f9f9;
@@ -288,13 +306,27 @@ div.searchTOC {
 .searchTOC ul a {
     display: inline;
 }
-
 .searchTOC ul span {
 	float:right;
 	padding-right: 10px;
 	color:gray;
 	font-size:smaller;
 }
+.search-facets-toggle {
+    width: 15px;
+    float: left;
+    cursor: pointer;
+}
+.search-facets-title {
+    color: black;
+    background: #e2e2e0;
+    cursor: pointer;
+}
+.search-facets {
+    color: black;
+    background: #e2e2e0;
+}
+
 .limit-head,
 .limit-head a:link,
 .limit-head a:visited {
@@ -364,4 +396,28 @@ div.wos-cited {
 }
 #info-message-spacer {
     height: 300px;
-}   
+}
+.hbox-container {
+    border-spacing: 20px;
+    border-collapse: separate;
+}
+.hbox {
+    width: 600px;
+    height: 280px;
+    text-align: left;
+    border: 1;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #222222;
+    background-color: white;
+}
+.hbox-title {
+    font-size: 16px;
+    font-weight: bold;
+}
+input.search-homepage {
+    border: 1;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #222222;
+}
