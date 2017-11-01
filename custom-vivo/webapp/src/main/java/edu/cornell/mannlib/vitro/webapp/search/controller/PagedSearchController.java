@@ -262,6 +262,7 @@ public class PagedSearchController extends FreemarkerHttpServlet {
                 // RAP
                 body.put("facets", getFacetLinks(vreq, response, queryText));
                 body.put("facetsAsText", RAPSearchFacets.getSearchFacetsAsText());
+                body.put(PARAM_FACET_TEXT_VALUE, vreq.getParameter(PARAM_FACET_TEXT_VALUE));
                 if ( !classGroupFilterRequested && !typeFilterRequested ) {
                     // Search request includes no ClassGroup and no type, so add ClassGroup search refinement links.
                     body.put("classGroupLinks", getClassGroupsLinks(vreq, grpDao, docs, response, queryText));

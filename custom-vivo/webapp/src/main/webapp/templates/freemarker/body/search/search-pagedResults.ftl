@@ -2,7 +2,6 @@
 
 <#-- Template for displaying paged search results -->
 
-<#if classGroupURI?has_content>
   <h2>
     <form action="" method="GET">
         <input type="text" name="querytext" value="${querytext}" />
@@ -12,16 +11,22 @@
                 <option value="${fat.fieldName}">${fat.publicName}</option>
 	    </#list>
 	</select>
-	<input type="text" name="facetTextValue"/>
-	<input type="hidden" name="classgroup" value="${classGroupURI}" />
+        <#if facetTextValue?has_content>
+	    <input type="text" name="facetTextValue" value="${facetTextValue}"/>
+        <#else>
+	    <input type="text" name="facetTextValue"/>
+        </#if>
+        <#if classGroupURI?has_content>
+	    <input type="hidden" name="classgroup" value="${classGroupURI}" />
+        </#if>
 	<input type="submit" value="Go"/>
     </form>
   </h2>
-</#if>
 
 <h2 class="searchResultsHeader">
 <#escape x as x?html>
     ${i18n().search_results_for} '${querytext}'
+    <#if facetTextValue?has_content> and '${facetTextValue}' </#if>
     <#if classGroupName?has_content>${i18n().limited_to_type} '${classGroupName}'</#if>
     <#if typeName?has_content>${i18n().limited_to_type} '${typeName}'</#if>
 </#escape>
@@ -70,6 +75,7 @@
         </div>
     </#if>
 
+<#--
     <#if classLinks?has_content>
         <div class="searchTOC">
             <#if classGroupName?has_content>
@@ -84,6 +90,7 @@
             </ul>
         </div>
     </#if>
+-->
 
     <#-- Search results -->
     <ul class="searchhits">
