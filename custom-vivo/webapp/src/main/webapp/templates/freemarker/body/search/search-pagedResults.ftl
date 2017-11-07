@@ -2,97 +2,115 @@
 
 <#-- Template for displaying paged search results -->
 
-<!--
-<h2 class="searchResultsHeader">
-<#escape x as x?html>
-    ${i18n().search_results_for} '${querytext}'
-    <#if classGroupName?has_content>${i18n().limited_to_type} '${classGroupName}'</#if>
-    <#if typeName?has_content>${i18n().limited_to_type} '${typeName}'</#if>
-</#escape>
-<script type="text/javascript">
-	var url = window.location.toString();	
-	if (url.indexOf("?") == -1){
-		var queryText = 'querytext=${querytext}';
-	} else {
-		var urlArray = url.split("?");
-		var queryText = urlArray[1];
-	}
-	
-	var urlsBase = '${urls.base}';
-</script>
-
-	<img id="downloadIcon" src="images/download-icon.png" alt="Download Results" title="Download Results" />
-     <span id="downloadResults" style="float:left"></span>
+<h2>
+    <form action="" method="GET">
+        <input type="text" name="querytext" value="${querytext}" />
+	<strong>AND</strong>
+	<select name="facetAsText">
+            <#list facetsAsText as fat>
+                <option value="${fat.fieldName}">${fat.publicName}</option>
+	    </#list>
+	</select>
+        <#if facetTextValue?has_content>
+	    <input type="text" name="facetTextValue" value="${facetTextValue}"/>
+        <#else>
+	    <input type="text" name="facetTextValue"/>
+        </#if>
+        <#if classGroupURI?has_content>
+	    <input type="hidden" name="classgroup" value="${classGroupURI}" />
+        </#if>
+	<input type="submit" value="Go"/>
+    </form>
 </h2>
--->
+<h2 class="searchResultsHeader">
+    <#escape x as x?html>
+        ${i18n().search_results_for} '${querytext}'
+        <#if facetTextValue?has_content> and '${facetTextValue}' </#if>
+        <#if classGroupName?has_content>${i18n().limited_to_type} '${classGroupName}'</#if>
+        <#if typeName?has_content>${i18n().limited_to_type} '${typeName}'</#if>
+    </#escape>
+    <script type="text/javascript">
+        var url = window.location.toString();	
+        if (url.indexOf("?") == -1){
+            var queryText = 'querytext=${querytext}';
+        } else {
+            var urlArray = url.split("?");
+            var queryText = urlArray[1];
+        }
+        var urlsBase = '${urls.base}';
+    </script>
+
+    <!--
+    <img id="downloadIcon" src="images/download-icon.png" alt="Download Results" title="Download Results" />
+    <span id="downloadResults" style="float:left"></span>
+    -->
+</h2>
 
 <script src="${urls.theme}/js/jquery.corner.js"></script>
 
 <span id="searchHelp"><a href="${urls.base}/searchHelp" title="${i18n().search_help}">${i18n().not_expected_results}</a></span>
 <div class="contentsBrowseGroup">
-
     <#-- Refinement links -->
-
     <div class="searchTOC-box">
-    <table border="1" class="searchTOC">
-        <tr>
-            <td>
-                <h4 class="hitCount">Results: ${hitCount}</h4>
-                <hr width="80%"/>
-                <div class="searchTOC-header">Use Facets to Refine Results</div>
-            </td>
-        </tr>
-        <#if classGroupLinks?has_content>
-            <tr class="search-facets-head">
+        <table border="1" class="searchTOC">
+            <tr>
                 <td>
-                    <h4 class="search-facets-title"><div class="search-facets-toggle">+</div>Type</h4>
+                    <h4 class="hitCount">Results: ${hitCount}</h4>
+                    <hr width="80%"/>
+                    <div class="searchTOC-header">Use Facets to Refine Results</div>
                 </td>
             </tr>
-            <tr class="search-facets" style="display: none;">
-                <td>
-                    <ul class="search-facets">
-                    <#list classGroupLinks as link>
-                        <li><a href="${link.url}" title="${i18n().class_group_link}">${link.text}</a><span>(${link.count})</span></li>
-                    </#list>
-                    </ul>           
-                </td>
-            </tr>
-        </#if>
-        <#if classLinks?has_content>
-            <tr class="search-facets-head">
-                <td>
-                    <h4 class="search-facets-title"><div class="search-facets-toggle">+</div>Type</h4>
-                </td>
-            </tr>
-            <tr class="search-facets" style="display: none;">
-                <td>
-                    <ul class="search-facets">
-                        <#list classLinks as link>
-                            <li><a href="${link.url}" title="${i18n().class_link}">${link.text}</a><span>(${link.count})</span></li>
-                        </#list>
-                    </ul>
-                </td>
-            </tr>
-        </#if>
-        <#if facets?has_content>
-            <#list facets as facet>
+            <#if classGroupLinks?has_content>
                 <tr class="search-facets-head">
-                    <td style="align: left">
-                        <h4 class="search-facets-title"><div class="search-facets-toggle">+</div>${facet.publicName}</h4>
+                    <td>
+                        <h4 class="search-facets-title"><div class="search-facets-toggle">+</div>Type</h4>
                     </td>
                 </tr>
                 <tr class="search-facets" style="display: none;">
                     <td>
-                        <ul>
-                            <#list facet.categories as category>
-                                <li><a href="${category.url}" title="${category.text}">${category.text}</a><span>(${category.count})</span></li>
+                        <ul class="search-facets">
+                        <#list classGroupLinks as link>
+                            <li><a href="${link.url}" title="${i18n().class_group_link}">${link.text}</a><span>(${link.count})</span></li>
+                        </#list>
+                        </ul>           
+                    </td>
+                </tr>
+            </#if>
+            <#if classLinks?has_content>
+                <tr class="search-facets-head">
+                    <td>
+                        <h4 class="search-facets-title"><div class="search-facets-toggle">+</div>Type</h4>
+                    </td>
+                </tr>
+                <tr class="search-facets" style="display: none;">
+                    <td>
+                        <ul class="search-facets">
+                            <#list classLinks as link>
+                                <li><a href="${link.url}" title="${i18n().class_link}">${link.text}</a><span>(${link.count})</span></li>
                             </#list>
                         </ul>
                     </td>
                 </tr>
-            </#list>
-        </#if>
-    </table>
+            </#if>
+            <#if facets?has_content>
+                <#list facets as facet>
+                    <tr class="search-facets-head">
+                        <td style="align: left">
+                            <h4 class="search-facets-title"><div class="search-facets-toggle">+</div>${facet.publicName}</h4>
+                        </td>
+                    </tr>
+                    <tr class="search-facets" style="display: none;">
+                        <td>
+                            <ul>
+                                <#list facet.categories as category>
+                                    <li><a href="${category.url}" title="${category.text}">${category.text}</a><span>(${category.count})</span></li>
+                                </#list>
+                            </ul>
+                        </td>
+                    </tr>
+                </#list>
+            </#if>
+        </table>
     </div>
     <script>
         var facetsOpen = 0;
@@ -117,7 +135,6 @@
             }
         });
     </script>
-
     <#-- Search results -->
     <div style="float: right; text-align: left; width: 75%;">
         <ul class="searchhits">
@@ -168,7 +185,6 @@
             <div id="gadgets-search" class="gadgets-gadget-parent" style="display:inline-block"></div>
         </#if>
     </#if>
-
 </div> <!-- end contentsBrowseGroup -->
 
 ${stylesheets.add('<link rel="stylesheet" href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />',

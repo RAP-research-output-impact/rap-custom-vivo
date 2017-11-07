@@ -1,11 +1,11 @@
-SELECT DISTINCT ?name (COUNT(DISTINCT ?pub) as ?total)
+SELECT DISTINCT ?uri ?name (COUNT(DISTINCT ?pub) as ?total)
 WHERE {
     VALUES ?dtuOrg { ?org }
     ?dtuOrg a tmp:Dtu ;
             tmp:relates ?pub .
-    ?exSubOrg a tmp:External ;
+    ?uri a tmp:External ;
             tmp:name ?name ;
             tmp:relates ?pub
 }
-GROUP BY ?name
+GROUP BY ?uri ?name
 ORDER BY DESC(?total) ?name

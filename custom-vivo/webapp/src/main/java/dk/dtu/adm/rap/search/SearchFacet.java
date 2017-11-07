@@ -15,6 +15,11 @@ public class SearchFacet {
     private String fieldName;
     private List<SearchFacetCategory> categories = new ArrayList<SearchFacetCategory>();
     
+    public SearchFacet(String fieldName, String publicName) {
+        this.fieldName = fieldName;
+        this.publicName = publicName;
+    }
+    
     /**
      * @return the name of the field used to store the facet in the search index
      */
@@ -45,6 +50,10 @@ public class SearchFacet {
     
     public List<SearchFacetCategory> getCategories() {
         return this.categories;
+    }
+    
+    public boolean isFacetAsText() {
+        return false;
     }
     
 }

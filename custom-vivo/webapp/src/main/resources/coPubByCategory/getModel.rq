@@ -6,42 +6,28 @@ CONSTRUCT {
         wos:referenceCount ?refCount ;
         wos:citationCount ?citeCount ;
         bibo:doi ?doi ;
-        tmp:relates ?org, ?subOrg, ?authorship, ?authorship2 .
-    ?subOrg a tmp:SubOrg ;
-        rdfs:label ?subOrgName .
-    ?org a tmp:DtuSubOrg ;
-        tmp:name ?dtuSubOrgName .
+        tmp:relates ?authorship .
     ?authorship a tmp:Authorship ;
             tmp:name ?name ;
-            tmp:relates ?org .
-    ?authorship2 a tmp:Authorship ;
-            tmp:name ?name2 ;
-            tmp:relates ?subOrg .
+            tmp:relates ?collab .
 }
 WHERE {
-    ?org a wos:SubOrganization ;
-        rdfs:label ?dtuSubOrgName ;
+    ?collab a wos:UnifiedOrganization ;
         vivo:relatedBy ?address .
     ?address a wos:Address ;
         vivo:relates ?pub .
     ?authorship a vivo:Authorship ;
             wos:fullName ?name ;
             vivo:relates ?pub, ?address .
-    ?collab a wos:UnifiedOrganization ;
-        vivo:relatedBy ?address2 .
-    ?address2 a wos:Address ;
-        vivo:relates ?pub .
-    ?authorship2 a vivo:Authorship ;
-            wos:fullName ?name2 ;
-            vivo:relates ?pub, ?address2 .
-    ?subOrg a wos:SubOrganization ;
-        wos:subOrganizationName ?subOrgName ;
-        vivo:relatedBy ?address2 .
     ?pub a wos:Publication ;
         rdfs:label ?title ;
         vivo:dateTimeValue ?dtv ;
-        vivo:relatedBy ?address, ?address2 .
+	wos:hasCategory ?category ;
+        vivo:relatedBy ?address .
     ?dtv vivo:dateTime ?date .
+    ?pub vivo:relatedBy ?dtuAddress .
+    ?dtuAddress a wos:Address .
+    ?dtuAddress vivo:relates d:org-technical-university-of-denmark . 
     OPTIONAL {
         ?pub wos:wosId ?wosId ;
             wos:referenceCount ?refCount ;

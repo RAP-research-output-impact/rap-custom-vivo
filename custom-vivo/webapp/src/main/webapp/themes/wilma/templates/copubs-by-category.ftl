@@ -1,6 +1,5 @@
-<h2>Co-publications by Department - DTU and ${collabOrg}</h2>
+<h2>Co-publications by category ${name} - DTU and ${collabOrg}</h2>
 
-<h3>${mainOrg} <#if collabSubName?has_content> -- ${collabSubName}</#if></h3>
 <div>${pubs?size} total co-publications</div>
 <hr/>
 
@@ -24,34 +23,14 @@
             </span>
         </div>
      </#if>
-     <#if pub.dtuSubOrg?has_content>
-          <ul class="copubdept">
-            <li>${mainOrg}</li>
-          <#list pub.dtuSubOrg as so>
-                <#if so.authors?has_content>
-                    <ul class="authors">
-                        <#list so.authors?split(";") as au>
-                            <li>${au}</li>
-                        </#list>
-                    </ul>
-                </#if>
-          </#list>
-        </ul>
-      </#if>
-      <#list pub.subOrg as so>
-        <ul class="copubdept">
-            <li>${so.subOrgName}</li>
-            <#if so.authors?has_content>
-                <ul class="authors">
-                    <#list so.authors?split(";") as au>
-                        <li>${au}</li>
-                    </#list>
-                </ul>
-            </#if>
-        </ul>
-      </#list>
+     <#if pub.authors?has_content>
+         <ul class="authors">
+             <#list so.authors?split(";") as au>
+                 <li>${au}</li>
+             </#list>
+         </ul>
+     </#if>
 </div>
- </#list>
-
+</#list>
 
 ${stylesheets.add('<link rel="stylesheet" href="${urls.base}/css/individual/individual-vivo.css" />')}

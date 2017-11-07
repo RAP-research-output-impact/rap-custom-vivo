@@ -1494,6 +1494,15 @@
     <servlet-name>CoPubsByDeptController</servlet-name>
     <url-pattern>/copubs-by-dept/*</url-pattern>
   </servlet-mapping>
+ 
+  <servlet>
+    <servlet-name>CoPubsByCategoryController</servlet-name>
+    <servlet-class>dk.dtu.adm.rap.controller.CoPubsByCategory</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CoPubsByCategoryController</servlet-name>
+    <url-pattern>/copubs-by-category/*</url-pattern>
+  </servlet-mapping>
   
   <servlet>
     <servlet-name>StaticTemplateController</servlet-name>

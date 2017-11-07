@@ -20,6 +20,7 @@ var vdsOrgs = base + '/vds/report/org/' + individualLocalName + "/orgs";
 var byDeptUrl = base + '/vds/report/org/' + individualLocalName + "/by-dept";
 info_message("Loading Co-publication report");
 loadPubInfo(vds, collabSummary);
+$('#overview').addClass('spinner');
 
 function info_message(msg) {
     $("section#individual-info").append("<div id=\"info-message\"><div>" + msg + "<img src=\"${urls.theme}/images/loading.gif\"/></div>" +
@@ -106,6 +107,7 @@ function doSummaryTable(response) {
     var closeHtml = "</table>";
     html += closeHtml;
     $("#individual-info").append(html);
+    $('#overview').removeClass('spinner');
 }
 
 function doTopCategoryTable(response) {
@@ -141,7 +143,8 @@ function doPubCategoryTable(totals) {
     var closeHtml = "</table>";
     $.each( totals.slice(0, 10), function( key, value ) {
         //console.log(value);
-        var row = "<tr><td>" + value.name + "</td><td>" + value.number + "</td></tr>";
+        var coPubLink = "<a href=\"" + base + "/copubs-by-category/" + value.category.split("/")[4] + "?collab=" + individualLocalName + "\" target=\"copubcategory\">" +  value.number + "</a>";
+        var row = "<tr><td>" + value.name + "</td><td>" + coPubLink + "</td></tr>";
         html += row;
     });
     html += closeHtml;
@@ -176,7 +179,8 @@ function doDepartmentTable(totals, name) {
         }
         $.each( value.sub_orgs, function( k2, subOrg ) {
             var row = "<tr class=\"copubdept-child\"><td>";
-            row +=  "</td><td>" + subOrg.total + "</td><td>" + subOrg.name + "</td></tr>";
+            var clink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + "&collabSub=" + subOrg.uri.split("/")[4] + "&collabSubName=" + encodeURIComponent(subOrg.name) + "\" target=\"copubdept\">" +  subOrg.total + "</a>";
+            row +=  "</td><td>" + clink + "</td><td>" + subOrg.name + "</td></tr>";
             html += row;
         });
         last = value.name;
