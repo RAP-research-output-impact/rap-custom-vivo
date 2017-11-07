@@ -26,6 +26,15 @@
     color: white;
 }
 
+.rep-label {
+}
+.rep-num {
+    text-align: right;
+}
+.dtu-dept-num {
+    text-align: right;
+}
+
 
 #collab-summary a.report-export {
     float: right;
