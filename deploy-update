@@ -8,6 +8,11 @@ fi
 export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
 /etc/init.d/tomcat8 stop
 cd custom-vivo
+if [ ! -d webapp/src/main/webapp/WEB-INF/resources ]
+then
+    mkdir --parents webapp/src/main/webapp/WEB-INF/resources
+fi
+cp build-update.properties webapp/src/main/webapp/WEB-INF/resources/build.properties
 mvn install -s settings-update.xml
 /etc/init.d/tomcat8 start
 exit 0

@@ -6,3 +6,4 @@ custom-vivo/home/target/
 .project
 custom-vivo/settings-local.xml
 **/arch/
+custom-vivo/webapp/src/main/webapp/WEB-INF/resources
