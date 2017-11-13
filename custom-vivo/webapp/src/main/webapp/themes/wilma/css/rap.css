@@ -198,3 +198,75 @@ ul.copubdept {
     right: 8px;
     font-size: 12px
 }
+
+#page-home-search {
+    position: absolute;
+    top: 220px;
+    right: 15px;
+    width: 60px;
+    height: 60px;
+}
+.page-home-go {
+    position: absolute;
+    top: 220px;
+    right: 15px;
+    width: 60px;
+    height: 60px;
+}
+.go-button {
+    border-radius: 4px;
+    border: 1px;
+    border-color: silver;
+    background: #b50404;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    width: 60px;
+    height: 40px;
+}
+#search-home-field {
+    width: 483px;
+    height: 44px;
+    background: white;
+}
+#search-form {
+    margin-top: 30px;
+    width: 75%;
+    float: right;
+}
+
+.qr-box {
+    background: #e2e2e0;
+    border: 1px solid #aaaaaa;
+    margin: 5px;
+    border-radius: 5px;
+    display: inline-block;
+}
+.qr-text {
+    padding: 3px 6px;
+    font-size: 12px;
+}
+.qr-link {
+    padding: 3px 6px;
+    display: inline-block;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.qr-link:hover {
+    background: #b50404;
+    color: white;
+}
+.qr-link a {
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 12px;
+    color: #666666;
+}
+.qr-link:hover a {
+    color: white;
+}
+.qr-x {
+    font-weight: bold;
+    font-size: 12px;
+}

@@ -261,6 +261,7 @@ table.searchTOC {
     width: 300px;
     height: 100%;
     float: left;
+    margin-top: 40px;
 }
 table.searchTOC td {
     padding: 2px;
@@ -402,6 +403,7 @@ div.wos-cited {
     border-collapse: separate;
 }
 .hbox {
+    position: relative;
     width: 600px;
     height: 280px;
     text-align: left;
@@ -416,8 +418,13 @@ div.wos-cited {
     font-weight: bold;
 }
 input.search-homepage {
-    border: 1;
     border-width: 1px;
     border-style: solid;
     border-color: #222222;
+}
+input.search-homepage-facet {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #222222;
+    width: 351px;
 }

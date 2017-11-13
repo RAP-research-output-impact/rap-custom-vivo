@@ -53,5 +53,12 @@ public class RAPSearchFacets {
     public static SearchFacet getSearchFacetByFieldName(String fieldName) {
         return facetsByFieldName.get(fieldName);
     }
-    
+
+    public static List<String> getFacetFields() {
+        ArrayList<String> facets = new ArrayList<String>();
+        for(SearchFacet sf : searchFacets) {
+            facets.add(sf.getFieldName());
+        }
+        return facets;
+    }
 }

@@ -2,53 +2,8 @@
 
 <#-- Template for displaying paged search results -->
 
-<h2>
-    <form action="" method="GET">
-        <input type="text" name="querytext" value="${querytext}" />
-	<strong>AND</strong>
-	<select name="facetAsText">
-            <#list facetsAsText as fat>
-                <option value="${fat.fieldName}">${fat.publicName}</option>
-	    </#list>
-	</select>
-        <#if facetTextValue?has_content>
-	    <input type="text" name="facetTextValue" value="${facetTextValue}"/>
-        <#else>
-	    <input type="text" name="facetTextValue"/>
-        </#if>
-        <#if classGroupURI?has_content>
-	    <input type="hidden" name="classgroup" value="${classGroupURI}" />
-        </#if>
-	<input type="submit" value="Go"/>
-    </form>
-</h2>
-<h2 class="searchResultsHeader">
-    <#escape x as x?html>
-        ${i18n().search_results_for} '${querytext}'
-        <#if facetTextValue?has_content> and '${facetTextValue}' </#if>
-        <#if classGroupName?has_content>${i18n().limited_to_type} '${classGroupName}'</#if>
-        <#if typeName?has_content>${i18n().limited_to_type} '${typeName}'</#if>
-    </#escape>
-    <script type="text/javascript">
-        var url = window.location.toString();	
-        if (url.indexOf("?") == -1){
-            var queryText = 'querytext=${querytext}';
-        } else {
-            var urlArray = url.split("?");
-            var queryText = urlArray[1];
-        }
-        var urlsBase = '${urls.base}';
-    </script>
-
-    <!--
-    <img id="downloadIcon" src="images/download-icon.png" alt="Download Results" title="Download Results" />
-    <span id="downloadResults" style="float:left"></span>
-    -->
-</h2>
-
 <script src="${urls.theme}/js/jquery.corner.js"></script>
 
-<span id="searchHelp"><a href="${urls.base}/searchHelp" title="${i18n().search_help}">${i18n().not_expected_results}</a></span>
 <div class="contentsBrowseGroup">
     <#-- Refinement links -->
     <div class="searchTOC-box">
@@ -79,7 +34,7 @@
             <#if classLinks?has_content>
                 <tr class="search-facets-head">
                     <td>
-                        <h4 class="search-facets-title"><div class="search-facets-toggle">+</div>Type</h4>
+                        <h4 class="search-facets-title"><div class="search-facets-toggle">+</div>Sub-Type</h4>
                     </td>
                 </tr>
                 <tr class="search-facets" style="display: none;">
@@ -111,6 +66,43 @@
                 </#list>
             </#if>
         </table>
+    </div>
+    <div id="search-form">
+        <form action="" method="GET">
+            <input type="text" name="querytext" value="${querytext}" />
+            <strong>AND</strong>
+            <select name="facetAsText">
+                <#if facetAsText?has_content>
+                    <#list facetsAsText as fat>
+                        <option value="${fat.fieldName}" <#if fat.fieldName == facetAsText>selected</#if>>${fat.publicName}</option>
+                    </#list>
+                <#else>
+                    <#list facetsAsText as fat>
+                        <option value="${fat.fieldName}">${fat.publicName}</option>
+                    </#list>
+                </#if>
+            </select>
+            <#if facetTextValue?has_content>
+                <input type="text" name="facetTextValue" value="${facetTextValue}"/>
+            <#else>
+                <input type="text" name="facetTextValue"/>
+            </#if>
+            <#if classGroupURI?has_content>
+                <input type="hidden" name="classgroup" value="${classGroupURI}" />
+            </#if>
+            <input type="submit" value="Go"/>
+        </form>
+        <!--
+        <span id="searchHelp" style="text-align: right;"><a href="${urls.base}/searchHelp" title="${i18n().search_help}">${i18n().not_expected_results}</a></span>
+        -->
+    </div>
+    <div style="width: 75%; float: right;">
+        <#list RAPQueryReduce as link>
+            <div class="qr-box">
+                <span class="qr-text">${link.text}</span>
+                <span class="qr-link" onClick="window.location.href='${link.url}';"><a href="${link.url}">X</a></span>
+            </div>
+        </#list>
     </div>
     <script>
         var facetsOpen = 0;
