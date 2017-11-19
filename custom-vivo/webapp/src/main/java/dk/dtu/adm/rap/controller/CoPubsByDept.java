@@ -25,7 +25,6 @@ import edu.cornell.mannlib.vitro.webapp.controller.freemarker.responsevalues.Tem
 public class CoPubsByDept extends CoPubsHttpServlet {
     private String TEMPLATE = "copubs-by-dept.ftl";
     private static final Log log = LogFactory.getLog(CoPubsByDept.class.getName());
-    private static String namespace;
     private StoreUtils storeUtils;
     private static final String ORG_INFO_QUERY = "coPubByDept/info.rq";
     private static final String PUB_MODEL_QUERY = "coPubByDept/getModel.rq";
@@ -57,7 +56,7 @@ public class CoPubsByDept extends CoPubsHttpServlet {
         log.debug("Meta query:\n" + rq);
         ArrayList<HashMap> meta = this.storeUtils.getFromStore(rq);
         String preferredName = meta.get(0).get("name").toString();
-        Model pubsModel = getPubModel(meta, collabUri, collabSubOrg);
+        Model pubsModel = getPubModel(meta, collabUri, collabSubOrg, namespace);
         ArrayList<HashMap> pubs = getPubs(pubsModel);
         Map<String, Object> body = new HashMap<String, Object>();
         body.put("mainOrg", preferredName);
@@ -68,7 +67,8 @@ public class CoPubsByDept extends CoPubsHttpServlet {
         return new TemplateResponseValues(TEMPLATE, body);
     }
 
-    private Model getPubModel(ArrayList<HashMap> meta, String collabUri, String collabSubOrg) {
+    private Model getPubModel(ArrayList<HashMap> meta, String collabUri, 
+            String collabSubOrg, String namespace) {
         String rq = readQuery(PUB_MODEL_QUERY);
         ParameterizedSparqlString prq = this.storeUtils.getQuery(rq);
         prq.setIri("org", meta.get(0).get("org").toString());
