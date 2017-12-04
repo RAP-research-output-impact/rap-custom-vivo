@@ -1,0 +1,19 @@
+CONSTRUCT {
+    ?pub rdfs:label ?title ;
+        tmp:pubDate ?date ;
+        wos:wosId ?wosId ;
+        wos:referenceCount ?refCount ;
+        wos:citationCount ?citeCount ;
+        bibo:doi ?doi .
+}
+WHERE {
+    ?pub rdfs:label ?title ;
+        vivo:dateTimeValue ?dtv .
+    ?dtv vivo:dateTime ?date .
+    OPTIONAL {
+        ?pub wos:wosId ?wosId ;
+            wos:referenceCount ?refCount ;
+            wos:citationCount ?citeCount .
+    }
+    OPTIONAL { ?pub bibo:doi ?doi }
+ }
