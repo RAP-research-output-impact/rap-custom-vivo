@@ -19,7 +19,7 @@ WHERE {
   ?dtv vivo:dateTime ?dateTime
   BIND(xsd:integer(substr(str(?dateTime), 1, 4)) AS ?year)
   FILTER(?startYear <= ?year)
-  FILTER(?endYear >= year)
+  FILTER(?endYear >= ?year)
   ?address2 a wos:Address ;
             vivo:relates ?pub .
   d:org-technical-university-of-denmark vivo:relatedBy ?address2 .
