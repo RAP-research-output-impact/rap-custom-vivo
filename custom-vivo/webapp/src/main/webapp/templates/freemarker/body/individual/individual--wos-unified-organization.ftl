@@ -79,7 +79,7 @@ function collabSummary(response, startYear) {
         if (response.categories.length > 0) {
             doPubCategoryTable(response.categories);
         }
-        loadPubInfo(byDeptUrl, startYear, byDeptReport)
+        loadPubInfoByStartYear(byDeptUrl, startYear, byDeptReport)
     };
 }
 
