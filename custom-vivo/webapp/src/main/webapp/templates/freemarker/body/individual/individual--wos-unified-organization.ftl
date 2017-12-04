@@ -84,7 +84,7 @@ function collabSummary(response, startYear) {
 }
 
 
-function byDeptReport(response) {
+function byDeptReport(response, startYear) {
     if (response.departments.length > 0) {
         doDepartmentTable(response.departments, response.name);
     }
