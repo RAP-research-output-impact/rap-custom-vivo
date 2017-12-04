@@ -85,7 +85,7 @@ public class CoPubsByDept extends CoPubsHttpServlet {
         // handle efficiently, we will now retrieve the triples describing each 
         // ?pub resource via a second query.
         ResIterator pubIt = pubModel.listResourcesWithProperty(RDF.type, 
-                PUBLICATION);
+                pubModel.getResource(PUBLICATION));
         String pubQueryStr = readQuery(PUB_CONSTRUCT_QUERY);
         while(pubIt.hasNext()) {
             Resource pub = pubIt.next();    
