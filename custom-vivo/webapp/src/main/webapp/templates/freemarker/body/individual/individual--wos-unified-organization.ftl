@@ -79,7 +79,7 @@ function collabSummary(response, startYear) {
         if (response.categories.length > 0) {
             doPubCategoryTable(response.categories);
         }
-        loadPubInfo(byDeptUrl, byDeptReport)
+        loadPubInfo(byDeptUrl, startYear, byDeptReport)
     };
 }
 
@@ -259,7 +259,7 @@ function loadPubInfoByStartYear(url, startYear, callback) {
             callback(response, startYear);
         }
         else {
-            alert('Request failed.  Returned status of ' + xhr.status);
+            alert('Request ' + url + ' failed.  Returned status of ' + xhr.status);
         }
     };
     xhr.send();

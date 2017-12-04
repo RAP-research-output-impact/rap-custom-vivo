@@ -66,22 +66,8 @@ public class DataService {
             @Context Request request) {
         VitroRequest vreq = new VitroRequest(httpRequest);
 
-        Integer startYearInt = null;
-        if(startYear != null) {
-            try {
-                startYearInt = Integer.parseInt(startYear, 10);
-            } catch (NumberFormatException nfe) {
-                log.trace(nfe, nfe);
-            }
-        }
-        Integer endYearInt = null;
-        if(endYear != null) {
-            try {
-                endYearInt = Integer.parseInt(endYear, 10);
-            } catch (NumberFormatException nfe) {
-                log.trace(nfe, nfe);
-            }
-        }
+        Integer startYearInt = parseInt(startYear);
+        Integer endYearInt = parseInt(endYear);
         
         if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
             return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
@@ -109,10 +95,10 @@ public class DataService {
             JSONObject jo = new JSONObject();
             try {
                 jo.put("summary", getSummary(uri, startYearInt, endYearInt));
-                jo.put("categories", getRelatedPubCategories(uri));
-                jo.put("org_totals", getSummaryPubCount(uri));
-                jo.put("top_categories", getTopCategories(uri));
-                jo.put("by_department", getCoPubsByDepartment(uri));
+                jo.put("categories", getRelatedPubCategories(uri, startYearInt, endYearInt));
+                jo.put("org_totals", getSummaryPubCount(uri, startYearInt, endYearInt));
+                jo.put("top_categories", getTopCategories(uri, startYearInt, endYearInt));
+                jo.put("by_department", getCoPubsByDepartment(uri, startYearInt, endYearInt));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -126,14 +112,49 @@ public class DataService {
 
         //return Response.status(200).entity(jo.toString()).cacheControl(cc).build();
     }
+    
+    private Integer parseInt(String value) {
+        if(value != null) {
+            try {
+                return Integer.parseInt(value, 10);
+            } catch (NumberFormatException nfe) {
+                log.trace(nfe, nfe);
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
 
-
-    @Path("/org/{vid}/by-dept")
+    @Path("/org/{vid}/by-dept/")
     @GET
     @Produces("application/json")
-    public Response getCoPubByDept(@PathParam("vid") String vid, @Context Request request) {
+    public Response getCoPubByDept(@PathParam("vid") String vid, 
+            @Context Request request) {
+        return getCoPubByDept(vid, null, null, request);
+    }
+    
+    @Path("/org/{vid}/by-dept/{startYear}")
+    @GET
+    @Produces("application/json")
+    public Response getCoPubByDept(@PathParam("vid") String vid,
+            @PathParam("startYear") String startYear,
+            @Context Request request) {
+        return getCoPubByDept(vid, startYear, null, request);
+    }
+    
+    @Path("/org/{vid}/by-dept/{startYear}/{endYear}")
+    @GET
+    @Produces("application/json")
+    public Response getCoPubByDept(@PathParam("vid") String vid,
+            @PathParam("startYear") String startYear,
+            @PathParam("endYear") String endYear,
+            @Context Request request) {
         VitroRequest vreq = new VitroRequest(httpRequest);
 
+        Integer startYearInt = parseInt(startYear);
+        Integer endYearInt = parseInt(endYear);
+        
         if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
             return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
         }
@@ -158,7 +179,7 @@ public class DataService {
 
         // cached resource did change -> serve updated content
         if (builder == null) {
-            Model tmpModel = deptModel(uri);
+            Model tmpModel = deptModel(uri, startYearInt, endYearInt);
             String rq = readQuery("coPubByDept/vds/dtuSubOrgCount.rq");
             log.debug("Dept query:\n" + rq);
             ArrayList<HashMap> depts = this.storeUtils.getFromModel(getQuery(rq), tmpModel);
@@ -284,12 +305,8 @@ public class DataService {
         builder.tag(etag);
         return builder.build();
     }
-
-    private Object getSummary(String orgUri) {
-        return getSummary(orgUri, null, null);
-    }
     
-    private Object getSummary(String orgUri, Integer startYear, Integer endYear) {
+    private String getYearFilter(Integer startYear, Integer endYear) {
         String yearFilter = "";
         if(startYear != null) {
             yearFilter += "   FILTER(" + startYear + " <= ?year) \n";                    
@@ -297,12 +314,22 @@ public class DataService {
         if(endYear != null) {
             yearFilter += "   FILTER(" + endYear + " >= ?year) \n";                    
         }
+        return yearFilter;
+    }
+    
+    private String getYearDtv(Integer startYear, Integer endYear) {
         String yearDtv = "";
         if(startYear != null || endYear != null) {
             yearDtv = "   ?pub vivo:dateTimeValue ?dtv . \n" +
-                      "   ?pub vivo:dateTime ?dateTime .\n " +
+                      "   ?dtv vivo:dateTime ?dateTime .\n " +
                       "   BIND(xsd:integer(substr(str(?dateTime), 1, 4)) AS ?year)";
         }
+        return yearDtv;
+    }
+
+    private Object getSummary(String orgUri, Integer startYear, Integer endYear) {
+        String yearFilter = getYearFilter(startYear, endYear);
+        String yearDtv = getYearDtv(startYear, endYear);
         String rq = "SELECT \n" +
                 "      ?name\n" +
                 "      ?overview\n" +
@@ -392,7 +419,8 @@ public class DataService {
         return (summary.isEmpty() ? null : summary.get(0));
     }
 
-    private ArrayList getSummaryPubCount(final String orgUri) {
+    private ArrayList getSummaryPubCount(final String orgUri, 
+            Integer startYear, Integer endYear) {
         log.debug("Running summary pub count query");
         final ArrayList<String> outArray = new ArrayList<String>();
         String rq = "" +
@@ -402,6 +430,7 @@ public class DataService {
                 "       wos:number ?number ;\n" +
                 "       wos:year ?year ;\n" +
                 "       vivo:relatedBy ?org .\n" +
+                getYearFilter(startYear, endYear) +
                 "}\n" +
                 "ORDER BY DESC(?year)";
         ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
@@ -412,16 +441,19 @@ public class DataService {
         return this.storeUtils.getFromStoreJSON(query);
     }
 
-    private ArrayList getTopCategories(final String orgUri) {
+    private ArrayList getTopCategories(final String orgUri, Integer startYear, 
+            Integer endYear) {
         log.debug("Running top category query");
         String rq = "select ?cat ?name ?number\n" +
                 "where {\n" +
                 "  ?count a wos:InCitesTopCategory ;\n" +
                 "         wos:number ?number ;\n" +
+                "         wos:year ?year ;\n" +
                 "         vivo:relates ?org ;\n" +
                 "         vivo:relates ?cat .\n" +
                 "  ?cat a wos:Category ;\n" +
                 "       rdfs:label ?name .\n" +
+                getYearFilter(startYear, endYear) +
                 "}\n" +
                 "ORDER BY DESC(?number)";
         ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
@@ -432,7 +464,8 @@ public class DataService {
         return this.storeUtils.getFromStoreJSON(query);
     }
 
-    private ArrayList getRelatedPubCategories(String orgUri) {
+    private ArrayList getRelatedPubCategories(String orgUri, 
+            Integer startYear, Integer endYear) {
         log.debug("Running org category query");
         String rq = "" +
                 "SELECT ?category (SAMPLE(?label) as ?name) (COUNT(distinct ?pub) as ?number)\n" +
@@ -444,6 +477,8 @@ public class DataService {
                 "?pub a wos:Publication ; \n" +
                 "    vivo:hasPublicationVenue ?venue ; \n" +
                 "    wos:hasCategory ?category . \n" +
+                getYearDtv(startYear, endYear) +
+                getYearFilter(startYear, endYear) +
                 "?category rdfs:label ?label . \n" +
                 "}\n" +
                 "GROUP BY ?category ?label\n" +
@@ -455,7 +490,7 @@ public class DataService {
         return this.storeUtils.getFromStoreJSON(query);
     }
 
-    private ArrayList getCoPubsByDepartment(String orgUri) {
+    private ArrayList getCoPubsByDepartment(String orgUri, Integer startYear, Integer endYear) {
         log.debug("Running copub by department query");
         String rq = "" +
                 "SELECT DISTINCT ?dtuSubOrg ?dtuSubOrgName ?otherOrgs (COUNT(DISTINCT ?pub) as ?number)\n" +
@@ -477,6 +512,8 @@ public class DataService {
                 "\t\t\t\twos:subOrganizationName ?subOrgName .\n" +
                 "\t\t\t?pub a wos:Publication ;\n" +
                 "\t\t\t\tvivo:relatedBy ?address, ?dtuAddress .\n" +
+                getYearDtv(startYear, endYear) +
+                getYearFilter(startYear, endYear) +
                 "\t\t}\n" +
                 "\t\tGROUP BY ?pub\n" +
                 "\t}\n" +
@@ -537,9 +574,17 @@ public class DataService {
     }
 
 
-    private Model deptModel(String externalOrgUri) {
+    private Model deptModel(String externalOrgUri, Integer startYear, Integer endYear) {
         String rq = readQuery("coPubByDept/vds/summaryModel.rq");
         ParameterizedSparqlString ps = this.storeUtils.getQuery(rq);
+        if(startYear == null) {
+            startYear = 1;
+        }
+        if(endYear == null) {
+            endYear = Integer.MAX_VALUE;
+        }
+        ps.setLiteral("startYear", startYear);
+        ps.setLiteral("endYear", endYear);
         ps.setIri("externalOrg", externalOrgUri);
         String processedRq =  ps.toString();
         log.debug("Dept model query:\n " + processedRq);
