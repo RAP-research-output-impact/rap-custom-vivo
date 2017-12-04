@@ -5,3 +5,5 @@ custom-vivo/home/target/
 .classpath
 .project
 custom-vivo/settings-local.xml
+**/arch/
+custom-vivo/webapp/src/main/webapp/WEB-INF/resources

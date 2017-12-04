@@ -1,0 +1,430 @@
+/* ------------------------------------------------->  */
+/* HOMEPAGE AND INTERIOR PAGES STYLES -------------->  */
+/* ------------------------------------------------->  */
+
+/* HEADER ------>  */
+#branding {
+    position: relative;
+    width: 100%;
+    height: 114px;
+    margin: 0 auto;
+}
+/* BRANDING ------>  */
+h1.vivo-logo {
+    position: absolute;
+    width: 254px;
+    height: 66px;
+    top: 28px;
+    left: 10px;
+    background: url(../images/VIVO-logo.png) 0 0 no-repeat;
+}
+h1.vivo-logo a {
+    display: block;
+    width: 386px;
+    height: 59px;
+}
+/* HEADER NAV------>  */
+ul#header-nav {
+    float: right;
+    list-style: none;
+    height: 30px;
+    padding-top: 10px;
+    margin-right: 13px;
+}
+ul#header-nav li {
+    float: left;
+    display: block;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-right: 1px solid #cccccc;
+    font-size: .7em;
+    color: #aaaaaa;
+}
+ul#header-nav li:last-child {
+    padding-left: 1px;
+    padding-right: 0;
+    border-right: none;
+}
+ul#header-nav a:hover,
+ul#header-nav a:active {
+    text-decoration: none;
+    color: #666666;
+}
+ul#header-nav a.log-out {
+    padding-left: 10px;
+}
+/* WRAPPER CONTENT------>  */
+#wrapper-content {
+    clear: both;
+/*  width: 930px; */
+    margin: 0 auto;
+    background: #fff;
+    min-height: 710px;
+    padding: 20px;
+    padding-top: 25px;
+}
+#flash-message {
+    border: 1px dotted #E2C822;
+    background-color: #FFF9D7;
+    padding: .5em;  
+    margin-bottom: 10px;
+    margin-top: 14px;
+}
+#welcome-message {
+    border: 1px dotted #E2C822;
+    background-color: #FFF9D7;
+    padding: .25em;
+    margin-bottom: 8px;
+}
+#welcome-msg-container {
+    margin-bottom: 8px;
+    margin-top: 14px;
+    margin-right:-10px;
+    height:34px;
+}
+/* SEARCH HOME------>  */ 
+ul#header-nav a {
+   color: #aaaaaa; 
+}
+/* FOOTER------>  */
+footer {
+    clear: both;
+    width: 100%;
+    height: 60px;
+    margin: 0 auto;
+    font-size: .7em;
+    color: #4e5051;
+    background-color: #fff;
+}
+/* ------------------------------------------------->  */
+/* MENU PAGES -------------------------------------->  */
+/* ------------------------------------------------->  */
+
+/* VISUAL GRAPH------>  */
+.property-group,
+#menupage-intro {
+    width: 100%;
+    background: #fff;
+}
+/* PROPERTY GROUP MENU ------>  */
+#property-group-menu {
+    width: 100%;
+    background: #f1f2ee;
+}
+article.property {
+    width: 100%;
+    margin: 0;
+}
+/* ------------------------------------------------->  */
+/* DTU SPECIAL  ------------------------------------>  */
+/* ------------------------------------------------->  */
+.dtu-redtop {
+    width: 100%;
+    height: 20px;
+    background-color: #b50404;
+}
+.dtu-title {
+    width: 100%;
+    height: 32px;
+    text-align: center;
+    margin-top: 50px;
+    vertical-align: bottom;
+    font-size: 18px;
+}
+.dtu-redbot {
+    width: 100%;
+    height: 60px;
+    background-color: #b50404;
+}
+.dtu-redbot-1 {
+    width: 15%;
+    text-align: left;
+    vertical-align: middle;
+    color: #eeeeee;
+    margin: 5px;
+}
+.dtu-redbot-2 {
+    width: 70%;
+    text-align: center;
+    vertical-align: middle;
+    color: #eeeeee;
+    font-size: 14px;
+    margin: 5px;
+}
+.dtu-redbot-3 {
+    width: 15%;
+    text-align: right;
+    vertical-align: middle;
+    color: #eeeeee;
+    padding: 5px;
+}
+td.dtu-redbot-3 a:link,
+td.dtu-redbot-3 a:visited {
+    color: #eeeeee;
+    text-decoration: none;
+    font-size: 10px;
+}
+td.dtu-redbot-3 a:hover {
+    color: #cccccc;
+    font-size: 10px;
+}
+.dtu-menu {
+    background-color: black;
+    text-align: center;
+    vertical-align: center;
+}
+td.dtu-menu a:link,
+td.dtu-menu a:visited {
+    margin-top: 8px;
+    color: #eeeeee;
+    text-decoration: none;
+    size: 14px;
+}
+td.dtu-menu a:hover {
+    margin-top: 8px;
+    color: #cccccc;
+    font-size: 14px;
+}
+div.developer {
+ /* width: 950px; */
+    margin: 0 auto;
+    margin-top: 34px;
+}
+div#dtu-home {
+    background: url(../images/home-background.jpg) center 0 no-repeat; 
+    height: 689px;
+    padding: 0px;
+    margin: 0px;
+}
+#wrapper-content-home {
+    clear: both;
+    margin: 0 auto;
+    background: #fff;
+    width: 100%;
+    padding: 0px;
+    min-height: 689px;
+}
+table#home-box {
+    padding-top: 360px;
+    padding-left: 30px;
+    border-collapse: separate;
+}
+table#home-box td {
+    padding: 15px;
+}
+#home-box-title {
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+}
+.home-box-data {
+    background: white;
+    min-height: 100px;
+    padding: 5px;
+}
+.home-box-data-num {
+    float: right;
+    padding-right: 10px;
+    color: black;
+    font-size: 12px;
+    text-decoration: none;
+}
+.home-box-logo {
+    margin: 0px;
+    padding: 0px;
+    height: 128px;
+}
+.home-box-heading,
+.home-box-heading a:link,
+.home-box-heading a:visited {
+    color: #b50404;
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: none;
+}
+.home-box-data a {
+    color: black;
+    font-size: 12px;
+    text-decoration: none;
+}
+table.searchTOC {
+    margin-left: 1px;
+    margin-right: 6px;
+    width: 300px;
+    float: left;
+    padding: 2px;
+    background: #e2e2e0;
+}
+.searchTOC-box {
+    background: #e2e2e0;
+    padding: 5px;
+    width: 300px;
+    height: 100%;
+    float: left;
+    margin-top: 40px;
+}
+table.searchTOC td {
+    padding: 2px;
+    background: #e2e2e0;
+}
+.searchTOC h4.hitCount {
+    color: black;
+    background: #e2e2e0;
+    text-align: center;
+}
+.searchTOC-header {
+    color: #666666;
+    background: #e2e2e0;
+    text-align: center;
+    font-size: 12px;
+}
+.searchTOC h4 {    
+    color: black;
+    padding: .2em 0 .2em 0;
+    text-align: left;
+}
+.searchTOC ul {
+    background: #e2e2e0;
+    padding: 0;
+    margin-top: 1px;
+    text-align: left;
+}
+.searchTOC ul li {
+    background: #e2e2e0;
+    border-bottom: none;
+    display: block;
+    font-size: 12px;
+    margin-left: 10px;
+    padding: 0;
+    width: 288px;
+}
+.searchTOC ul li:hover {
+    background-color:#f7f9f9;
+}
+.searchTOC ul li:last-child {
+    border-bottom: none
+}
+.searchTOC ul a {
+    display: inline;
+}
+.searchTOC ul span {
+	float:right;
+	padding-right: 10px;
+	color:gray;
+	font-size:smaller;
+}
+.search-facets-toggle {
+    width: 15px;
+    float: left;
+    cursor: pointer;
+}
+.search-facets-title {
+    color: black;
+    background: #e2e2e0;
+    cursor: pointer;
+}
+.search-facets {
+    color: black;
+    background: #e2e2e0;
+}
+
+.limit-head,
+.limit-head a:link,
+.limit-head a:visited {
+    color: #b50404;
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: none;
+}
+.searchTOC li.limit-sub {
+    font-size: 12px;
+}
+.limit-sub a:link,
+.limit-sub a:visited {
+    color: black;
+    font-size: 12px;
+    text-decoration: none;
+}
+#share-contact {
+    width: 190px;
+}
+
+.wos-cited {
+ font-size: 12px;
+}
+
+.wos-badge {
+  margin: 0 5px 5px 0;
+  background-color: #ff8100;
+  font-size: 16px;
+  display: inline-block;
+  min-width: 10px;
+  padding: 3px 7px;
+  color: #fff;
+  vertical-align: middle;
+  border-radius: 10px;
+}
+.wos-badge a {
+ text-decoration: none;
+ color: #fff;
+}
+h2#relatedBy {
+    display: none;
+}
+div.wos-cited {
+    float: right;
+    padding-left: 15px;
+    padding-right: 15px;
+    vertical-align: middle;
+}
+.wos-badge {
+    display: inline-block;
+    vertical-align: middle;
+}
+.wos-text {
+    display: inline-block;
+    vertical-align: middle;
+}
+#info-message div {
+    font-size: 24px;
+    vertical-align: middle;
+    line-height: 120px;
+    font-weight: bold;
+}
+#info-message img {
+    vertical-align: middle;
+    margin-left: 20px;
+}
+#info-message-spacer {
+    height: 300px;
+}
+.hbox-container {
+    border-spacing: 20px;
+    border-collapse: separate;
+}
+.hbox {
+    position: relative;
+    width: 600px;
+    height: 280px;
+    text-align: left;
+    border: 1;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #222222;
+    background-color: white;
+}
+.hbox-title {
+    font-size: 16px;
+    font-weight: bold;
+}
+input.search-homepage {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #222222;
+}
+input.search-homepage-facet {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #222222;
+    width: 351px;
+}

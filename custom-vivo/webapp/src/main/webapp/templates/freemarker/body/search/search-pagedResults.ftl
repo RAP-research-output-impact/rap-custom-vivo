@@ -2,99 +2,157 @@
 
 <#-- Template for displaying paged search results -->
 
-<h2 class="searchResultsHeader">
-<#escape x as x?html>
-    ${i18n().search_results_for} '${querytext}'
-    <#if classGroupName?has_content>${i18n().limited_to_type} '${classGroupName}'</#if>
-    <#if typeName?has_content>${i18n().limited_to_type} '${typeName}'</#if>
-</#escape>
-<script type="text/javascript">
-	var url = window.location.toString();	
-	if (url.indexOf("?") == -1){
-		var queryText = 'querytext=${querytext}';
-	} else {
-		var urlArray = url.split("?");
-		var queryText = urlArray[1];
-	}
-	
-	var urlsBase = '${urls.base}';
-</script>
+<script src="${urls.theme}/js/jquery.corner.js"></script>
 
-	<img id="downloadIcon" src="images/download-icon.png" alt="Download Results" title="Download Results" />
-<#-- <span id="downloadResults" style="float:left"></span>  -->
-</h2>
-
-<span id="searchHelp"><a href="${urls.base}/searchHelp" title="${i18n().search_help}">${i18n().not_expected_results}</a></span>
 <div class="contentsBrowseGroup">
-
     <#-- Refinement links -->
-
-    <#if facets?has_content>
-        <div class="searchTOC" style="width:200px;">
-	    <#list facets as facet>
-                <h4>${facet.publicName}</h4>
-                <ul style="width:200px; max-height: 30ex; overflow-y: auto; overflow-x: hidden;">           
-                <#list facet.categories as category>
-                    <li><a href="${category.url}" title="${category.text}">${category.text}</a><span>(${category.count})</span></li>
-                </#list>
-                </ul>
-	    </#list>
-        </div>
-    </#if>
-
-    <#if classGroupLinks?has_content>
-        <div class="searchTOC">
-            <h4>${i18n().display_only}</h4>           
-            <ul>           
-            <#list classGroupLinks as link>
-                <li><a href="${link.url}" title="${i18n().class_group_link}">${link.text}</a><span>(${link.count})</span></li>
-            </#list>
-            </ul>           
-        </div>
-    </#if>
-
-    <#if classLinks?has_content>
-        <div class="searchTOC">
-            <#if classGroupName?has_content>
-                <h4>${i18n().limit} ${classGroupName} to</h4>
-            <#else>
-                <h4>${i18n().limit_to}</h4>
+    <div class="searchTOC-box">
+        <table border="1" class="searchTOC">
+            <tr>
+                <td>
+                    <h4 class="hitCount">Results: ${hitCount}</h4>
+                    <hr width="80%"/>
+                    <div class="searchTOC-header">Use Facets to Refine Results</div>
+                </td>
+            </tr>
+            <#if classGroupLinks?has_content>
+                <tr class="search-facets-head">
+                    <td>
+                        <h4 class="search-facets-title"><div class="search-facets-toggle">+</div>Type</h4>
+                    </td>
+                </tr>
+                <tr class="search-facets" style="display: none;">
+                    <td>
+                        <ul class="search-facets">
+                        <#list classGroupLinks as link>
+                            <li><a href="${link.url}" title="${i18n().class_group_link}">${link.text}</a><span>(${link.count})</span></li>
+                        </#list>
+                        </ul>           
+                    </td>
+                </tr>
             </#if>
-            <ul>           
-            <#list classLinks as link>
-                <li><a href="${link.url}" title="${i18n().class_link}">${link.text}</a><span>(${link.count})</span></li>
-            </#list>
-            </ul>
-        </div>
-    </#if>
-
-    <#-- Search results -->
-    <ul class="searchhits">
-        <#list individuals as individual>
-            <li>                        
-            	<@shortView uri=individual.uri viewContext="search" />
-            </li>
-        </#list>
-    </ul>
-    
-
-    <#-- Paging controls -->
-    <#if (pagingLinks?size > 0)>
-        <div class="searchpages">
-            Pages: 
-            <#if prevPage??><a class="prev" href="${prevPage}" title="${i18n().previous}">${i18n().previous}</a></#if>
-            <#list pagingLinks as link>
-                <#if link.url??>
-                    <a href="${link.url}" title="${i18n().page_link}">${link.text}</a>
+            <#if classLinks?has_content>
+                <tr class="search-facets-head">
+                    <td>
+                        <h4 class="search-facets-title"><div class="search-facets-toggle">+</div>Sub-Type</h4>
+                    </td>
+                </tr>
+                <tr class="search-facets" style="display: none;">
+                    <td>
+                        <ul class="search-facets">
+                            <#list classLinks as link>
+                                <li><a href="${link.url}" title="${i18n().class_link}">${link.text}</a><span>(${link.count})</span></li>
+                            </#list>
+                        </ul>
+                    </td>
+                </tr>
+            </#if>
+            <#if facets?has_content>
+                <#list facets as facet>
+                    <tr class="search-facets-head">
+                        <td style="align: left">
+                            <h4 class="search-facets-title"><div class="search-facets-toggle">+</div>${facet.publicName}</h4>
+                        </td>
+                    </tr>
+                    <tr class="search-facets" style="display: none;">
+                        <td>
+                            <ul>
+                                <#list facet.categories as category>
+                                    <li><a href="${category.url}" title="${category.text}">${category.text}</a><span>(${category.count})</span></li>
+                                </#list>
+                            </ul>
+                        </td>
+                    </tr>
+                </#list>
+            </#if>
+        </table>
+    </div>
+    <div id="search-form">
+        <form action="" method="GET">
+            <input type="text" name="querytext" value="${querytext}" />
+            <strong>AND</strong>
+            <select name="facetAsText">
+                <#if facetAsText?has_content>
+                    <#list facetsAsText as fat>
+                        <option value="${fat.fieldName}" <#if fat.fieldName == facetAsText>selected</#if>>${fat.publicName}</option>
+                    </#list>
                 <#else>
-                    <span>${link.text}</span> <#-- no link if current page -->
+                    <#list facetsAsText as fat>
+                        <option value="${fat.fieldName}">${fat.publicName}</option>
+                    </#list>
                 </#if>
+            </select>
+            <#if facetTextValue?has_content>
+                <input type="text" name="facetTextValue" value="${facetTextValue}"/>
+            <#else>
+                <input type="text" name="facetTextValue"/>
+            </#if>
+            <#if classGroupURI?has_content>
+                <input type="hidden" name="classgroup" value="${classGroupURI}" />
+            </#if>
+            <input type="submit" value="Go"/>
+        </form>
+        <!--
+        <span id="searchHelp" style="text-align: right;"><a href="${urls.base}/searchHelp" title="${i18n().search_help}">${i18n().not_expected_results}</a></span>
+        -->
+    </div>
+    <div style="width: 75%; float: right;">
+        <#list RAPQueryReduce as link>
+            <div class="qr-box">
+                <span class="qr-text">${link.text}</span>
+                <span class="qr-link" onClick="window.location.href='${link.url}';"><a href="${link.url}">X</a></span>
+            </div>
+        </#list>
+    </div>
+    <script>
+        var facetsOpen = 0;
+        $("div.searchTOC-box").corner();
+        $(".search-facets-head").click(function() {
+            if (facetsOpen) {
+                if (facetsOpen == this) {
+                    $(this).next("tr").hide();
+                    $(this).find(".search-facets-toggle").html('+');
+                    facetsOpen = 0;
+                } else {
+                    $(facetsOpen).next("tr").hide();
+                    $(facetsOpen).find(".search-facets-toggle").html('+');
+                    $(this).next("tr").show();
+                    $(this).find(".search-facets-toggle").html('-');
+                    facetsOpen = this;
+                }
+            } else {
+                $(this).next("tr").show();
+                $(this).find(".search-facets-toggle").html('-');
+                facetsOpen = this;
+            }
+        });
+    </script>
+    <#-- Search results -->
+    <div style="float: right; text-align: left; width: 75%;">
+        <ul class="searchhits">
+            <#list individuals as individual>
+                <li>                        
+                    <@shortView uri=individual.uri viewContext="search" />
+                </li>
             </#list>
-            <#if nextPage??><a class="next" href="${nextPage}" title="${i18n().next_capitalized}">${i18n().next_capitalized}</a></#if>
-        </div>
-    </#if>
+        </ul>
+        <#-- Paging controls -->
+        <#if (pagingLinks?size > 0)>
+            <div class="searchpages">
+                Pages: 
+                <#if prevPage??><a class="prev" href="${prevPage}" title="${i18n().previous}">${i18n().previous}</a></#if>
+                <#list pagingLinks as link>
+                    <#if link.url??>
+                        <a href="${link.url}" title="${i18n().page_link}">${link.text}</a>
+                    <#else>
+                        <span>${link.text}</span> <#-- no link if current page -->
+                    </#if>
+                </#list>
+                <#if nextPage??><a class="next" href="${nextPage}" title="${i18n().next_capitalized}">${i18n().next_capitalized}</a></#if>
+            </div>
+        </#if>
+    </div>
     <br />
-
     <#-- VIVO OpenSocial Extension by UCSF -->
     <#if openSocial??>
         <#if openSocial.visible>
@@ -119,7 +177,6 @@
             <div id="gadgets-search" class="gadgets-gadget-parent" style="display:inline-block"></div>
         </#if>
     </#if>
-
 </div> <!-- end contentsBrowseGroup -->
 
 ${stylesheets.add('<link rel="stylesheet" href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />',

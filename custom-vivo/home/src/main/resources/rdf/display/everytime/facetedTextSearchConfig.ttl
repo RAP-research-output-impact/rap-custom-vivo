@@ -9,7 +9,7 @@
     a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.SelectQueryDocumentModifier> ,
             <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.DocumentModifier> ;
     rdfs:label "Web of Science Category document modifier" ;
-    :hasTargetField "facetext_wos-category_ss" ;
+    :hasTargetField "facetext_wos-category_en" ;
     :hasTypeRestriction "http://purl.obolibrary.org/obo/IAO_0000030";
     :hasSelectQuery """
         PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> 
@@ -41,7 +41,7 @@
     a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.SelectQueryDocumentModifier> ,
             <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.DocumentModifier> ;
     rdfs:label "Document type document modifier" ;
-    :hasTargetField "facetext_document-type_ss" ;
+    :hasTargetField "facetext_document-type_en" ;
     :hasTypeRestriction "http://purl.obolibrary.org/obo/IAO_0000030";
     :hasSelectQuery """
         PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> 
@@ -71,7 +71,7 @@
     a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.SelectQueryDocumentModifier> ,
             <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.DocumentModifier> ;
     rdfs:label "Research area document modifier" ;
-    :hasTargetField "facetext_research-area_ss" ;
+    :hasTargetField "facetext_research-area_en" ;
     :hasTypeRestriction "http://purl.obolibrary.org/obo/IAO_0000030";
     :hasSelectQuery """
         PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> 
@@ -103,7 +103,7 @@
     a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.SelectQueryDocumentModifier> ,
             <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.DocumentModifier> ;
     rdfs:label "Publication year document modifier" ;
-    :hasTargetField "facetext_publication-year_ss" ;
+    :hasTargetField "facetext_publication-year_en" ;
     :hasTypeRestriction "http://purl.obolibrary.org/obo/IAO_0000030";
     :hasSelectQuery """
 	PREFIX vivo: <http://vivoweb.org/ontology/core#>
@@ -119,7 +119,7 @@
     a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.SelectQueryDocumentModifier> ,
             <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.DocumentModifier> ;
     rdfs:label "Organization enhanced document modifier" ;
-    :hasTargetField "facetext_organization-enhanced_ss" ;
+    :hasTargetField "facetext_organization-enhanced_en" ;
     :hasTypeRestriction "http://purl.obolibrary.org/obo/IAO_0000030";
     :hasSelectQuery """
         PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> 
@@ -161,7 +161,7 @@
     a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.SelectQueryDocumentModifier> ,
             <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.DocumentModifier> ;
     rdfs:label "Journal document modifier" ;
-    :hasTargetField "facetext_journal_ss" ;
+    :hasTargetField "facetext_journal_en" ;
     :hasTypeRestriction "http://purl.obolibrary.org/obo/IAO_0000030";
     :hasSelectQuery """
         PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> 
@@ -195,7 +195,7 @@
     a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.SelectQueryDocumentModifier> ,
             <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.DocumentModifier> ;
     rdfs:label "Conference document modifier" ;
-    :hasTargetField "facetext_conference_ss" ;
+    :hasTargetField "facetext_conference_en" ;
     :hasTypeRestriction "http://purl.obolibrary.org/obo/IAO_0000030";
     :hasSelectQuery """
         PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> 
@@ -231,7 +231,7 @@
     a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.SelectQueryDocumentModifier> ,
             <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.DocumentModifier> ;
     rdfs:label "Country document modifier" ;
-    :hasTargetField "facetext_country_ss" ;
+    :hasTargetField "facetext_country_en" ;
     :hasTypeRestriction "http://purl.obolibrary.org/obo/IAO_0000030";
     :hasSelectQuery """
         PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> 
@@ -275,7 +275,7 @@
     a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.SelectQueryDocumentModifier> ,
             <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.DocumentModifier> ;
     rdfs:label "Funding agency document modifier" ;
-    :hasTargetField "facetext_funding-agency_ss" ;
+    :hasTargetField "facetext_funding-agency_en" ;
     :hasTypeRestriction "http://purl.obolibrary.org/obo/IAO_0000030";
     :hasSelectQuery """
         PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> 

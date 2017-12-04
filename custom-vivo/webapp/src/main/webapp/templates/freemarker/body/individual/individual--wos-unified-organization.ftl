@@ -18,6 +18,7 @@ var base = "${urls.base}";
 var vds = base + '/vds/report/org/' + individualLocalName;
 var vdsOrgs = base + '/vds/report/org/' + individualLocalName + "/orgs";
 var byDeptUrl = base + '/vds/report/org/' + individualLocalName + "/by-dept";
+info_message("Loading Co-publication report");
 loadPubInfo(vds, collabSummary);
 $('#overview').addClass('spinner');
 addDateSelector();
@@ -30,6 +31,16 @@ function addDateSelector() {
            loadPubInfoByStartYear(vds, this.value, collabSummary);
     }, false);
 
+}
+
+function info_message(msg) {
+    $("section#individual-info").append("<div id=\"info-message\"><div>" + msg + "<img src=\"${urls.theme}/images/loading.gif\"/></div>" +
+                                        "<div id=\"info-message-spacer\"></div><div id=\"info-message-spacer\"></div></div>");
+}
+
+function info_message_reset() {
+    $("div#info-message").html ("");
+    $("section#individual-info").append("<div id=\"info-message-spacer\"></div>");
 }
 
 function collabSummary(response, startYear) {
@@ -77,6 +88,7 @@ function byDeptReport(response) {
     if (response.departments.length > 0) {
         doDepartmentTable(response.departments, response.name);
     }
+    info_message_reset();
 }
 
 
@@ -111,10 +123,10 @@ function doSummaryTable(response) {
         var dtuImpact = null ;
     }
     html += "<tr><th></th><th>" + response.summary.name + "</th><th>Technical University of Denmark</th></tr>";
-    html += "<tr><td>Publications</td><td>" + orgTotal + "</td><td>" + dtuTotal + "</td>";
-    html += "<tr><td>Citations</td><td>" + orgTotalCites + "</td><td>" + dtuTotalCites + "</td>";
+    html += "<tr><td class=\"rep-label\">Publications</td><td class=\"rep-num\">" + orgTotal + "</td><td class=\"rep-num\">" + dtuTotal + "</td>";
+    html += "<tr><td class=\"rep-label\">Citations</td><td class=\"rep-num\">" + orgTotalCites + "</td><td class=\"rep-num\">" + dtuTotalCites + "</td>";
     //Impact
-    html += "<tr><td>Impact</td><td>" + orgImpact + "</td><td>" + dtuImpact + "</td>";
+    html += "<tr><td class=\"rep-label\">Impact</td><td class=\"rep-num\">" + orgImpact + "</td><td class=\"rep-num\">" + dtuImpact + "</td>";
 
     var closeHtml = "</table></div>";
     html += closeHtml;
@@ -135,7 +147,7 @@ function doTopCategoryTable(response) {
 
     $.each( response.top_categories, function( key, value ) {
         //console.log(value);
-        var row = "<tr><td>" + value.name + "</td><td>" + value.number + "</td></tr>";
+        var row = "<tr><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + value.number + "</td></tr>";
         html += row;
     });
     var closeHtml = "</table></div>";
@@ -160,7 +172,7 @@ function doPubCategoryTable(totals) {
     $.each( totals.slice(0, 10), function( key, value ) {
         //console.log(value);
         var coPubLink = "<a href=\"" + base + "/copubs-by-category/" + value.category.split("/")[4] + "?collab=" + individualLocalName + "\" target=\"copubcategory\">" +  value.number + "</a>";
-        var row = "<tr><td>" + value.name + "</td><td>" + coPubLink + "</td></tr>";
+        var row = "<tr><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
         html += row;
     });
     html += closeHtml;
@@ -191,14 +203,14 @@ function doDepartmentTable(totals, name) {
             link = "<a href=\"" + base + "/individual?uri=" + value.org + "\">" + value.name + "</a>";
             var coPubLink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + "\" target=\"copubdept\">" +  value.num + "</a>";
             //link = value.name;
-            var row = "<tr class=\"copubdept-head\"><td>";
+            var row = "<tr class=\"copubdept-head\"><td class=\"rep-label\">";
             row += value.name + "</td><td class=\"dtu-dept-num\">" + coPubLink + "</td><td><a class=\"view-dept\">Show details</a></td></tr>"
             html += row
         }
         $.each( value.sub_orgs, function( k2, subOrg ) {
             var row = "<tr class=\"copubdept-child\"><td>";
             var clink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + "&collabSub=" + subOrg.uri.split("/")[4] + "&collabSubName=" + encodeURIComponent(subOrg.name) + "\" target=\"copubdept\">" +  subOrg.total + "</a>";
-            row +=  "</td><td>" + clink + "</td><td>" + subOrg.name + "</td></tr>";
+            row +=  "</td><td class=\"rep-num\">" + clink + "</td><td>" + subOrg.name + "</td></tr>";
             html += row;
         });
         last = value.name;
@@ -223,7 +235,7 @@ function doPubCountTable(totals) {
     var closeHtml = "</table></div>";
     $.each( totals, function( key, value ) {
         //console.log(value);
-        var row = "<tr><td>" + value.year + "</td><td>" + value.number + "</td></tr>";
+        var row = "<tr><td class=\"rep-label\">" + value.year + "</td><td class=\"rep-num\">" + value.number + "</td></tr>";
         html += row;
     });
     html += closeHtml;
@@ -235,7 +247,6 @@ function loadPubInfo(url, callback) {
 }
 
 function loadPubInfoByStartYear(url, startYear, callback) {
-
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url );
     xhr.onload = function() {
@@ -265,7 +276,7 @@ document.addEventListener('click', function (e) {
         $(e.target).parents('tr').nextUntil('.copubdept-head').toggle();
         label = $(e.target);
         if(label.html()=="Show details"){
-            label.html('Hide detals');
+            label.html('Hide details');
         }else{
             label.html('Show details');
         }

@@ -1,11 +1,5 @@
 CONSTRUCT {
     ?pub a wos:Publication ;
-        rdfs:label ?title ;
-        tmp:pubDate ?date ;
-        wos:wosId ?wosId ;
-        wos:referenceCount ?refCount ;
-        wos:citationCount ?citeCount ;
-        bibo:doi ?doi ;
         tmp:relates ?org, ?subOrg, ?authorship, ?authorship2 .
     ?subOrg a tmp:SubOrg ;
         rdfs:label ?subOrgName .
@@ -37,15 +31,5 @@ WHERE {
     ?subOrg a wos:SubOrganization ;
         wos:subOrganizationName ?subOrgName ;
         vivo:relatedBy ?address2 .
-    ?pub a wos:Publication ;
-        rdfs:label ?title ;
-        vivo:dateTimeValue ?dtv ;
-        vivo:relatedBy ?address, ?address2 .
-    ?dtv vivo:dateTime ?date .
-    OPTIONAL {
-        ?pub wos:wosId ?wosId ;
-            wos:referenceCount ?refCount ;
-            wos:citationCount ?citeCount .
-    }
-    OPTIONAL { ?pub bibo:doi ?doi }
+    ?pub a wos:Publication .
  }
