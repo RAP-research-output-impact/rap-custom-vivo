@@ -27,20 +27,20 @@ function addDateSelector() {
     var startYearSelectorHtml = "<p>Start year <select id=\"startYear\" name=\"startYear\"></select></p>";
     $("section#individual-info").append(startYearSelectorHtml);
     document.getElementById("startYear").addEventListener('change', function() {
-           alert(this.value);
+           $('#overview').addClass('spinner');
            loadPubInfoByStartYear(vds, this.value, collabSummary);
     }, false);
 
 }
 
 function info_message(msg) {
-    $("section#individual-info").append("<div id=\"info-message\"><div>" + msg + "<img src=\"${urls.theme}/images/loading.gif\"/></div>" +
+    $("#collab-summary-container").append("<div id=\"info-message\"><div>" + msg + "<img src=\"${urls.theme}/images/loading.gif\"/></div>" +
                                         "<div id=\"info-message-spacer\"></div><div id=\"info-message-spacer\"></div></div>");
 }
 
 function info_message_reset() {
     $("div#info-message").html ("");
-    $("section#individual-info").append("<div id=\"info-message-spacer\"></div>");
+    $("#collab-summary-container").append("<div id=\"info-message-spacer\"></div>");
 }
 
 function collabSummary(response, startYear) {
@@ -60,18 +60,18 @@ function collabSummary(response, startYear) {
             $("#startYear").append("<option value=\"" + yearRange[i] + "\");\">" + yearRange[i] + "</option>");
         }
     }
-    $("collab-summary").remove();
-
+    $("#collab-summary-container").remove();
+    $("section#individual-info").append("<div id=\"collab-summary-container\"></div>");
     if (individualLocalName != "org-technical-university-of-denmark") {
         var msg = "<h2 id=\"collab-summary\">Co-publications: " + response.summary.coPubTotal + " total ";
         if (response.categories.length > 0) {
             msg += "in " + response.categories.length + " categories ";
         }
         msg += "from " + yearRange[0] + " to " + yearRange.slice(-1)[0] + ".<a class=\"report-export\" href=\"#\">Export</a></h2>";
-        $("section#individual-info").append(msg);
+        $("#collab-summary-container").append(msg);
         doSummaryTable(response)
         if (response.org_totals.length != 0) {
-            doPubCountTable(response.org_totals);
+            doPubCountTable(response.org_totals, startYear);
         }
         if (response.top_categories.length != 0) {
             doTopCategoryTable(response);
@@ -94,7 +94,7 @@ function byDeptReport(response) {
 
 function doCategories(response) {
 	console.log(response.categories);
-	$("ul#collab-summary").append("<li>Co-publication categories: " + response.categories.length + "</li>");
+	$("#collab-summary-container").append("<li>Co-publication categories: " + response.categories.length + "</li>");
 }
 
 
@@ -130,7 +130,7 @@ function doSummaryTable(response) {
 
     var closeHtml = "</table></div>";
     html += closeHtml;
-    $("#individual-info").append(html);
+    $("#collab-summary-container").append(html);
     $('#overview').removeClass('spinner');
 }
 
@@ -152,7 +152,7 @@ function doTopCategoryTable(response) {
     });
     var closeHtml = "</table></div>";
     html += closeHtml;
-    $("#individual-info").append(html);
+    $("#collab-summary-container").append(html);
 }
 
 function doPubCategoryTable(totals) {
@@ -176,7 +176,7 @@ function doPubCategoryTable(totals) {
         html += row;
     });
     html += closeHtml;
-    $("#individual-info").append(html);
+    $("#collab-summary-container").append(html);
 }
 
 
@@ -216,11 +216,10 @@ function doDepartmentTable(totals, name) {
         last = value.name;
     });
     html += closeHtml;
-    $("#individual-info").append(html);
+    $("#collab-summary-container").append(html);
 }
 
-function doPubCountTable(totals) {
-    $("pubCountTable").remove();
+function doPubCountTable(totals, startYear) {
     var html = `
     <div id="pubCountTable">
     <hr/>
@@ -235,11 +234,13 @@ function doPubCountTable(totals) {
     var closeHtml = "</table></div>";
     $.each( totals, function( key, value ) {
         //console.log(value);
-        var row = "<tr><td class=\"rep-label\">" + value.year + "</td><td class=\"rep-num\">" + value.number + "</td></tr>";
-        html += row;
+	if(startYear <= value.year) {
+            var row = "<tr><td class=\"rep-label\">" + value.year + "</td><td class=\"rep-num\">" + value.number + "</td></tr>";
+            html += row;
+	}
     });
     html += closeHtml;
-    $("#individual-info").append(html);
+    $("#collab-summary-container").append(html);
 }
 
 function loadPubInfo(url, callback) {
