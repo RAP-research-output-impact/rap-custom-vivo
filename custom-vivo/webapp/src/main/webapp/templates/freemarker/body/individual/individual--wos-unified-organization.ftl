@@ -249,6 +249,9 @@ function loadPubInfo(url, callback) {
 
 function loadPubInfoByStartYear(url, startYear, callback) {
     var xhr = new XMLHttpRequest();
+    if(startYear > 0)  {
+        url += "/" + startYear;
+    }
     xhr.open('GET', url );
     xhr.onload = function() {
         if (xhr.status === 200) {

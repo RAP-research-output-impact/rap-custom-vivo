@@ -40,12 +40,49 @@ public class DataService {
     private static String namespace;
     private StoreUtils storeUtils;
 
+    
     @Path("/org/{vid}")
     @GET
     @Produces("application/json")
     public Response getOrg(@PathParam("vid") String vid, @Context Request request) {
+        return getOrg(vid, null, null, request);
+    }
+    
+    @Path("/org/{vid}/{startYear}")
+    @GET
+    @Produces("application/json")
+    public Response getOrg(@PathParam("vid") String vid, 
+            @PathParam("startYear") String startYear,
+            @Context Request request) {
+        return getOrg(vid, startYear, null, request);
+    }
+    
+    @Path("/org/{vid}/{startYear}/{endYear}")
+    @GET
+    @Produces("application/json")
+    public Response getOrg(@PathParam("vid") String vid, 
+            @PathParam("startYear") String startYear,
+            @PathParam("endYear") String endYear,
+            @Context Request request) {
         VitroRequest vreq = new VitroRequest(httpRequest);
 
+        Integer startYearInt = null;
+        if(startYear != null) {
+            try {
+                startYearInt = Integer.parseInt(startYear, 10);
+            } catch (NumberFormatException nfe) {
+                log.trace(nfe, nfe);
+            }
+        }
+        Integer endYearInt = null;
+        if(endYear != null) {
+            try {
+                endYearInt = Integer.parseInt(endYear, 10);
+            } catch (NumberFormatException nfe) {
+                log.trace(nfe, nfe);
+            }
+        }
+        
         if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
             return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
         }
@@ -71,7 +108,7 @@ public class DataService {
         if (builder == null) {
             JSONObject jo = new JSONObject();
             try {
-                jo.put("summary", getSummary(uri));
+                jo.put("summary", getSummary(uri, startYearInt, endYearInt));
                 jo.put("categories", getRelatedPubCategories(uri));
                 jo.put("org_totals", getSummaryPubCount(uri));
                 jo.put("top_categories", getTopCategories(uri));
@@ -249,6 +286,23 @@ public class DataService {
     }
 
     private Object getSummary(String orgUri) {
+        return getSummary(orgUri, null, null);
+    }
+    
+    private Object getSummary(String orgUri, Integer startYear, Integer endYear) {
+        String yearFilter = "";
+        if(startYear != null) {
+            yearFilter += "   FILTER(" + startYear + " <= ?year) \n";                    
+        }
+        if(endYear != null) {
+            yearFilter += "   FILTER(" + endYear + " >= ?year) \n";                    
+        }
+        String yearDtv = "";
+        if(startYear != null || endYear != null) {
+            yearDtv = "   ?pub vivo:dateTimeValue ?dtv . \n" +
+                      "   ?pub vivo:dateTime ?dateTime .\n " +
+                      "   BIND(xsd:integer(substr(str(?dateTime), 1, 4)) AS ?year)";
+        }
         String rq = "SELECT \n" +
                 "      ?name\n" +
                 "      ?overview\n" +
@@ -271,6 +325,8 @@ public class DataService {
                 "   ?address a wos:Address ;\n" +
                 "       vivo:relates ?pub .\n" +
                 "   ?pub a wos:Publication .\n" +
+                yearDtv +
+                yearFilter +
                 "   }\n" +
                 "  }\n" +
                 "  {\n" +
@@ -282,6 +338,8 @@ public class DataService {
                 "         vivo:relates ?pub .\n" +
                 "      ?pub a wos:Publication ;\n" +
                 "           wos:hasCategory ?cat .\n" +
+                yearDtv +
+                yearFilter +
                 "      }\n" +
                 "  }\n" +
                 "  {\n" +
@@ -289,7 +347,9 @@ public class DataService {
                 "      where {\n" +
                 "         ?tc a wos:InCitesPubPerYear ;\n" +
                 "             wos:number ?number ;\n" +
+                "             wos:year ?year ;\n" +
                 "             vivo:relatedBy ?org .\n" +
+                yearFilter +
                 "   \t  }\n" +
                 "  }\n" +
                 "  {\n" +
@@ -297,7 +357,9 @@ public class DataService {
                 "    where {\n" +
                 "       ?tc a wos:InCitesCitesPerYear ;\n" +
                 "           wos:number ?number ;\n" +
+                "           wos:year ?year ;\n" +
                 "           vivo:relatedBy ?org .\n" +
+                yearFilter +
                 "   }\n" +
                 "  }\n" +
                 "  {\n" +
@@ -305,7 +367,9 @@ public class DataService {
                 "      where {\n" +
                 "         ?tc a wos:InCitesPubPerYear ;\n" +
                 "             wos:number ?number ;\n" +
-                "             vivo:relatedBy d:org-technical-university-of-denmark .\n" +
+                "             wos:year ?year ;\n" +
+                 "             vivo:relatedBy d:org-technical-university-of-denmark .\n" +
+                 yearFilter +
                 "   \t  }\n" +
                 "  }\n" +
                 "  {\n" +
@@ -313,7 +377,9 @@ public class DataService {
                 "    where {\n" +
                 "       ?tc a wos:InCitesCitesPerYear ;\n" +
                 "           wos:number ?number ;\n" +
-                "           vivo:relatedBy d:org-technical-university-of-denmark .\n" +
+                "           wos:year ?year ;\n" + 
+                "           vivo:relatedBy d:org-technical-university-of-denmark .\n" + 
+                yearFilter +
                 "    }\n" +
                 "  }\n" +
                 "}";
