@@ -96,7 +96,7 @@
 <div class="pub-ids">
     <span class="counts">
         <#if refs?has_content>
-            References:&nbsp;<a href="http://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVersion=2&SrcApp=VIVO&SrcAuth=TRINTCEL&KeyUT=${wosId}&DestLinkType=FullRecord&DestApp=WOS_CPL"  title="View references in Web of Science" class="wos-badge" target="external">${refs}</a>
+            References:&nbsp;<a href="http://apps.webofknowledge.com/InterService.do?product=WOS&toPID=WOS&action=AllCitationService&isLinks=yes&highlighted_tab=WOS&last_prod=WOS&fromPID=WOS&srcDesc=RET2WOS&srcAlt=Back+to+Web+of+Science&UT=${wosId}&search_mode=CitedRefList&SID=D6oIIYbSLV2HqN3nOCS&parentProduct=WOS&recid=${wosId}&fromRightPanel=true&cacheurlFromRightClick=no" title="View references in Web of Science" class="wos-badge" target="external">${refs}</a>
         </#if>
         <#if cites?has_content>
             Citations:&nbsp;<a href="http://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVersion=2&SrcApp=VIVO&SrcAuth=TRINTCEL&KeyUT=${wosId}&DestLinkType=CitingArticles&DestApp=WOS_CPL" class="wos-badge" title="View citations in Web of Science" target="external">${cites}</a>

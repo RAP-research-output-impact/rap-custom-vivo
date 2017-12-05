@@ -18,7 +18,7 @@
     <#if pub.wosId?has_content>
         <div class="pub-ids">
             <span class="counts">
-                References:&nbsp;<a href="http://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVersion=2&amp;SrcApp=VIVO&amp;SrcAuth=TRINTCEL&amp;KeyUT=${pub.wosId}&amp;DestLinkType=FullRecord&amp;DestApp=WOS_CPL" title="View references in Web of Science" target="external">${pub.refCount}</a>
+                References:&nbsp;<a href="http://apps.webofknowledge.com/InterService.do?product=WOS&toPID=WOS&action=AllCitationService&isLinks=yes&highlighted_tab=WOS&last_prod=WOS&fromPID=WOS&srcDesc=RET2WOS&srcAlt=Back+to+Web+of+Science&UT=${pub.wosId}&search_mode=CitedRefList&SID=D6oIIYbSLV2HqN3nOCS&parentProduct=WOS&recid=${pub.wosId}&fromRightPanel=true&cacheurlFromRightClick=no" title="View references in Web of Science" target="external">${pub.refCount}</a>
                 Citations:&nbsp;<a href="http://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVersion=2&amp;SrcApp=VIVO&amp;SrcAuth=TRINTCEL&amp;KeyUT=${pub.wosId}&amp;DestLinkType=CitingArticles&amp;DestApp=WOS_CPL" title="View citations in Web of Science" target="external">${pub.citeCount}</a>
             </span>
         </div>
