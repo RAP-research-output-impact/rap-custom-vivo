@@ -28,9 +28,14 @@ function addDateSelector() {
     $("section#individual-info").append(startYearSelectorHtml);
     document.getElementById("startYear").addEventListener('change', function() {
            $('#overview').addClass('spinner');
-           loadPubInfoByStartYear(vds, this.value, collabSummary);
+           loadPubInfoByStartYear(vds, this.value, $("#endYear").val(), collabSummary);
     }, false);
-
+    var endYearSelectorHtml = "<p>End year <select id=\"endYear\" name=\"endYear\"></select></p>";
+    $("section#individual-info").append(endYearSelectorHtml);
+    document.getElementById("endYear").addEventListener('change', function() {
+           $('#overview').addClass('spinner');
+           loadPubInfoByStartYear(vds, $("#startYear").val(), this.value, collabSummary);
+    }, false);
 }
 
 function info_message(msg) {
@@ -43,7 +48,15 @@ function info_message_reset() {
     $("#collab-summary-container").append("<div id=\"info-message-spacer\"></div>");
 }
 
-function collabSummary(response, startYear) {
+function collabSummary(response, startYear, endYear) {
+    $("#collab-summary-container").remove();
+    $("section#individual-info").append("<div id=\"collab-summary-container\"></div>");
+    if (startYear > endYear) {
+        msg = "<h2>Please select an end year that is greater than or equal to the start year.</h2>";
+        $("#collab-summary-container").append(msg);
+        $('#overview').removeClass('spinner');
+	return;
+    }
     var yearRange = [];
     if (response.org_totals != []) {
         for(var i in response.org_totals) {
@@ -58,10 +71,10 @@ function collabSummary(response, startYear) {
     if(startYear < 0) {
         for(var i in yearRange) {
             $("#startYear").append("<option value=\"" + yearRange[i] + "\");\">" + yearRange[i] + "</option>");
+            $("#endYear").append("<option value=\"" + yearRange[i] + "\");\">" + yearRange[i] + "</option>");
         }
+	$("#endYear").val($("#endYear option:last-child").val());
     }
-    $("#collab-summary-container").remove();
-    $("section#individual-info").append("<div id=\"collab-summary-container\"></div>");
     if (individualLocalName != "org-technical-university-of-denmark") {
         var msg = "<h2 id=\"collab-summary\">Co-publications: " + response.summary.coPubTotal + " total ";
         if (response.categories.length > 0) {
@@ -71,7 +84,7 @@ function collabSummary(response, startYear) {
         $("#collab-summary-container").append(msg);
         doSummaryTable(response)
         if (response.org_totals.length != 0) {
-            doPubCountTable(response.org_totals, startYear);
+            doPubCountTable(response.org_totals);
         }
         if (response.top_categories.length != 0) {
             doTopCategoryTable(response);
@@ -79,12 +92,12 @@ function collabSummary(response, startYear) {
         if (response.categories.length > 0) {
             doPubCategoryTable(response.categories);
         }
-        loadPubInfoByStartYear(byDeptUrl, startYear, byDeptReport)
+        loadPubInfoByStartYear(byDeptUrl, startYear, endYear, byDeptReport)
     };
 }
 
 
-function byDeptReport(response, startYear) {
+function byDeptReport(response, startYear, endYear) {
     if (response.departments.length > 0) {
         doDepartmentTable(response.departments, response.name);
     }
@@ -234,29 +247,33 @@ function doPubCountTable(totals, startYear) {
     var closeHtml = "</table></div>";
     $.each( totals, function( key, value ) {
         //console.log(value);
-	if(startYear <= value.year) {
-            var row = "<tr><td class=\"rep-label\">" + value.year + "</td><td class=\"rep-num\">" + value.number + "</td></tr>";
-            html += row;
-	}
+        var row = "<tr><td class=\"rep-label\">" + value.year + "</td><td class=\"rep-num\">" + value.number + "</td></tr>";
+        html += row;
     });
     html += closeHtml;
     $("#collab-summary-container").append(html);
 }
 
 function loadPubInfo(url, callback) {
-    loadPubInfoByStartYear(url, -1, callback);
+    loadPubInfoByStartYear(url, -1, -1, callback);
 }
 
-function loadPubInfoByStartYear(url, startYear, callback) {
+function loadPubInfoByStartYear(url, startYear, endYear, callback) {
+    if(startYear > endYear) {
+            callback("", startYear, endYear);
+    }
     var xhr = new XMLHttpRequest();
     if(startYear > 0)  {
         url += "/" + startYear;
+    }
+    if(endYear > 0)  {
+        url += "/" + endYear;
     }
     xhr.open('GET', url );
     xhr.onload = function() {
         if (xhr.status === 200) {
             var response = JSON.parse(xhr.response);
-            callback(response, startYear);
+            callback(response, startYear, endYear);
         }
         else {
             alert('Request ' + url + ' failed.  Returned status of ' + xhr.status);

@@ -326,7 +326,7 @@ public class DataService {
         }
         if(endYear != null) {
             yearFilter += "   FILTER(\"" + endYear 
-                    + "-01-01T00:00:00\" >= ?dateTime) \n";                    
+                    + "-01-01T00:00:00\"^^xsd:dateTime >= ?dateTime) \n";                    
         }
         return yearFilter;
     }
