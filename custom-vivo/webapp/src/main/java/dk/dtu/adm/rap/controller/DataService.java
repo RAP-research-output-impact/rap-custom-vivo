@@ -592,14 +592,14 @@ public class DataService {
         String rq = readQuery("coPubByDept/vds/summaryModel.rq");
         ParameterizedSparqlString ps = this.storeUtils.getQuery(rq);
         if(startYear == null) {
-            startYear = 0001;
+            startYear = 1;
         }
         if(endYear == null) {
             endYear = 9999;
         }
-        ps.setLiteral("startYear", startYear + "-01-01T00:00:00", 
+        ps.setLiteral("startYear", String.format("%04d", startYear) + "-01-01T00:00:00", 
                 XSDDatatype.XSDdateTime);
-        ps.setLiteral("endYear", endYear+ "-01-01T00:00:00", 
+        ps.setLiteral("endYear", String.format("%04d", endYear) + "-01-01T00:00:00", 
                 XSDDatatype.XSDdateTime);
         ps.setIri("externalOrg", externalOrgUri);
         String processedRq =  ps.toString();
