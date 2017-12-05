@@ -326,7 +326,7 @@ public class DataService {
         }
         if(endYear != null) {
             yearFilter += "   FILTER(\"" + endYear 
-                    + "-01-01T00:00:00\"^^xsd:dateTime >= ?dateTime) \n";                    
+                    + "-12-31T23:59:59\"^^xsd:dateTime >= ?dateTime) \n";                    
         }
         return yearFilter;
     }
@@ -599,7 +599,7 @@ public class DataService {
         }
         ps.setLiteral("startYear", String.format("%04d", startYear) + "-01-01T00:00:00", 
                 XSDDatatype.XSDdateTime);
-        ps.setLiteral("endYear", String.format("%04d", endYear) + "-01-01T00:00:00", 
+        ps.setLiteral("endYear", String.format("%04d", endYear) + "-12-31T23:59:59", 
                 XSDDatatype.XSDdateTime);
         ps.setIri("externalOrg", externalOrgUri);
         String processedRq =  ps.toString();
