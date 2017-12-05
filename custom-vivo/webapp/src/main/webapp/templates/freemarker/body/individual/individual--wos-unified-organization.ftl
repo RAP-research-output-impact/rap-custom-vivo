@@ -90,7 +90,7 @@ function collabSummary(response, startYear, endYear) {
             doTopCategoryTable(response);
         }
         if (response.categories.length > 0) {
-            doPubCategoryTable(response.categories);
+            doPubCategoryTable(response.categories, startYear, endYear);
         }
         loadPubInfoByStartYear(byDeptUrl, startYear, endYear, byDeptReport)
     };
@@ -99,7 +99,7 @@ function collabSummary(response, startYear, endYear) {
 
 function byDeptReport(response, startYear, endYear) {
     if (response.departments.length > 0) {
-        doDepartmentTable(response.departments, response.name);
+        doDepartmentTable(response.departments, response.name, startYear, endYear);
     }
     info_message_reset();
 }
@@ -168,7 +168,7 @@ function doTopCategoryTable(response) {
     $("#collab-summary-container").append(html);
 }
 
-function doPubCategoryTable(totals) {
+function doPubCategoryTable(totals, startYear, endYear) {
     $("pubCategoryTable").remove();
     var html = `
     <div id="pubCategoryTable">
@@ -184,7 +184,14 @@ function doPubCategoryTable(totals) {
     var closeHtml = "</table></div>";
     $.each( totals.slice(0, 10), function( key, value ) {
         //console.log(value);
-        var coPubLink = "<a href=\"" + base + "/copubs-by-category/" + value.category.split("/")[4] + "?collab=" + individualLocalName + "\" target=\"copubcategory\">" +  value.number + "</a>";
+	var href = base + "/copubs-by-category/" + value.category.split("/")[4] + "?collab=" + individualLocalName;
+	if(startYear > 0) {
+            href += "&startYear=" + startYear;
+	}
+	if(endYear > 0) {
+            href += "&endYear=" + endYear;
+	}
+        var coPubLink = "<a href=\"" + href + "\" target=\"copubcategory\">" +  value.number + "</a>";
         var row = "<tr><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
         html += row;
     });
@@ -193,7 +200,7 @@ function doPubCategoryTable(totals) {
 }
 
 
-function doDepartmentTable(totals, name) {
+function doDepartmentTable(totals, name, startYear, endYear) {
     $("departmentTable").remove();
     var html = `
     <div id="departmentTable">
@@ -209,12 +216,20 @@ function doDepartmentTable(totals, name) {
       </tr>
     `;
 
+    var yearParams = "";
+    if(startYear > 0) {
+        yearParams += "&startYear=" + startYear;
+    }
+    if(endYear > 0) {
+        yearParams += "&endYear=" + endYear;
+    }
+
     var closeHtml = "</table></div>";
     var last = null;
     $.each( totals, function( key, value ) {
         if (value.name != last) {
             link = "<a href=\"" + base + "/individual?uri=" + value.org + "\">" + value.name + "</a>";
-            var coPubLink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + "\" target=\"copubdept\">" +  value.num + "</a>";
+            var coPubLink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + yearParams + "\" target=\"copubdept\">" +  value.num + "</a>";
             //link = value.name;
             var row = "<tr class=\"copubdept-head\"><td class=\"rep-label\">";
             row += value.name + "</td><td class=\"dtu-dept-num\">" + coPubLink + "</td><td><a class=\"view-dept\">Show details</a></td></tr>"
@@ -222,7 +237,7 @@ function doDepartmentTable(totals, name) {
         }
         $.each( value.sub_orgs, function( k2, subOrg ) {
             var row = "<tr class=\"copubdept-child\"><td>";
-            var clink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + "&collabSub=" + subOrg.uri.split("/")[4] + "&collabSubName=" + encodeURIComponent(subOrg.name) + "\" target=\"copubdept\">" +  subOrg.total + "</a>";
+            var clink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + "&collabSub=" + subOrg.uri.split("/")[4] + "&collabSubName=" + encodeURIComponent(subOrg.name) + yearParams + "\" target=\"copubdept\">" +  subOrg.total + "</a>";
             row +=  "</td><td class=\"rep-num\">" + clink + "</td><td>" + subOrg.name + "</td></tr>";
             html += row;
         });

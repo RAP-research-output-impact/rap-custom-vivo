@@ -58,7 +58,10 @@ public class CoPubsByDept extends CoPubsHttpServlet {
         log.debug("Meta query:\n" + rq);
         ArrayList<HashMap> meta = this.storeUtils.getFromStore(rq);
         String preferredName = meta.get(0).get("name").toString();
-        Model pubsModel = getPubModel(meta, collabUri, collabSubOrg, namespace);
+        Integer startYear = parseInt(vreq.getParameter("startYear"));
+        Integer endYear = parseInt(vreq.getParameter("endYear"));
+        Model pubsModel = getPubModel(meta, collabUri, collabSubOrg, namespace, 
+                startYear, endYear);
         ArrayList<HashMap> pubs = getPubs(pubsModel);
         Map<String, Object> body = new HashMap<String, Object>();
         body.put("mainOrg", preferredName);
@@ -70,7 +73,7 @@ public class CoPubsByDept extends CoPubsHttpServlet {
     }
 
     private Model getPubModel(ArrayList<HashMap> meta, String collabUri, 
-            String collabSubOrg, String namespace) {
+            String collabSubOrg, String namespace, Integer startYear, Integer endYear) {
         String rq = readQuery(PUB_MODEL_QUERY);
         ParameterizedSparqlString prq = this.storeUtils.getQuery(rq);
         prq.setIri("org", meta.get(0).get("org").toString());
@@ -94,6 +97,7 @@ public class CoPubsByDept extends CoPubsHttpServlet {
             }
             ParameterizedSparqlString pubQuery = this.storeUtils.getQuery(
                     pubQueryStr);
+            pubQuery = addYearFilters(pubQuery, startYear, endYear);
             pubQuery.setIri("pub", pub.getURI());
             String pubQueryParamStr = pubQuery.toString();
             log.debug("Pub query:\n" + pubQueryParamStr); 

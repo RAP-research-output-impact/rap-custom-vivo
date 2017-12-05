@@ -25,6 +25,8 @@ WHERE {
 	wos:hasCategory ?category ;
         vivo:relatedBy ?address .
     ?dtv vivo:dateTime ?date .
+    FILTER(?startYear <= ?date)
+    FILTER(?endYear >= ?date)
     ?pub vivo:relatedBy ?dtuAddress .
     ?dtuAddress a wos:Address .
     ?dtuAddress vivo:relates d:org-technical-university-of-denmark . 

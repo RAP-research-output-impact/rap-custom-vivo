@@ -30,7 +30,10 @@ public class CoPubsByCategory extends CoPubsHttpServlet {
         String collab = vreq.getParameter("collab");
         String collabUri = namespace + collab ;
         Map<String, Object> body = new HashMap<String, Object>();
-        Model pubsModel = getPubModel(collabUri, categoryUri, storeUtils);
+        Integer startYear = parseInt(vreq.getParameter("startYear"));
+        Integer endYear = parseInt(vreq.getParameter("endYear"));
+        Model pubsModel = getPubModel(collabUri, categoryUri, storeUtils, 
+                startYear, endYear);
         log.info("Pubs model has " + pubsModel.size() + " statements");
         ArrayList<HashMap> pubs = getPubs(pubsModel, storeUtils);
         body.put("name", getResourceName(categoryUri, storeUtils));
@@ -40,9 +43,10 @@ public class CoPubsByCategory extends CoPubsHttpServlet {
     }
     
     private Model getPubModel(String collabUri, String categoryUri, 
-            StoreUtils storeUtils) {
+            StoreUtils storeUtils, Integer startYear, Integer endYear) {
         String rq = readQuery(PUB_MODEL_QUERY);
         ParameterizedSparqlString prq = storeUtils.getQuery(rq);
+        prq = addYearFilters(prq, startYear, endYear);
         prq.setIri("category", categoryUri);
         prq.setIri("collab", collabUri);
         log.info("Pub model query:\n " + prq.toString());
