@@ -2,6 +2,7 @@ package dk.dtu.adm.rap.controller;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.query.ParameterizedSparqlString;
 import com.hp.hpl.jena.rdf.model.Model;
 import dk.dtu.adm.rap.utils.StoreUtils;
@@ -317,12 +318,24 @@ public class DataService {
         return yearFilter;
     }
     
+    private String getDtvFilter(Integer startYear, Integer endYear) {
+        String yearFilter = "";
+        if(startYear != null) {
+            yearFilter += "   FILTER(\"" + startYear 
+                    + "-01-01T00:00:00\"^^xsd:dateTime <= ?dateTime) \n";                    
+        }
+        if(endYear != null) {
+            yearFilter += "   FILTER(\"" + endYear 
+                    + "-01-01T00:00:00\" >= ?dateTime) \n";                    
+        }
+        return yearFilter;
+    }
+    
     private String getYearDtv(Integer startYear, Integer endYear) {
         String yearDtv = "";
         if(startYear != null || endYear != null) {
             yearDtv = "   ?pub vivo:dateTimeValue ?dtv . \n" +
-                      "   ?dtv vivo:dateTime ?dateTime .\n " +
-                      "   BIND(xsd:integer(substr(str(?dateTime), 1, 4)) AS ?year)";
+                      "   ?dtv vivo:dateTime ?dateTime .\n ";
         }
         return yearDtv;
     }
@@ -330,6 +343,7 @@ public class DataService {
     private Object getSummary(String orgUri, Integer startYear, Integer endYear) {
         String yearFilter = getYearFilter(startYear, endYear);
         String yearDtv = getYearDtv(startYear, endYear);
+        String dtvFilter = getDtvFilter(startYear, endYear);
         String rq = "SELECT \n" +
                 "      ?name\n" +
                 "      ?overview\n" +
@@ -353,7 +367,7 @@ public class DataService {
                 "       vivo:relates ?pub .\n" +
                 "   ?pub a wos:Publication .\n" +
                 yearDtv +
-                yearFilter +
+                dtvFilter +
                 "   }\n" +
                 "  }\n" +
                 "  {\n" +
@@ -366,7 +380,7 @@ public class DataService {
                 "      ?pub a wos:Publication ;\n" +
                 "           wos:hasCategory ?cat .\n" +
                 yearDtv +
-                yearFilter +
+                dtvFilter +
                 "      }\n" +
                 "  }\n" +
                 "  {\n" +
@@ -478,7 +492,7 @@ public class DataService {
                 "    vivo:hasPublicationVenue ?venue ; \n" +
                 "    wos:hasCategory ?category . \n" +
                 getYearDtv(startYear, endYear) +
-                getYearFilter(startYear, endYear) +
+                getDtvFilter(startYear, endYear) +
                 "?category rdfs:label ?label . \n" +
                 "}\n" +
                 "GROUP BY ?category ?label\n" +
@@ -513,7 +527,7 @@ public class DataService {
                 "\t\t\t?pub a wos:Publication ;\n" +
                 "\t\t\t\tvivo:relatedBy ?address, ?dtuAddress .\n" +
                 getYearDtv(startYear, endYear) +
-                getYearFilter(startYear, endYear) +
+                getDtvFilter(startYear, endYear) +
                 "\t\t}\n" +
                 "\t\tGROUP BY ?pub\n" +
                 "\t}\n" +
@@ -583,8 +597,10 @@ public class DataService {
         if(endYear == null) {
             endYear = Integer.MAX_VALUE;
         }
-        ps.setLiteral("startYear", startYear);
-        ps.setLiteral("endYear", endYear);
+        ps.setLiteral("startYear", startYear + "-01-01T00:00:00", 
+                XSDDatatype.XSDdateTime);
+        ps.setLiteral("endYear", endYear+ "-01-01T00:00:00", 
+                XSDDatatype.XSDdateTime);
         ps.setIri("externalOrg", externalOrgUri);
         String processedRq =  ps.toString();
         log.debug("Dept model query:\n " + processedRq);
