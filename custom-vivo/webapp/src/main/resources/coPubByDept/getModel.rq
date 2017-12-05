@@ -13,6 +13,7 @@ CONSTRUCT {
             tmp:relates ?subOrg .
 }
 WHERE {
+  {
     ?org a wos:SubOrganization ;
         rdfs:label ?dtuSubOrgName ;
         vivo:relatedBy ?address .
@@ -32,4 +33,19 @@ WHERE {
         wos:subOrganizationName ?subOrgName ;
         vivo:relatedBy ?address2 .
     ?pub a wos:Publication .
+  } UNION {
+    ?org a wos:SubOrganization ;
+        rdfs:label ?dtuSubOrgName ;
+        vivo:relatedBy ?address .
+    ?address a wos:Address ;
+        vivo:relates ?pub .
+    ?collab a wos:UnifiedOrganization ;
+        vivo:relatedBy ?address2 .
+    ?address2 a wos:Address ;
+        vivo:relates ?pub .
+    ?subOrg a wos:SubOrganization ;
+        wos:subOrganizationName ?subOrgName ;
+        vivo:relatedBy ?address2 .
+    ?pub a wos:Publication .
+  }
  }
