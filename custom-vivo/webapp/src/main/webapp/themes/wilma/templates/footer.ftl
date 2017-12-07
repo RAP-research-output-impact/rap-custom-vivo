@@ -7,11 +7,11 @@
         <tr>
             <td class="dtu-redbot-1"></td>
             <td class="dtu-redbot-2">
-                A service from the Research Analytics Office - based on the VIVO system and data from the Web of Science
+                An internal DTU service from the Research Analytics Office
+                -
+                based on the <a href="${urls.about}" title="Powered by VIVO">VIVO system</a> and data from the Web of Science
             </td>
             <td class="dtu-redbot-3">
-                <a href="${urls.about}" title="Powered by VIVO">
-                    Powered by VIVO</a>
             </td>
         </tr>
     </table>
