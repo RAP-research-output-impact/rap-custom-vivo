@@ -15,38 +15,6 @@
                     <div class="searchTOC-header">Use Facets to Refine Results</div>
                 </td>
             </tr>
-            <#if classGroupLinks?has_content>
-                <tr class="search-facets-head">
-                    <td>
-                        <h4 class="search-facets-title"><div class="search-facets-toggle">+</div>Type</h4>
-                    </td>
-                </tr>
-                <tr class="search-facets" style="display: none;">
-                    <td>
-                        <ul class="search-facets">
-                        <#list classGroupLinks as link>
-                            <li><a href="${link.url}" title="${i18n().class_group_link}">${link.text}</a><span>(${link.count})</span></li>
-                        </#list>
-                        </ul>           
-                    </td>
-                </tr>
-            </#if>
-            <#if classLinks?has_content>
-                <tr class="search-facets-head">
-                    <td>
-                        <h4 class="search-facets-title"><div class="search-facets-toggle">+</div>Sub-Type</h4>
-                    </td>
-                </tr>
-                <tr class="search-facets" style="display: none;">
-                    <td>
-                        <ul class="search-facets">
-                            <#list classLinks as link>
-                                <li><a href="${link.url}" title="${i18n().class_link}">${link.text}</a><span>(${link.count})</span></li>
-                            </#list>
-                        </ul>
-                    </td>
-                </tr>
-            </#if>
             <#if facets?has_content>
                 <#list facets as facet>
                     <tr class="search-facets-head">
