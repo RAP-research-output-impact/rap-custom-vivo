@@ -129,7 +129,7 @@ article.property {
     text-align: center;
     margin-top: 50px;
     vertical-align: bottom;
-    font-size: 18px;
+    font-size: 30px;
 }
 .dtu-redbot {
     width: 100%;
@@ -150,6 +150,15 @@ article.property {
     color: #eeeeee;
     font-size: 14px;
     margin: 5px;
+}
+td.dtu-redbot-2 a:link,
+td.dtu-redbot-2 a:visited {
+    color: #eeeeee;
+    font-size: 14px;
+}
+td.dtu-redbot-2 a:hover {
+    font-size: 14px;
+    font-weight: bold;
 }
 .dtu-redbot-3 {
     width: 15%;
@@ -416,6 +425,7 @@ div.wos-cited {
 .hbox-title {
     font-size: 16px;
     font-weight: bold;
+    margin-top: 10px;
 }
 input.search-homepage {
     border-width: 1px;
