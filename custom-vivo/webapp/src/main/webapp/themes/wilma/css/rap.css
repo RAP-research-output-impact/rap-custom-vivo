@@ -53,9 +53,20 @@
 
 #copub-map-info {
     padding: 1em;
-    border: 1px solid #2485AE;
 }
 
+#map-org-list {
+    border: 1px solid #666666;
+    padding: 3px;
+}
+#map-org-list td {
+    border: 1px solid #666666;
+    padding: 3px;
+}
+#map-org-list th {
+    border: 1px solid #666666;
+    padding: 3px;
+}
 #copub-form form {
     margin-left: auto;
     margin-right: auto;
@@ -75,16 +86,6 @@
     margin-left: auto;
     margin-right: auto;
 }
-
-#map-org-list li {
-  display:inline;
-  margin: .5em;
-}
-
-#map-org-list li:not(:first-child):before {
-    content: " | ";
-}
-
 
 /*https://stephanwagner.me/only-css-loading-spinner*/
 @keyframes spinner {
@@ -225,6 +226,13 @@ ul.copubdept {
     width: 60px;
     height: 40px;
 }
+.page-home-test {
+    position: absolute;
+    top: 10px;
+    right: 36px;
+    color: #b50404;
+    font-size: 24px;
+}
 #search-home-field {
     width: 483px;
     height: 44px;
@@ -269,4 +277,51 @@ ul.copubdept {
 .qr-x {
     font-weight: bold;
     font-size: 12px;
+}
+#individual-info {
+    margin-left: 12px;
+}
+
+;Report tables
+table#rep1 th.col1 {
+    width: 100px;
+}
+table#rep1 th.col2 {
+    width: 300px;
+    text-align: right;
+}
+table#rep1 th.col3 {
+    width: 300px;
+    text-align: right;
+}
+table#rep2 th.col1 {
+    width: 100px;
+}
+table#rep2 th.col2 {
+    width: 300px;
+    text-align: right;
+}
+table#rep3 th.col1 {
+    width: 300px;
+}
+table#rep3 th.col2 {
+    width: 100px;
+    text-align: right;
+}
+table#rep4 th.col1 {
+    width: 300px;
+}
+table#rep4 th.col2 {
+    width: 100px;
+    text-align: right;
+}
+table#rep5 th.col1 {
+    width: 300px;
+}
+table#rep5 th.col2 {
+    width: 100px;
+    text-align: right;
+}
+table#rep5 th.col3 {
+    width: 412px;
 }
