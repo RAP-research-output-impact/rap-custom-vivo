@@ -5,6 +5,7 @@
 <script src="${urls.theme}/js/datamaps.world.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/datamaps/0.5.8/datamaps.world.hires.min.js"></script>
 <script src="${urls.theme}/js/copub.js"></script>
+<script src="${urls.theme}/js/jquery.sortElements.js"></script>
 
 <!-- worldmap -->
 <section class="home-sections" id="worldmap">
@@ -14,15 +15,29 @@
             <div id="zoom-info"></div>
             <button id="zoom-button-in" class="zoom-button" data-zoom="in">+</button>
         </div>
-
-        <div id="copub-map-info">
-            <div id="copub-form">
-                <form>
-                    <input id="copub-filter" type="text" size="30" placeholder="filter by..."/>
-                </form>
-            </div>
-            <ul id="map-org-list">
-            </ul>
+        <div id="copub-map-info" style="display: inline-block; float: left;">
+            <table id="map-org-list">
+                <thead>
+                    <tr>
+                        <th style="text-align: left; vertical-align: middle; width: 600px;">
+                            <span id="sort-org">Organisation</span>
+                            <span class="sort-dir"></span>
+                            <form style="display: inline-block; float: right;">
+                                <input id="copub-filter" type="text" size="30" placeholder="filter by..." style="margin: 0px;"/>
+                            </form>
+                        </th>
+                        <th id="sort-pub" style="text-align: right; vertical-align: middle;">
+                            Co-publications
+                            <span class="sort-dir"></span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <div id="min-map" style="display: inline-block; float: right; margin-top: 20px; border: 1px solid #aaaaaa; background-color: white;">
+            <img src="${urls.theme}/images/worldmap.png"/>
         </div>
     </div>
 </section>
@@ -31,8 +46,10 @@
 <@lh.listAcademicDepartments/>
 
 <script>
+    $("#copub-map-info").hide();
+    $('#min-map').hide();
     $("#copub-filter").keyup(function() {
-        $("#map-org-list li a").each(function() {
+        $(".map-org-org").each(function() {
             if ($(this).text().search(new RegExp($("#copub-filter").val(), "i")) != -1) {
                 $(this).parent().show();
             } else {
@@ -105,7 +122,6 @@
     }
 
     function makeMap(data) {
-        $("#copub-map-info").hide();
         var countries = Datamaps.prototype.worldTopo.objects.world.geometries;
         var countryKey = {}
         for (var i = 0, j = countries.length; i < j; i++) {
@@ -120,13 +136,21 @@
                     return '<div class="hoverinfo">' + country + ' ' + data.publications + ' co-publications</div>'
                 }
         });
+        $("#min-map").click(function() {
+            $('#copub-map').show();
+            $('#copub-map-info').hide();
+            $('#min-map').hide();
+        });
         d3.selectAll(".datamaps-bubble").on('click', function(bubble) {
-            $('#copub-map-info').show();
+            $("#copub-filter").val("")
             loadData(countryData + bubble.centered, orgList);
             var irec = $('#copub-map-info').get(0).getBoundingClientRect();
             var view = Math.max(document.documentElement.clientHeight, window.innerHeight);
             console.log (irec);
             console.log (view);
+            $('#copub-map').hide();
+            $('#min-map').show();
+            $('#copub-map-info').show();
             if ((irec.top + 110) > view) {
                 window.scrollTo(0, (irec.top + 110 - view + document.documentElement.scrollTop));
             }
@@ -139,13 +163,51 @@
     }
 
     function orgList(data) {
-        var contentDiv = document.getElementById("map-org-list");
-
-        contentDiv.innerHTML = "";
-        for (var i =0, j = data.orgs.length; i < j; i++){
-            liHTML = "<li><a href=\"" + profileBase+ data.orgs[i].org + "\">" + data.orgs[i].name + "</a> (" + data.orgs[i].publications + ")</li>";
-            contentDiv.innerHTML += liHTML;
+        var tbody = "";
+        for (var i = 0, j = data.orgs.length; i < j; i++){
+            tbody += "<tr><td class=\"map-org-org sort-org\"><a href=\"" + profileBase + data.orgs[i].org + "\">" + data.orgs[i].name +
+                     "</a></td><td class=\"sort-pub\" style=\"text-align: right;\">" + data.orgs[i].publications + "</td></tr>";
         }
+        $("#map-org-list tbody").html(tbody);
+        $("#sort-pub .sort-dir").html ('&uarr;');
+        $('#sort-org').each(function() {
+            var inverse = false;
+            $(this).click(function() {
+                $("td.sort-org").sortElements(function(a, b) {
+                    return $.text([a]) > $.text([b]) ?
+                           inverse ? -1 : 1
+                         : inverse ? 1 : -1;
+                }, function() {
+                    return this.parentNode;
+                });
+                if (inverse) {
+                    $("#sort-org~.sort-dir").html ('&uarr;');
+                } else {
+                    $("#sort-org~.sort-dir").html ('&darr;');
+                }
+                $("#sort-pub .sort-dir").html ('');
+                inverse = !inverse;
+            });
+        });
+        $('#sort-pub').each(function() {
+            var inverse = false;
+            $(this).click(function() {
+                $("td.sort-pub").sortElements(function(a, b) {
+                    return Number($.text([a])) > Number($.text([b])) ?
+                           inverse ? -1 : 1
+                         : inverse ? 1 : -1;
+                }, function() {
+                    return this.parentNode;
+                });
+                if (inverse) {
+                    $("#sort-pub .sort-dir").html ('&uarr;');
+                } else {
+                    $("#sort-pub .sort-dir").html ('&darr;');
+                }
+                $("#sort-org~.sort-dir").html ('');
+                inverse = !inverse;
+            });
+        });
     }
 
     function loadData(url, callback) {
