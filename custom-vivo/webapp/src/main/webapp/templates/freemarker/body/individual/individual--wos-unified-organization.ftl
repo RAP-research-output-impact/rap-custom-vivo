@@ -20,7 +20,7 @@ var vdsOrgs = base + '/vds/report/org/' + individualLocalName + "/orgs";
 var byDeptUrl = base + '/vds/report/org/' + individualLocalName + "/by-dept";
 info_message("Loading Co-publication report");
 loadPubInfo(vds, collabSummary);
-$('#overview').addClass('spinner');
+//$('#overview').addClass('spinner');
 
 function info_message(msg) {
     $("section#individual-info").append("<div id=\"info-message\"><div>" + msg + "<img src=\"${urls.theme}/images/loading.gif\"/></div>" +
@@ -30,6 +30,18 @@ function info_message(msg) {
 function info_message_reset() {
     $("div#info-message").html ("");
     $("section#individual-info").append("<div id=\"info-message-spacer\"></div>");
+    $(".rep-num").each(function() {
+        $(this).html($(this).html().replace(/\B(?=(\d{3})+(?!\d))/g, " "));
+    });
+    $(".rep-row").hover(function() {
+        var id = $(this).attr("id");
+        $("#" + id.replace("tc-", "cc-")).css("background-color", "#dddddd");
+        $("#" + id.replace("cc-", "tc-")).css("background-color", "#dddddd");
+    }, function() {
+        var id = $(this).attr("id");
+        $("#" + id.replace("tc-", "cc-")).css("background-color", "#f2f2f2");
+        $("#" + id.replace("cc-", "tc-")).css("background-color", "#f2f2f2");
+    });
 }
 
 function collabSummary(response) {
@@ -75,12 +87,11 @@ function doCategories(response) {
 	$("ul#collab-summary").append("<li>Co-publication categories: " + response.categories.length + "</li>");
 }
 
-
 function doSummaryTable(response) {
     var html = `
     <hr/>
     <h2>Overview</h2>
-    <table class="pub-counts">
+    <table id="rep1" class="pub-counts">
       <tr>
     `;
     var orgTotal = response.summary.orgTotal;
@@ -98,7 +109,7 @@ function doSummaryTable(response) {
     } else {
         var dtuImpact = null ;
     }
-    html += "<tr><th></th><th>" + response.summary.name + "</th><th>Technical University of Denmark</th></tr>";
+    html += "<tr><th class=\"col1\"></th><th class=\"col2\">" + response.summary.name + "</th><th class=\"col3\">Technical University of Denmark</th></tr>";
     html += "<tr><td class=\"rep-label\">Publications</td><td class=\"rep-num\">" + orgTotal + "</td><td class=\"rep-num\">" + dtuTotal + "</td>";
     html += "<tr><td class=\"rep-label\">Citations</td><td class=\"rep-num\">" + orgTotalCites + "</td><td class=\"rep-num\">" + dtuTotalCites + "</td>";
     //Impact
@@ -114,14 +125,15 @@ function doTopCategoryTable(response) {
     var html = `
     <hr/>
     <h2>Top research subjects</h2>
-    <table class="pub-counts">
-      <tr>
+    <table id="rep3" class="pub-counts" style="display: inline-block;">
+        <tr>
+            <th class="col1">Partner&apos;s top research subjects</th>
+            <th class="col2">Number</th>
+        </tr>
     `;
-    html += "<tr><th>Category</th><th>Number</th></tr>";
-
     $.each( response.top_categories, function( key, value ) {
         //console.log(value);
-        var row = "<tr><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + value.number + "</td></tr>";
+        var row = "<tr class=\"rep-row\" id=\"tc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + value.number + "</td></tr>";
         html += row;
     });
     var closeHtml = "</table>";
@@ -129,22 +141,24 @@ function doTopCategoryTable(response) {
     $("#individual-info").append(html);
 }
 
+function idkey(name) {
+    name = name.toLowerCase();
+    return name.replace(/[^0-9a-z]/g, '');
+}
+
 function doPubCategoryTable(totals) {
     var html = `
-    <hr/>
-    <h2>Co-publications by category. Top 10</h2>
-    <table class="pub-counts">
+    <table id="rep4" class="pub-counts" style="display: inline-block;">
       <tr>
-        <th>Category</th>
-        <th>Number</th>
+        <th class="col1">Collaboration top research subjects</th>
+        <th class="col2">Number</th>
       </tr>
     `;
-
     var closeHtml = "</table>";
-    $.each( totals.slice(0, 10), function( key, value ) {
+    $.each( totals.slice(0, 20), function( key, value ) {
         //console.log(value);
         var coPubLink = "<a href=\"" + base + "/copubs-by-category/" + value.category.split("/")[4] + "?collab=" + individualLocalName + "\" target=\"copubcategory\">" +  value.number + "</a>";
-        var row = "<tr><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
+        var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
         html += row;
     });
     html += closeHtml;
@@ -156,11 +170,11 @@ function doDepartmentTable(totals, name) {
     var html = `
     <hr/>
     <h2>Co-publications by department</h2>
-    <table class="pub-counts">
+    <table id="rep5" class="pub-counts">
       <tr>
-        <th>DTU department</th>
-        <th>Number</th>
-        <th>`;
+        <th class="col1">DTU department</th>
+        <th class="col2">Number</th>
+        <th class="col3">`;
     html += name + ' department';
     html += `</th>
       </tr>
@@ -193,10 +207,10 @@ function doPubCountTable(totals) {
     var html = `
     <hr/>
     <h2>Total publications per year</h2>
-    <table class="pub-counts">
+    <table id="rep2" class="pub-counts">
       <tr>
-        <th>Year</th>
-        <th>Number</th>
+        <th class="col1">Year</th>
+        <th class="col2">Number</th>
       </tr>
     `;
 
