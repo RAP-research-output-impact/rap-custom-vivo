@@ -41,7 +41,7 @@
                     <td width="50%" align="right" style="marging-right: 20px;">
                         <div class="hbox">
                             <p class="hbox-title">
-                                Explore Global Collaboration
+                                DTU collaboration
                             </p>
                             <p>
                                 <a href="${urls.base}/copub"><img src="${urls.theme}/images/worldmap.png"/></a>
@@ -49,42 +49,26 @@
                             <div class="page-home-go">
                                 <button class="go-button" onClick="window.location.href='${urls.base}/copub'">Go</button>
                             </div>
+                            <div class="page-home-test">
+                                &beta; test
+                            <div>
                         </div>
                     </td>
                     <td width="50%" align="left" style="marging-left: 20px;">
                         <div class="hbox">
-                            <form id="search-homepage" action="${urls.search}" name="search-home" role="search" method="post" >
-                                <p class="hbox-title">
-                                    Search DTU publications in Web of Science
-                                </p>
-                                <p>
-                                    <section id="search-home" role="region">
-                                        <div id="search-home-field">
-                                                <input type="text" name="querytext" class="search-homepage" value="" autocapitalize="off" />
-                                        </div>
-                                        <div style="text-align: left;">AND</div>
-                                        <div>
-                                            <select name="facetAsText">
-                                                <option value="facetext_wos-category_en">Subject categories</option>
-                                                <option value="facetext_document-type_en">Document types</option>
-                                                <option value="facetext_research-area_en">Research areas</option>
-                                                <option value="facetext_publication-year_en">Publication years</option>
-                                                <option value="facetext_organization-enhanced_en">Organi.-Enhanced</option>
-                                                <option value="facetext_journal_en">Journals</option>
-                                                <option value="facetext_conference_en">Conferences</option>
-                                                <option value="facetext_country_en">Countries</option>
-                                                <option value="facetext_funding-agency_en">Funding Agencies</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <input class="search-homepage-facet" type="text" name="facetTextValue"/>
-                                        </div>
-                                    </section>
-                                </p>
-                                <div id="page-home-search">
-                                    <input class="go-button" type="submit" value="Go"/>
-                                </div>
-                            </form>
+                            <p class="hbox-title">
+                                DTU publications
+                            </p>
+                            <p>
+                                <a href="${urls.base}/search?querytext=&classgroup=http%3A%2F%2Fvivoweb.org%2Fontology%23vitroClassGrouppublications"
+                                   title="Publications"><img src="${urls.theme}/images/publications.png"/></a>
+                            </p>
+                            <div class="page-home-go">
+                                <button class="go-button" onClick="window.location.href='${urls.base}/search?querytext=&classgroup=http%3A%2F%2Fvivoweb.org%2Fontology%23vitroClassGrouppublications'">Go</button>
+                            </div>
+                            <div class="page-home-test">
+                                &alpha; test
+                            <div>
                         </div>
                     </td>
                 </tr>
