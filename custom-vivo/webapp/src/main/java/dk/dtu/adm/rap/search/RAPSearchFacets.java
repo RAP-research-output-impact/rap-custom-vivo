@@ -17,7 +17,7 @@ public class RAPSearchFacets {
         searchFacets.add(new SearchFacet("facet_document-type_ss", "Document types"));
         searchFacets.add(new SearchFacet("facet_research-area_ss", "Research areas"));
         searchFacets.add(new SearchFacet("facet_publication-year_ss", "Publication years"));
-        searchFacets.add(new SearchFacet("facet_organization-enhanced_ss", "Organi.-Enhanced"));
+        searchFacets.add(new SearchFacet("facet_organization-enhanced_ss", "Org.-Enhanced"));
         searchFacets.add(new SearchFacet("facet_journal_ss", "Journals"));
         searchFacets.add(new SearchFacet("facet_conference_ss", "Conferences"));
         searchFacets.add(new SearchFacet("facet_country_ss", "Countries"));
