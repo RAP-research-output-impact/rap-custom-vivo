@@ -1,11 +1,5 @@
 CONSTRUCT {
     ?pub a wos:Publication ;
-        rdfs:label ?title ;
-        tmp:pubDate ?date ;
-        wos:wosId ?wosId ;
-        wos:referenceCount ?refCount ;
-        wos:citationCount ?citeCount ;
-        bibo:doi ?doi ;
         tmp:relates ?org, ?subOrg, ?authorship, ?authorship2 .
     ?subOrg a tmp:SubOrg ;
         rdfs:label ?subOrgName .
@@ -19,6 +13,7 @@ CONSTRUCT {
             tmp:relates ?subOrg .
 }
 WHERE {
+  {
     ?org a wos:SubOrganization ;
         rdfs:label ?dtuSubOrgName ;
         vivo:relatedBy ?address .
@@ -37,15 +32,20 @@ WHERE {
     ?subOrg a wos:SubOrganization ;
         wos:subOrganizationName ?subOrgName ;
         vivo:relatedBy ?address2 .
-    ?pub a wos:Publication ;
-        rdfs:label ?title ;
-        vivo:dateTimeValue ?dtv ;
-        vivo:relatedBy ?address, ?address2 .
-    ?dtv vivo:dateTime ?date .
-    OPTIONAL {
-        ?pub wos:wosId ?wosId ;
-            wos:referenceCount ?refCount ;
-            wos:citationCount ?citeCount .
-    }
-    OPTIONAL { ?pub bibo:doi ?doi }
+    ?pub a wos:Publication .
+  } UNION {
+    ?org a wos:SubOrganization ;
+        rdfs:label ?dtuSubOrgName ;
+        vivo:relatedBy ?address .
+    ?address a wos:Address ;
+        vivo:relates ?pub .
+    ?collab a wos:UnifiedOrganization ;
+        vivo:relatedBy ?address2 .
+    ?address2 a wos:Address ;
+        vivo:relates ?pub .
+    ?subOrg a wos:SubOrganization ;
+        wos:subOrganizationName ?subOrgName ;
+        vivo:relatedBy ?address2 .
+    ?pub a wos:Publication .
+  }
  }

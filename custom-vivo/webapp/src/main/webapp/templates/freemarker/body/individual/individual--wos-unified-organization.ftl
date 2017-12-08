@@ -4,6 +4,8 @@
 
 <#-- Do not show the link for temporal visualization unless it's enabled -->
 
+<script src="${urls.theme}/js/jquery.corner.js"></script>
+
 <#assign affiliatedResearchAreas>
     <#include "individual-affiliated-research-areas.ftl">
 </#assign>
@@ -13,23 +15,81 @@
 
 <script>
 //co-publication report
-var orgLocalName = individualLocalName;
-var base = "${urls.base}";
-var vds = base + '/vds/report/org/' + individualLocalName;
-var vdsOrgs = base + '/vds/report/org/' + individualLocalName + "/orgs";
-var byDeptUrl = base + '/vds/report/org/' + individualLocalName + "/by-dept";
-info_message("Loading Co-publication report");
-loadPubInfo(vds, collabSummary);
-//$('#overview').addClass('spinner');
+if (individualLocalName != "org-technical-university-of-denmark") {
+    var orgLocalName = individualLocalName;
+    var base = "${urls.base}";
+    var vds = base + '/vds/report/org/' + individualLocalName;
+    var vdsOrgs = base + '/vds/report/org/' + individualLocalName + "/orgs";
+    var byDeptUrl = base + '/vds/report/org/' + individualLocalName + "/by-dept";
+    info_message_setup();
+    info_message("Loading Co-publication report");
+    var html = `
+        <h2 id="collab-summary">
+            Co-publications: <span id="collab-summary-total"></span> total
+            <span id="collab-summary-cat"></span>
+            from
+            <select id="startYear" name="startYear"></select>
+            to
+            <select id="endYear" name="endYear"></select>
+            <a class="report-export" href="#">Export</a>
+        </h2>
+    `;
+    $("#startYear").corner();
+    $("#endYear").corner();
+    $("#individual-info").append(html);
+    $("#startYear").change(function() {
+        info_message("Updating Co-publication report for start year " + $("#startYear").val());
+        loadPubInfoByStartYear(vds, $("#startYear").val(), $("#endYear").val(), collabSummary);
+    });
+    $("#endYear").change(function() {
+        info_message("Updating Co-publication report for end year " + $("#endYear").val());
+        loadPubInfoByStartYear(vds, $("#startYear").val(), $("#endYear").val(), collabSummary);
+    });
+    loadPubInfo(vds, collabSummary);
+    document.addEventListener('click', function (e) {
+        if (hasClass(e.target, 'report-export')) {
+            var html = document.querySelector("table").outerHTML
+            exportTable(html, "co-publication-" + individualLocalName + ".tsv");
+        } else if (hasClass(e.target, 'view-dept')) {
+            $(e.target).parents('tr').nextUntil('.copubdept-head').toggle();
+            label = $(e.target);
+            if(label.html()=="Show details"){
+                label.html('Hide details');
+            }else{
+                label.html('Show details');
+            }
+            return false;
+        }
+    }, false);
+}
+
+function addDateSelector() {
+    $("section#individual-info").append("<p>Start year <select id=\"startYear\" name=\"startYear\"></select></p>");
+    $("#startYear").change(function() {
+        info_message("Updating Co-publication report for start year " + $("#startYear").val());
+        loadPubInfoByStartYear(vds, $("#startYear").val(), $("#endYear").val(), collabSummary);
+    });
+    $("section#individual-info").append("<p>End year <select id=\"endYear\" name=\"endYear\"></select></p>");
+    $("#endYear").change(function() {
+        info_message("Updating Co-publication report for end year " + $("#endYear").val());
+        loadPubInfoByStartYear(vds, $("#startYear").val(), $("#endYear").val(), collabSummary);
+    });
+    $("#startYear").corner();
+}
+
+function info_message_setup() {
+    $("#individual-info").append("<div id=\"info-message\"></div><div id=\"info-message-spacer\"></div>");
+    $("ul.propertyTabsList").before("<div id=\"group-tab-spacer\"></div>");
+}
 
 function info_message(msg) {
-    $("section#individual-info").append("<div id=\"info-message\"><div>" + msg + "<img src=\"${urls.theme}/images/loading.gif\"/></div>" +
-                                        "<div id=\"info-message-spacer\"></div><div id=\"info-message-spacer\"></div></div>");
+    $("#info-message").html(msg + "<img src=\"${urls.theme}/images/loading.gif\"/>");
+    $("#info-message-spacer").show();
 }
 
 function info_message_reset() {
     $("div#info-message").html ("");
-    $("section#individual-info").append("<div id=\"info-message-spacer\"></div>");
+    $("#info-message-spacer").hide();
     $(".rep-num").each(function() {
         $(this).html($(this).html().replace(/\B(?=(\d{3})+(?!\d))/g, " "));
     });
@@ -44,51 +104,75 @@ function info_message_reset() {
     });
 }
 
-function collabSummary(response) {
+function collabSummary(response, startYear, endYear) {
+    $("#collab-summary-container").remove();
+    $("section#individual-info").append("<div id=\"collab-summary-container\"></div>");
+    if (startYear > endYear) {
+        msg = "<h2>Please select an end year that is greater than or equal to the start year.</h2>";
+        $("#collab-summary-container").append(msg);
+        info_message_reset();
+        $("#collab-summary-total").html(0);
+	return;
+    }
     var yearRange = [];
     if (response.org_totals != []) {
-        for(var i in response.org_totals) { yearRange.push(response.org_totals[i].year) };
+        for(var i in response.org_totals) {
+	    if(response.org_totals[i].year >= startYear) {
+	        yearRange.push(response.org_totals[i].year) 
+	    }
+	};
         yearRange.sort()
     } else {
-        yearRange = [2015, 2016];
+        yearRange = [startYear, 2016];
     }
-    if (individualLocalName != "org-technical-university-of-denmark") {
-        var msg = "<h2 id=\"collab-summary\">Co-publications: " + response.summary.coPubTotal + " total ";
-        if (response.categories.length > 0) {
-            msg += "in " + response.categories.length + " categories ";
+    if(startYear < 0) {
+        for(var i in yearRange) {
+            $("#startYear").append("<option value=\"" + yearRange[i] + "\">" + yearRange[i] + "</option>");
+            $("#endYear").append("<option value=\"" + yearRange[i] + "\">" + yearRange[i] + "</option>");
         }
-        msg += "from " + yearRange[0] + " to " + yearRange.slice(-1)[0] + ".<a class=\"report-export\" href=\"#\">Export</a></h2>";
-        $("section#individual-info").append(msg);
-        doSummaryTable(response)
-        if (response.org_totals.length != 0) {
-            doPubCountTable(response.org_totals);
-        }
-        if (response.top_categories.length != 0) {
-            doTopCategoryTable(response);
-        }
-        if (response.categories.length > 0) {
-            doPubCategoryTable(response.categories);
-        }
-        loadPubInfo(byDeptUrl, byDeptReport)
-    };
+	$("#endYear").val($("#endYear option:last-child").val());
+    }
+    $("#collab-summary-total").html(response.summary.coPubTotal);
+    if (response.categories.length > 0) {
+        $("#collab-summary-cat").html("in " + response.categories.length + " categories ");
+    }
+    doSummaryTable(response);
+    if (response.org_totals.length != 0) {
+        doPubCountTable(response.org_totals);
+    }
+    var html = `
+    <hr/>
+    <h2>Top research subjects</h2>
+    <div id="top-research">
+    `;
+    if (response.top_categories.length != 0) {
+        html += doTopCategoryTable(response);
+    }
+    if (response.categories.length > 0) {
+        html += doPubCategoryTable(response.categories, startYear, endYear);
+    }
+    html += "</div>";
+    $("#collab-summary-container").append(html);
+    loadPubInfoByStartYear(byDeptUrl, startYear, endYear, byDeptReport)
 }
 
 
-function byDeptReport(response) {
+function byDeptReport(response, startYear, endYear) {
     if (response.departments.length > 0) {
-        doDepartmentTable(response.departments, response.name);
+        doDepartmentTable(response.departments, response.name, startYear, endYear);
     }
     info_message_reset();
 }
 
-
 function doCategories(response) {
-	console.log(response.categories);
-	$("ul#collab-summary").append("<li>Co-publication categories: " + response.categories.length + "</li>");
+    console.log(response.categories);
+    $("#collab-summary-container").append("<li>Co-publication categories: " + response.categories.length + "</li>");
 }
 
 function doSummaryTable(response) {
+    $("summaryTable").remove();
     var html = `
+    <div id="summaryTable">
     <hr/>
     <h2>Overview</h2>
     <table id="rep1" class="pub-counts">
@@ -115,17 +199,14 @@ function doSummaryTable(response) {
     //Impact
     html += "<tr><td class=\"rep-label\">Impact</td><td class=\"rep-num\">" + orgImpact + "</td><td class=\"rep-num\">" + dtuImpact + "</td>";
 
-    var closeHtml = "</table>";
+    var closeHtml = "</table></div>";
     html += closeHtml;
-    $("#individual-info").append(html);
-    $('#overview').removeClass('spinner');
+    $("#collab-summary-container").append(html);
 }
 
 function doTopCategoryTable(response) {
     var html = `
-    <hr/>
-    <h2>Top research subjects</h2>
-    <table id="rep3" class="pub-counts" style="display: inline-block;">
+    <table id="rep3" class="pub-counts" style="display: inline-block; vertical-align: top;">
         <tr>
             <th class="col1">Partner&apos;s top research subjects</th>
             <th class="col2">Number</th>
@@ -136,9 +217,8 @@ function doTopCategoryTable(response) {
         var row = "<tr class=\"rep-row\" id=\"tc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + value.number + "</td></tr>";
         html += row;
     });
-    var closeHtml = "</table>";
-    html += closeHtml;
-    $("#individual-info").append(html);
+    html += "</table>";
+    return html;
 }
 
 function idkey(name) {
@@ -146,28 +226,34 @@ function idkey(name) {
     return name.replace(/[^0-9a-z]/g, '');
 }
 
-function doPubCategoryTable(totals) {
+function doPubCategoryTable(totals, startYear, endYear) {
     var html = `
-    <table id="rep4" class="pub-counts" style="display: inline-block;">
+    <table id="rep4" class="pub-counts" style="display: inline-block; vertical-align: top;">
       <tr>
         <th class="col1">Collaboration top research subjects</th>
         <th class="col2">Number</th>
       </tr>
     `;
-    var closeHtml = "</table>";
     $.each( totals.slice(0, 20), function( key, value ) {
-        //console.log(value);
-        var coPubLink = "<a href=\"" + base + "/copubs-by-category/" + value.category.split("/")[4] + "?collab=" + individualLocalName + "\" target=\"copubcategory\">" +  value.number + "</a>";
+	var href = base + "/copubs-by-category/" + value.category.split("/")[4] + "?collab=" + individualLocalName;
+	if(startYear > 0) {
+            href += "&startYear=" + startYear;
+	}
+	if(endYear > 0) {
+            href += "&endYear=" + endYear;
+	}
+        var coPubLink = "<a href=\"" + href + "\" target=\"copubcategory\">" +  value.number + "</a>";
         var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
         html += row;
     });
-    html += closeHtml;
-    $("#individual-info").append(html);
+    html += "</table>";
+    return html;
 }
 
-
-function doDepartmentTable(totals, name) {
+function doDepartmentTable(totals, name, startYear, endYear) {
+    $("departmentTable").remove();
     var html = `
+    <div id="departmentTable">
     <hr/>
     <h2>Co-publications by department</h2>
     <table id="rep5" class="pub-counts">
@@ -180,12 +266,20 @@ function doDepartmentTable(totals, name) {
       </tr>
     `;
 
-    var closeHtml = "</table>";
+    var yearParams = "";
+    if(startYear > 0) {
+        yearParams += "&startYear=" + startYear;
+    }
+    if(endYear > 0) {
+        yearParams += "&endYear=" + endYear;
+    }
+
+    var closeHtml = "</table></div>";
     var last = null;
     $.each( totals, function( key, value ) {
         if (value.name != last) {
             link = "<a href=\"" + base + "/individual?uri=" + value.org + "\">" + value.name + "</a>";
-            var coPubLink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + "\" target=\"copubdept\">" +  value.num + "</a>";
+            var coPubLink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + yearParams + "\" target=\"copubdept\">" +  value.num + "</a>";
             //link = value.name;
             var row = "<tr class=\"copubdept-head\"><td class=\"rep-label\">";
             row += value.name + "</td><td class=\"dtu-dept-num\">" + coPubLink + "</td><td><a class=\"view-dept\">Show details</a></td></tr>"
@@ -193,18 +287,19 @@ function doDepartmentTable(totals, name) {
         }
         $.each( value.sub_orgs, function( k2, subOrg ) {
             var row = "<tr class=\"copubdept-child\"><td>";
-            var clink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + "&collabSub=" + subOrg.uri.split("/")[4] + "&collabSubName=" + encodeURIComponent(subOrg.name) + "\" target=\"copubdept\">" +  subOrg.total + "</a>";
+            var clink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + "&collabSub=" + subOrg.uri.split("/")[4] + "&collabSubName=" + encodeURIComponent(subOrg.name) + yearParams + "\" target=\"copubdept\">" +  subOrg.total + "</a>";
             row +=  "</td><td class=\"rep-num\">" + clink + "</td><td>" + subOrg.name + "</td></tr>";
             html += row;
         });
         last = value.name;
     });
     html += closeHtml;
-    $("#individual-info").append(html);
+    $("#collab-summary-container").append(html);
 }
 
-function doPubCountTable(totals) {
+function doPubCountTable(totals, startYear) {
     var html = `
+    <div id="pubCountTable">
     <hr/>
     <h2>Total publications per year</h2>
     <table id="rep2" class="pub-counts">
@@ -214,26 +309,39 @@ function doPubCountTable(totals) {
       </tr>
     `;
 
-    var closeHtml = "</table>";
+    var closeHtml = "</table></div>";
     $.each( totals, function( key, value ) {
         //console.log(value);
         var row = "<tr><td class=\"rep-label\">" + value.year + "</td><td class=\"rep-num\">" + value.number + "</td></tr>";
         html += row;
     });
     html += closeHtml;
-    $("#individual-info").append(html);
+    $("#collab-summary-container").append(html);
 }
 
 function loadPubInfo(url, callback) {
+    loadPubInfoByStartYear(url, -1, -1, callback);
+}
+
+function loadPubInfoByStartYear(url, startYear, endYear, callback) {
+    if(startYear > endYear) {
+        callback("", startYear, endYear);
+    }
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', url );
+    if(startYear > 0)  {
+        url += "/" + startYear;
+    }
+    if(endYear > 0)  {
+        url += "/" + endYear;
+    }
+    xhr.open('GET', url);
     xhr.onload = function() {
         if (xhr.status === 200) {
-            var response = JSON.parse(xhr.response)
-            callback(response);
+            var response = JSON.parse(xhr.response);
+            callback(response, startYear, endYear);
         }
         else {
-            alert('Request failed.  Returned status of ' + xhr.status);
+            alert('Request ' + url + ' failed.  Returned status of ' + xhr.status);
         }
     };
     xhr.send();
@@ -245,23 +353,6 @@ function loadPubInfo(url, callback) {
 function hasClass(elem, className) {
     return elem.className.split(' ').indexOf(className) > -1;
 }
-
-document.addEventListener('click', function (e) {
-    if (hasClass(e.target, 'report-export')) {
-        var html = document.querySelector("table").outerHTML
-        exportTable(html, "co-publication-" + individualLocalName + ".tsv");
-    } else if (hasClass(e.target, 'view-dept')) {
-        $(e.target).parents('tr').nextUntil('.copubdept-head').toggle();
-        label = $(e.target);
-        if(label.html()=="Show details"){
-            label.html('Hide details');
-        }else{
-            label.html('Show details');
-        }
-        return false;
-    }
-}, false);
-
 
 //https://jsfiddle.net/gengns/j1jm2tjx/
 function downloadCsv(csv, filename) {

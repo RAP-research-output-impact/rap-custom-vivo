@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.query.ParameterizedSparqlString;
 
 import dk.dtu.adm.rap.utils.StoreUtils;
@@ -73,6 +74,35 @@ public abstract class CoPubsHttpServlet extends FreemarkerHttpServlet {
     protected String getQuery(String raw, StoreUtils storeUtils) {
         ParameterizedSparqlString ps = storeUtils.getQuery(raw);
         return ps.toString();
+    }
+    
+    protected Integer parseInt(String value) {
+        if(value != null) {
+            try {
+                return Integer.parseInt(value, 10);
+            } catch (NumberFormatException nfe) {
+                log.trace(nfe, nfe);
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+    
+    protected ParameterizedSparqlString addYearFilters(
+            ParameterizedSparqlString ps, 
+            Integer startYear, Integer endYear) {
+        if(startYear == null) {
+            startYear = 1;
+        }
+        if(endYear == null) {
+            endYear = 9999;
+        }
+        ps.setLiteral("startYear", String.format("%04d", startYear) + "-01-01T00:00:00", 
+                XSDDatatype.XSDdateTime);
+        ps.setLiteral("endYear", String.format("%04d", endYear) + "-12-31T23:59:59", 
+                XSDDatatype.XSDdateTime);
+        return ps;
     }
     
     abstract ResponseValues processRequest(VitroRequest vreq, StoreUtils storeUtils, 
