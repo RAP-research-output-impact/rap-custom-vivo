@@ -20,8 +20,9 @@
                 <thead>
                     <tr>
                         <th style="text-align: left; vertical-align: middle; width: 600px;">
-                            <span id="sort-org">Organisation</span>
-                            <span class="sort-dir"></span>
+                            <div id="sort-org">Organisation
+                                <span class="sort-dir"></span>
+                            </div>
                             <form style="display: inline-block; float: right;">
                                 <input id="copub-filter" type="text" size="30" placeholder="filter by..." style="margin: 0px;"/>
                             </form>
@@ -181,9 +182,9 @@
                     return this.parentNode;
                 });
                 if (inverse) {
-                    $("#sort-org~.sort-dir").html ('&uarr;');
+                    $("#sort-org .sort-dir").html ('&uarr;');
                 } else {
-                    $("#sort-org~.sort-dir").html ('&darr;');
+                    $("#sort-org .sort-dir").html ('&darr;');
                 }
                 $("#sort-pub .sort-dir").html ('');
                 inverse = !inverse;
@@ -204,7 +205,7 @@
                 } else {
                     $("#sort-pub .sort-dir").html ('&darr;');
                 }
-                $("#sort-org~.sort-dir").html ('');
+                $("#sort-org .sort-dir").html ('');
                 inverse = !inverse;
             });
         });

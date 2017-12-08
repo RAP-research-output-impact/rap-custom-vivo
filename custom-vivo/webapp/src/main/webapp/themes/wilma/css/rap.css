@@ -325,3 +325,16 @@ table#rep5 th.col2 {
 table#rep5 th.col3 {
     width: 412px;
 }
+.sort-dir {
+    font-size: 24px;
+    font-weight: 1000;
+}
+#sort-org {
+    display: inline-block;
+    height: 100%;
+    min-width: 300px;
+    cursor: pointer;
+}
+#sort-pub {
+    cursor: pointer;
+}
