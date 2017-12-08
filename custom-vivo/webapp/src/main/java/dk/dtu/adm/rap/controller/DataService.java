@@ -463,12 +463,10 @@ public class DataService {
                 "where {\n" +
                 "  ?count a wos:InCitesTopCategory ;\n" +
                 "         wos:number ?number ;\n" +
-                "         wos:year ?year ;\n" +
                 "         vivo:relates ?org ;\n" +
                 "         vivo:relates ?cat .\n" +
                 "  ?cat a wos:Category ;\n" +
                 "       rdfs:label ?name .\n" +
-                getYearFilter(startYear, endYear) +
                 "}\n" +
                 "ORDER BY DESC(?number)";
     */
