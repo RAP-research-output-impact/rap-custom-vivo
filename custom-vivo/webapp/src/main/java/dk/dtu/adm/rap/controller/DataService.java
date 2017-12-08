@@ -458,18 +458,6 @@ public class DataService {
     private ArrayList getTopCategories(final String orgUri, Integer startYear, 
             Integer endYear) {
         log.debug("Running top category query");
-    /*
-        String rq = "select ?cat ?name ?number\n" +
-                "where {\n" +
-                "  ?count a wos:InCitesTopCategory ;\n" +
-                "         wos:number ?number ;\n" +
-                "         vivo:relates ?org ;\n" +
-                "         vivo:relates ?cat .\n" +
-                "  ?cat a wos:Category ;\n" +
-                "       rdfs:label ?name .\n" +
-                "}\n" +
-                "ORDER BY DESC(?number)";
-    */
         String rq = "select ?cat ?name ?number\n" +
                 "where {\n" +
                 "  ?count a wos:InCitesTopCategory ;\n" +
