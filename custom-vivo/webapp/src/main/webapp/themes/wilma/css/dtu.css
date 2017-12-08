@@ -394,7 +394,7 @@ div.wos-cited {
     display: inline-block;
     vertical-align: middle;
 }
-#info-message div {
+#info-message {
     font-size: 24px;
     vertical-align: middle;
     line-height: 120px;
@@ -405,7 +405,10 @@ div.wos-cited {
     margin-left: 20px;
 }
 #info-message-spacer {
-    height: 300px;
+    height: 1200px;
+}
+#group-tab-spacer {
+    height: 600px;
 }
 .hbox-container {
     border-spacing: 20px;
