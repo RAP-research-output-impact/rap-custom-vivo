@@ -80,11 +80,10 @@
 	PREFIX foaf: <http://xmlns.com/foaf/0.1/>
         SELECT DISTINCT ?org
         WHERE {
-            ?uri vivo:relatedBy ?authorship .
-	    ?authorship a vivo:Authorship .
-	    ?authorship vivo:relates ?author .
-	    ?author a foaf:Person .
-	    ?author wos:hasAffiliation ?org .
+            ?address vivo:relates ?uri .
+	    ?address a wos:Address .
+	    ?address vivo:relates ?org .
+	    ?org a wos:UnifiedOrganization .
         }
     """ .
 
@@ -194,24 +193,6 @@
         }
     """ .
 
-:uriFinder_facet_organization-enhanced
-    a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.IndexingUriFinder> ,
-            <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.SelectQueryUriFinder> ;
-    rdfs:label "Organization-enhanced uri finder" ;
-    :hasPredicateRestriction "http://webofscience.com/ontology/wos#" ;
-    :hasSelectQuery """
-	PREFIX vivo: <http://vivoweb.org/ontology/core#>
-	PREFIX wos: <http://webofscience.com/ontology/wos#> 
-	PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-        SELECT DISTINCT ?uri
-        WHERE {
-            ?uri vivo:relatedBy ?authorship .
-	    ?authorship a vivo:Authorship .
-	    ?authorship vivo:relates ?subject .
-	    ?subject a foaf:Person .
-        }
-    """ .
-
 :uriFinder_facet_publication-year
     a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.IndexingUriFinder> ,
             <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.SelectQueryUriFinder> ;
@@ -219,7 +200,7 @@
     :hasPredicateRestriction "http://vivoweb.org/ontology/core#dateTime" ;
     :hasSelectQuery """
 	PREFIX vivo: <http://vivoweb.org/ontology/core#>
-        SELECT DISTINCT ?year
+        SELECT DISTINCT ?uri
         WHERE {
             ?uri vivo:dateTimeValue ?subject .
         }
