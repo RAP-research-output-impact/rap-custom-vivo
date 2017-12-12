@@ -9,6 +9,7 @@
 
 <!-- worldmap -->
 <section class="home-sections" id="worldmap">
+    <h1 id="copub-title">DTU collaboration - zoom-in and select a country</h1>
     <div id="copub-map-container">
         <div id="copub-map">
             <button id="zoom-button-out" class="zoom-button" data-zoom="out">-</button>
@@ -20,15 +21,16 @@
                 <thead>
                     <tr>
                         <th style="text-align: left; vertical-align: middle; width: 600px;">
-                            <div id="sort-org">Organisation
+                            <div id="sort-org">
+                                Co-publications with
                                 <span class="sort-dir"></span>
                             </div>
                             <form style="display: inline-block; float: right;">
                                 <input id="copub-filter" type="text" size="30" placeholder="filter by..." style="margin: 0px;"/>
                             </form>
                         </th>
-                        <th id="sort-pub" style="text-align: right; vertical-align: middle;">
-                            Co-publications
+                        <th id="sort-pub" style="text-align: right; vertical-align: middle; width: 100px;">
+                            Number
                             <span class="sort-dir"></span>
                         </th>
                     </tr>
@@ -138,6 +140,7 @@
                 }
         });
         $("#min-map").click(function() {
+            $("#copub-title").html("DTU collaboration - zoom-in and select a country");
             $('#copub-map').show();
             $('#copub-map-info').hide();
             $('#min-map').hide();
@@ -149,12 +152,14 @@
             var view = Math.max(document.documentElement.clientHeight, window.innerHeight);
             console.log (irec);
             console.log (view);
+            if (countryKey[bubble.centered]) {
+                $("#copub-title").html("DTU collaboration with " + countryKey[bubble.centered]);
+            } else {
+                $("#copub-title").html("DTU collaboration with " + bubble.centered);
+            }
             $('#copub-map').hide();
             $('#min-map').show();
             $('#copub-map-info').show();
-            if ((irec.top + 110) > view) {
-                window.scrollTo(0, (irec.top + 110 - view + document.documentElement.scrollTop));
-            }
         });
         map.instance.svg.selectAll('.datamaps-bubble')
             .each(function (d) {
