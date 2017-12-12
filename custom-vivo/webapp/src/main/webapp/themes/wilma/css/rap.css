@@ -14,7 +14,9 @@
     padding: 5px;
 }
 
+/*
 .pub-counts tr:nth-child(even){background-color: #f2f2f2;}
+*/
 
 .pub-counts tr:hover {background-color: #ddd;}
 
@@ -148,7 +150,8 @@ span.org-enhanced {
 
 
 tr.copubdept-child {
-  display: none;
+    display: none;
+    background: #e6e6e6;
 }
 
 div.copubdept-pubmeta {
@@ -281,10 +284,19 @@ ul.copubdept {
 #individual-info {
     margin-left: 12px;
 }
-
-;Report tables
+#individual-info h2 {
+    color: #5E6363;
+    font-size: 16px;
+    font-weight: bold;
+}
+#individual-info h2 span {
+    color: #5E6363;
+    font-size: 16px;
+    font-weight: bold;
+}
+/* Report tables */
 table#rep1 th.col1 {
-    width: 100px;
+    width: 300px;
 }
 table#rep1 th.col2 {
     width: 300px;
@@ -337,4 +349,27 @@ table#rep5 th.col3 {
 }
 #sort-pub {
     cursor: pointer;
+}
+#copub-title {
+    margin: 30px 0px 0px 16px;
+    font-size 18px;
+    font-weight: bold;
+}
+.copubs-by-dept h2 {
+    margin-left: 10px;
+}
+.copubs-by-dept h3 {
+    margin-left: 10px;
+}
+.copubs-by-dept div {
+    margin-left: 10px;
+}
+.copubs-by-category h2 {
+    margin-left: 10px;
+}
+.copubs-by-category h3 {
+    margin-left: 10px;
+}
+.copubs-by-category div {
+    margin-left: 10px;
 }

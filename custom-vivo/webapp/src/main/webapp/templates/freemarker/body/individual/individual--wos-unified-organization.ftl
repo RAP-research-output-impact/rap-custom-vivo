@@ -15,6 +15,11 @@
 
 <script>
 //co-publication report
+$("span.display-title").html('');
+var uni = $("h1.fn").text();
+$("h1.fn").html("DTU collaboration with " + uni.trim() +
+                " from " + "<select id=\"startYear\" name=\"startYear\"></select>" +
+                " to " + "<select id=\"endYear\" name=\"endYear\"></select>");
 if (individualLocalName != "org-technical-university-of-denmark") {
     var orgLocalName = individualLocalName;
     var base = "${urls.base}";
@@ -25,12 +30,8 @@ if (individualLocalName != "org-technical-university-of-denmark") {
     info_message("Loading Co-publication report");
     var html = `
         <h2 id="collab-summary">
-            Co-publications: <span id="collab-summary-total"></span> total
+            <span id="collab-summary-total"></span> co-publications
             <span id="collab-summary-cat"></span>
-            from
-            <select id="startYear" name="startYear"></select>
-            to
-            <select id="endYear" name="endYear"></select>
             <a class="report-export" href="#">Export</a>
         </h2>
     `;
@@ -90,8 +91,14 @@ function info_message(msg) {
 function info_message_reset() {
     $("div#info-message").html ("");
     $("#info-message-spacer").hide();
-    $(".rep-num").each(function() {
-        $(this).html($(this).html().replace(/\B(?=(\d{3})+(?!\d))/g, " "));
+    $("td.rep-num").each(function() {
+        if ($(this).find("a").length) {
+            $(this).find("a").each(function() {
+                $(this).html($(this).html().replace(/\B(?=(\d{3})+(?!\d))/g, " "));
+            });
+        } else {
+            $(this).html($(this).html().replace(/\B(?=(\d{3})+(?!\d))/g, " "));
+        }
     });
     $(".rep-row").hover(function() {
         var id = $(this).attr("id");
@@ -134,7 +141,7 @@ function collabSummary(response, startYear, endYear) {
     }
     $("#collab-summary-total").html(response.summary.coPubTotal);
     if (response.categories.length > 0) {
-        $("#collab-summary-cat").html("in " + response.categories.length + " categories ");
+        $("#collab-summary-cat").html(" in " + response.categories.length + " subject categories");
     }
     doSummaryTable(response);
     if (response.org_totals.length != 0) {
@@ -176,7 +183,6 @@ function doSummaryTable(response) {
     <hr/>
     <h2>Overview</h2>
     <table id="rep1" class="pub-counts">
-      <tr>
     `;
     var orgTotal = response.summary.orgTotal;
     //for(var i in response.org_totals) { orgTotal += response.org_totals[i].count; };
@@ -242,7 +248,7 @@ function doPubCategoryTable(totals, startYear, endYear) {
 	if(endYear > 0) {
             href += "&endYear=" + endYear;
 	}
-        var coPubLink = "<a href=\"" + href + "\" target=\"copubcategory\">" +  value.number + "</a>";
+        var coPubLink = "<a href=\"" + href + "\" target=\"_blank\">" +  value.number + "</a>";
         var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
         html += row;
     });
@@ -277,17 +283,19 @@ function doDepartmentTable(totals, name, startYear, endYear) {
     var closeHtml = "</table></div>";
     var last = null;
     $.each( totals, function( key, value ) {
+        var orgKey = value.org.split("/")[4];
         if (value.name != last) {
             link = "<a href=\"" + base + "/individual?uri=" + value.org + "\">" + value.name + "</a>";
-            var coPubLink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + yearParams + "\" target=\"copubdept\">" +  value.num + "</a>";
+            var coPubLink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + yearParams + "\" target=\"_blank\">" +  value.num + "</a>";
             //link = value.name;
             var row = "<tr class=\"copubdept-head\"><td class=\"rep-label\">";
             row += value.name + "</td><td class=\"dtu-dept-num\">" + coPubLink + "</td><td><a class=\"view-dept\">Show details</a></td></tr>"
             html += row
         }
         $.each( value.sub_orgs, function( k2, subOrg ) {
+            var subOrgKey = subOrg.uri.split("/")[4];
             var row = "<tr class=\"copubdept-child\"><td>";
-            var clink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + "&collabSub=" + subOrg.uri.split("/")[4] + "&collabSubName=" + encodeURIComponent(subOrg.name) + yearParams + "\" target=\"copubdept\">" +  subOrg.total + "</a>";
+            var clink = "<a href=\"" + base + "/copubs-by-dept/" + orgKey + "?collab=" + individualLocalName + "&collabSub=" + subOrgKey + "&collabSubName=" + encodeURIComponent(subOrg.name) + yearParams + "\" target=\"copubdept\">" +  subOrg.total + "</a>";
             row +=  "</td><td class=\"rep-num\">" + clink + "</td><td>" + subOrg.name + "</td></tr>";
             html += row;
         });
@@ -295,20 +303,20 @@ function doDepartmentTable(totals, name, startYear, endYear) {
     });
     html += closeHtml;
     $("#collab-summary-container").append(html);
+
 }
 
 function doPubCountTable(totals, startYear) {
     var html = `
     <div id="pubCountTable">
     <hr/>
-    <h2>Total publications per year</h2>
+    <h2>Number of publications per year</h2>
     <table id="rep2" class="pub-counts">
       <tr>
         <th class="col1">Year</th>
-        <th class="col2">Number</th>
-      </tr>
+        <th class="col2">
     `;
-
+    html += uni.trim() + "</th></tr>";
     var closeHtml = "</table></div>";
     $.each( totals, function( key, value ) {
         //console.log(value);
@@ -387,9 +395,10 @@ function exportTable(html, filename) {
         var rows = sections[sec].querySelectorAll("tr");
         for (var i = 0; i < rows.length; i++) {
             var row = [], cols = rows[i].querySelectorAll("td, th");
-            for (var j = 0; j < cols.length; j++)
-                row.push("\"" + cols[j].innerText + "\"");
-                csv.push(row.join("\t"));
+            for (var j = 0; j < cols.length; j++) {
+                row.push("\"" + cols[j].innerText.replace(/(?<=\d) (?=\d)/g, "") + "\"");
+            }
+            csv.push(row.join("\t"));
         }
         csv.push("\n");
     }

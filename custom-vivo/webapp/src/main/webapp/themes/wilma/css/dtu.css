@@ -127,7 +127,8 @@ article.property {
     width: 100%;
     height: 32px;
     text-align: center;
-    margin-top: 50px;
+    margin-top: 30px;
+    margin-bottom: 20px;
     vertical-align: bottom;
     font-size: 30px;
 }
