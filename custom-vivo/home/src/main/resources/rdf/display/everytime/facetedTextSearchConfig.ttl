@@ -46,10 +46,15 @@
     :hasSelectQuery """
         PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> 
 	PREFIX vitro: <http://vitro.mannlib.cornell.edu/ns/vitro/0.7#>
+	PREFIX bibo:   <http://purl.org/ontology/bibo/>
+	PREFIX wos: <http://webofscience.com/ontology/wos#>
         SELECT DISTINCT ?typeLabel
         WHERE {
             ?uri vitro:mostSpecificType ?type .
 	    ?type rdfs:label ?typeLabel
+	    FILTER (?type != bibo:Journal)
+            FILTER (?type != bibo:Book)
+            FILTER (?type != wos:Conference)
         }
     """ .
 

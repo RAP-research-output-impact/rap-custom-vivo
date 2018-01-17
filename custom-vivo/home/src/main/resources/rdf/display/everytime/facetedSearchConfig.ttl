@@ -31,9 +31,14 @@
     :hasTypeRestriction "http://purl.obolibrary.org/obo/IAO_0000030";
     :hasSelectQuery """
 	PREFIX vitro: <http://vitro.mannlib.cornell.edu/ns/vitro/0.7#>
+	PREFIX bibo:   <http://purl.org/ontology/bibo/>
+	PREFIX wos: <http://webofscience.com/ontology/wos#> 
         SELECT DISTINCT ?type
         WHERE {
             ?uri vitro:mostSpecificType ?type 
+	    FILTER (?type != bibo:Journal)
+	    FILTER (?type != bibo:Book)
+	    FILTER (?type != wos:Conference)
         }
     """ .
 
