@@ -289,6 +289,27 @@
         }
     """ .
 
+:documentModifier_facetext_dtu-dept
+    a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.SelectQueryDocumentModifier> ,
+        <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.DocumentModifier> ;
+    rdfs:label "DTU department document modifier" ;
+    :hasTargetField "facetext_dtu-dept_ss" ;
+    :hasTypeRestriction "http://purl.obolibrary.org/obo/IAO_0000030";
+    :hasSelectQuery """
+        PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> 
+        PREFIX vivo: <http://vivoweb.org/ontology/core#>
+        PREFIX wos: <http://webofscience.com/ontology/wos#>
+        SELECT DISTINCT ?dtuDeptLabel
+        WHERE {
+            ?address vivo:relates ?uri .
+            ?address a wos:Address .
+            ?address vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> .
+            ?address vivo:relates ?dtuDept .
+            ?dtuDept a wos:SubOrganization .
+	    ?dtuDept rdfs:label ?label
+        }	
+    """ .
+
 :uriFinder_label_facetext_funding-agency
     a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.IndexingUriFinder> ,
             <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.SelectQueryUriFinder> ;
@@ -351,6 +372,22 @@
         SELECT DISTINCT ?uri
         WHERE {
             ?uri vivo:dateTimeValue ?subject .
+        }
+    """ .
+
+:uriFinder_facetext_dtu-dept
+    a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.IndexingUriFinder> ,
+        <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.SelectQueryUriFinder> ;
+    rdfs:label "DTU department uri finder" ;
+    :hasPredicateRestriction "http://vivoweb.org/ontology/core#relates" ;
+    :hasSelectQuery """
+        PREFIX vivo: <http://vivoweb.org/ontology/core#>
+        PREFIX wos: <http://webofscience.com/ontology/wos#>
+        SELECT DISTINCT ?uri
+        WHERE {
+            ?address vivo:relates ?uri .
+            ?address a wos:Address .
+            ?address vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> .
         }
     """ .
 
