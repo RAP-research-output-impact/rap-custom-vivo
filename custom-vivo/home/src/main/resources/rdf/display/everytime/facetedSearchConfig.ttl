@@ -175,6 +175,9 @@
 	    ?address vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> .
             ?address vivo:relates ?dtuDept .
 	    ?dtuDept a wos:SubOrganization .
+	    # for now, the only thing that seems to differentiate real departments from uncontrolled dept. names
+	    # is that a real department has its variant names as properties
+	    ?dtuDept wos:subOrganizationNameVariant ?variant
         }
     """ .
 
