@@ -26,7 +26,9 @@
                         <td>
                             <ul>
                                 <#list facet.categories as category>
-                                    <li><a href="${category.url}" title="${category.text}">${category.text}</a><span>(${category.count})</span></li>
+                                    <#if category.text != 'Journal' && category.text != 'Book' && category.text != 'Conference'>
+                                        <li><a href="${category.url}" title="${category.text}">${category.text}</a><span>(${category.count})</span></li>
+                                    </#if>
                                 </#list>
                             </ul>
                         </td>
