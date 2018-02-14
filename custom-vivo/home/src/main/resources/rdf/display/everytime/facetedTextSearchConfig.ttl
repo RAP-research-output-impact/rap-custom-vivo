@@ -46,10 +46,15 @@
     :hasSelectQuery """
         PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> 
 	PREFIX vitro: <http://vitro.mannlib.cornell.edu/ns/vitro/0.7#>
+	PREFIX bibo:   <http://purl.org/ontology/bibo/>
+	PREFIX wos: <http://webofscience.com/ontology/wos#>
         SELECT DISTINCT ?typeLabel
         WHERE {
             ?uri vitro:mostSpecificType ?type .
 	    ?type rdfs:label ?typeLabel
+	    FILTER (?type != bibo:Journal)
+            FILTER (?type != bibo:Book)
+            FILTER (?type != wos:Conference)
         }
     """ .
 
@@ -126,13 +131,12 @@
 	PREFIX vivo: <http://vivoweb.org/ontology/core#>
 	PREFIX wos: <http://webofscience.com/ontology/wos#> 
 	PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-        SELECT DISTINCT ?org
+        SELECT DISTINCT ?orgLabel
         WHERE {
-            ?uri vivo:relatedBy ?authorship .
-	    ?authorship a vivo:Authorship .
-	    ?authorship vivo:relates ?author .
-	    ?author a foaf:Person .
-	    ?author wos:hasAffiliation ?org .
+            ?address vivo:relates ?uri .
+            ?address a wos:Address .
+            ?address vivo:relates ?org .
+            ?org a wos:UnifiedOrganization .
 	    ?org rdfs:label ?orgLabel
         }
     """ .
@@ -149,11 +153,10 @@
 	PREFIX foaf: <http://xmlns.com/foaf/0.1/>
         SELECT DISTINCT ?uri
         WHERE {
-            ?uri vivo:relatedBy ?authorship .
-	    ?authorship a vivo:Authorship .
-	    ?authorship vivo:relates ?author .
-	    ?author a foaf:Person .
-	    ?author wos:hasAffiliation ?subject .
+            ?subject a wos:UnifiedOrganization .
+            ?address vivo:relates ?subject .
+            ?address a wos:Address .
+            ?address vivo:relates ?uri .
         }
     """ .
 
@@ -291,6 +294,30 @@
         }
     """ .
 
+:documentModifier_facetext_dtu-dept
+    a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.SelectQueryDocumentModifier> ,
+        <java:edu.cornell.mannlib.vitro.webapp.searchindex.documentBuilding.DocumentModifier> ;
+    rdfs:label "DTU department document modifier" ;
+    :hasTargetField "facetext_dtu-dept_ss" ;
+    :hasTypeRestriction "http://purl.obolibrary.org/obo/IAO_0000030";
+    :hasSelectQuery """
+        PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> 
+        PREFIX vivo: <http://vivoweb.org/ontology/core#>
+        PREFIX wos: <http://webofscience.com/ontology/wos#>
+        SELECT DISTINCT ?dtuDeptLabel
+        WHERE {
+            ?address vivo:relates ?uri .
+            ?address a wos:Address .
+            ?address vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> .
+            ?address vivo:relates ?dtuDept .
+            ?dtuDept a wos:SubOrganization .
+	    # for now, the only thing that seems to differentiate real departments from uncontrolled dept. names
+	    # is that a real department has its variant names as properties
+	    ?dtuDept wos:subOrganizationNameVariant ?variant .
+	    ?dtuDept rdfs:label ?label .
+        }	
+    """ .
+
 :uriFinder_label_facetext_funding-agency
     a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.IndexingUriFinder> ,
             <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.SelectQueryUriFinder> ;
@@ -343,24 +370,6 @@
         }
     """ .
 
-:uriFinder_facetext_organization-enhanced
-    a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.IndexingUriFinder> ,
-            <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.SelectQueryUriFinder> ;
-    rdfs:label "Organization-enhanced uri finder" ;
-    :hasPredicateRestriction "http://webofscience.com/ontology/wos#" ;
-    :hasSelectQuery """
-	PREFIX vivo: <http://vivoweb.org/ontology/core#>
-	PREFIX wos: <http://webofscience.com/ontology/wos#> 
-	PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-        SELECT DISTINCT ?uri
-        WHERE {
-            ?uri vivo:relatedBy ?authorship .
-	    ?authorship a vivo:Authorship .
-	    ?authorship vivo:relates ?subject .
-	    ?subject a foaf:Person .
-        }
-    """ .
-
 :uriFinder_facetext_publication-year
     a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.IndexingUriFinder> ,
             <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.SelectQueryUriFinder> ;
@@ -368,9 +377,25 @@
     :hasPredicateRestriction "http://vivoweb.org/ontology/core#dateTime" ;
     :hasSelectQuery """
 	PREFIX vivo: <http://vivoweb.org/ontology/core#>
-        SELECT DISTINCT ?year
+        SELECT DISTINCT ?uri
         WHERE {
             ?uri vivo:dateTimeValue ?subject .
+        }
+    """ .
+
+:uriFinder_facetext_dtu-dept
+    a   <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.IndexingUriFinder> ,
+        <java:edu.cornell.mannlib.vitro.webapp.searchindex.indexing.SelectQueryUriFinder> ;
+    rdfs:label "DTU department uri finder" ;
+    :hasPredicateRestriction "http://vivoweb.org/ontology/core#relates" ;
+    :hasSelectQuery """
+        PREFIX vivo: <http://vivoweb.org/ontology/core#>
+        PREFIX wos: <http://webofscience.com/ontology/wos#>
+        SELECT DISTINCT ?uri
+        WHERE {
+            ?address vivo:relates ?uri .
+            ?address a wos:Address .
+            ?address vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> .
         }
     """ .
 

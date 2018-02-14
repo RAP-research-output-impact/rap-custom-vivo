@@ -21,7 +21,8 @@ public class RAPSearchFacets {
         searchFacets.add(new SearchFacet("facet_journal_ss", "Journals"));
         searchFacets.add(new SearchFacet("facet_conference_ss", "Conferences"));
         searchFacets.add(new SearchFacet("facet_country_ss", "Countries"));
-        searchFacets.add(new SearchFacet("facet_funding-agency_ss", "Funding Agencies"));
+        searchFacets.add(new SearchFacet("facet_funding-agency_ss", "Funding agencies"));
+        searchFacets.add(new SearchFacet("facet_dtu-dept_ss", "DTU departments"));
         for(SearchFacet facet : searchFacets) {
             facetsByFieldName.put(facet.getFieldName(), facet);
             String textFieldName = facet.getFieldName().replaceAll(
