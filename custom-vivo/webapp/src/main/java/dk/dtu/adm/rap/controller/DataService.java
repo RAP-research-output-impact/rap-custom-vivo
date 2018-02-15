@@ -466,6 +466,7 @@ public class DataService {
                 "         vivo:relates ?cat .\n" +
                 "  ?cat a wos:Category ;\n" +
                 "       rdfs:label ?name .\n" +
+                getYearFilter(startYear, endYear) +
                 "}\n" +
                 "ORDER BY DESC(?number)";
         ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);

@@ -125,7 +125,7 @@ function collabSummary(response, startYear, endYear) {
     if (response.org_totals != []) {
         for(var i in response.org_totals) {
 	    if(response.org_totals[i].year >= startYear) {
-	        yearRange.push(response.org_totals[i].year) 
+	        yearRange.push(response.org_totals[i].year)
 	    }
 	};
         yearRange.sort()
@@ -241,16 +241,18 @@ function doPubCategoryTable(totals, startYear, endYear) {
       </tr>
     `;
     $.each( totals.slice(0, 20), function( key, value ) {
-	var href = base + "/copubs-by-category/" + value.category.split("/")[4] + "?collab=" + individualLocalName;
-	if(startYear > 0) {
-            href += "&startYear=" + startYear;
-	}
-	if(endYear > 0) {
-            href += "&endYear=" + endYear;
-	}
-        var coPubLink = "<a href=\"" + href + "\" target=\"_blank\">" +  value.number + "</a>";
-        var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
-        html += row;
+        if (value.category != null) {
+        	var href = base + "/copubs-by-category/" + value.category.split("/")[4] + "?collab=" + individualLocalName;
+        	if(startYear > 0) {
+                    href += "&startYear=" + startYear;
+        	}
+        	if(endYear > 0) {
+                    href += "&endYear=" + endYear;
+        	}
+            var coPubLink = "<a href=\"" + href + "\" target=\"_blank\">" +  value.number + "</a>";
+            var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
+            html += row;
+        }
     });
     html += "</table>";
     return html;
