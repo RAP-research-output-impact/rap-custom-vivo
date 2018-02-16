@@ -14,10 +14,12 @@
 <#include "individual.ftl">
 
 <script>
+var individualUri = "${individual.uri}";
 //co-publication report
 $("span.display-title").html('');
 var uni = $("h1.fn").text();
 $("h1.fn").html("DTU collaboration with " + uni.trim() +
+                "<span id=\"collab-summary-country\" class=\"hidden\"></span>" +
                 " from " + "<select id=\"startYear\" name=\"startYear\"></select>" +
                 " to " + "<select id=\"endYear\" name=\"endYear\"></select>");
 if (individualLocalName != "org-technical-university-of-denmark") {
@@ -28,13 +30,15 @@ if (individualLocalName != "org-technical-university-of-denmark") {
     var byDeptUrl = base + '/vds/report/org/' + individualLocalName + "/by-dept";
     info_message_setup();
     info_message("Loading Co-publication report");
+    var searchLink = base + "/search?classgroup=http%3A%2F%2Fvivoweb.org%2Fontology%23vitroClassGrouppublications&querytext=&facet_organization-enhanced_ss=" + encodeURIComponent(individualUri);
     var html = `
         <h2 id="collab-summary">
             <span id="collab-summary-total"></span> co-publications
             <span id="collab-summary-cat"></span>
             <a class="report-export" href="#">Export</a>
         </h2>
-    `;
+        <p><a href="--link--">Show list</a> of all publications since 2007</p>
+    `.replace('--link--', searchLink);
     $("#startYear").corner();
     $("#endYear").corner();
     $("#individual-info").append(html);
@@ -184,6 +188,9 @@ function doSummaryTable(response) {
     <h2>Overview</h2>
     <table id="rep1" class="pub-counts">
     `;
+    if (response.summary.country) {
+        $("#collab-summary-country").html(",&nbsp" + response.summary.country).removeClass("hidden");
+    }
     var orgTotal = response.summary.orgTotal;
     //for(var i in response.org_totals) { orgTotal += response.org_totals[i].count; };
     var orgTotalCites = response.summary.orgCitesTotal;

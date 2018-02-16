@@ -347,6 +347,7 @@ public class DataService {
         String rq = "SELECT \n" +
                 "      ?name\n" +
                 "      ?overview\n" +
+                "      ?country\n" +
                 "      ?coPubTotal\n" +
                 "      ?categories\n" +
                 "      ?orgTotal\n" +
@@ -358,6 +359,9 @@ public class DataService {
                 "WHERE {\n" +
                 "  ?org rdfs:label ?name .\n" +
                 "  OPTIONAL {  ?org vivo:overview ?overview }\n" +
+                "  OPTIONAL { ?org obo:RO_0001025 ?countryUri .\n" +
+                "            ?countryUri rdfs:label ?country " +
+                "  }\n" +
                 "{\n" +
                 "    SELECT (COUNT(DISTINCT ?pub) as ?coPubTotal) " +
                 "   WHERE {\n" +
