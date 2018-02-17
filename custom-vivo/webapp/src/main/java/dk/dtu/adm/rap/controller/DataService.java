@@ -462,10 +462,10 @@ public class DataService {
     private ArrayList getTopCategories(final String orgUri, Integer startYear, 
             Integer endYear) {
         log.debug("Running top category query");
-        String rq = "select ?cat ?name ?number ?year\n" +
+        String rq = "select ?name (sum(?yrNumber) as ?number)\n" +
                 "where {\n" +
                 "  ?count a wos:InCitesTopCategory ;\n" +
-                "         wos:number ?number ;\n" +
+                "         wos:number ?yrNumber ;\n" +
                 "         wos:year ?year ;\n" +
                 "         vivo:relates ?org ;\n" +
                 "         vivo:relates ?cat .\n" +
@@ -473,6 +473,7 @@ public class DataService {
                 "       rdfs:label ?name .\n" +
                 getYearFilter(startYear, endYear) +
                 "}\n" +
+                "GROUP BY ?name \n" +
                 "ORDER BY DESC(?number)";
         ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
         q2.setCommandText(rq);
