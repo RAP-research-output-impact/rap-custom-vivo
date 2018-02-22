@@ -347,6 +347,7 @@ public class DataService {
         String rq = "SELECT \n" +
                 "      ?name\n" +
                 "      ?overview\n" +
+                "      ?country\n" +
                 "      ?coPubTotal\n" +
                 "      ?categories\n" +
                 "      ?orgTotal\n" +
@@ -358,6 +359,9 @@ public class DataService {
                 "WHERE {\n" +
                 "  ?org rdfs:label ?name .\n" +
                 "  OPTIONAL {  ?org vivo:overview ?overview }\n" +
+                "  OPTIONAL { ?org obo:RO_0001025 ?countryUri .\n" +
+                "            ?countryUri rdfs:label ?country " +
+                "  }\n" +
                 "{\n" +
                 "    SELECT (COUNT(DISTINCT ?pub) as ?coPubTotal) " +
                 "   WHERE {\n" +
@@ -458,15 +462,18 @@ public class DataService {
     private ArrayList getTopCategories(final String orgUri, Integer startYear, 
             Integer endYear) {
         log.debug("Running top category query");
-        String rq = "select ?cat ?name ?number\n" +
+        String rq = "select ?name (sum(?yrNumber) as ?number)\n" +
                 "where {\n" +
                 "  ?count a wos:InCitesTopCategory ;\n" +
-                "         wos:number ?number ;\n" +
+                "         wos:number ?yrNumber ;\n" +
+                "         wos:year ?year ;\n" +
                 "         vivo:relates ?org ;\n" +
                 "         vivo:relates ?cat .\n" +
                 "  ?cat a wos:Category ;\n" +
                 "       rdfs:label ?name .\n" +
+                getYearFilter(startYear, endYear) +
                 "}\n" +
+                "GROUP BY ?name \n" +
                 "ORDER BY DESC(?number)";
         ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
         q2.setCommandText(rq);
