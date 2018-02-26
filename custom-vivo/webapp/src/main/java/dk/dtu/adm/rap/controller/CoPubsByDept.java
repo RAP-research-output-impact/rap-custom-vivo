@@ -170,7 +170,7 @@ public class CoPubsByDept extends CoPubsHttpServlet {
             pubQuery = addYearFilters(pubQuery, startYear, endYear);
             pubQuery.setIri("pub", pub.getURI());
             String pubQueryParamStr = pubQuery.toString();
-            log.debug("Pub query:\n" + pubQueryParamStr); 
+            log.trace("Pub query:\n" + pubQueryParamStr); 
             pubModel.add(this.storeUtils.getModelFromStore(pubQueryParamStr));
         }
         return pubModel;
