@@ -1,0 +1,51 @@
+CONSTRUCT {
+    ?pub a wos:Publication ;
+        tmp:relates ?org, ?subOrg, ?authorship, ?authorship2 .
+    ?subOrg a tmp:SubOrg ;
+        rdfs:label ?subOrgName .
+    ?org a tmp:DtuSubOrg ;
+        tmp:name ?dtuSubOrgName .
+    ?authorship a tmp:Authorship ;
+            tmp:name ?name ;
+            tmp:relates ?org .
+    ?authorship2 a tmp:Authorship ;
+            tmp:name ?name2 ;
+            tmp:relates ?subOrg .
+}
+WHERE {
+  {
+    ?org a wos:SubOrganization ;
+        rdfs:label ?dtuSubOrgName ;
+        vivo:relatedBy ?address .
+    ?address a wos:Address ;
+        vivo:relates ?pub .
+    ?authorship a vivo:Authorship ;
+            wos:fullName ?name ;
+            vivo:relates ?pub, ?address .
+    ?collab a wos:UnifiedOrganization ;
+        vivo:relatedBy ?address2 .
+    ?address2 a wos:Address ;
+        vivo:relates ?pub .
+    ?authorship2 a vivo:Authorship ;
+            wos:fullName ?name2 ;
+            vivo:relates ?pub, ?address2 .
+    ?subOrg a wos:SubOrganization ;
+        wos:subOrganizationName ?subOrgName ;
+        vivo:relatedBy ?address2 .
+    ?pub a wos:Publication .
+  } UNION {
+    ?org a wos:SubOrganization ;
+        rdfs:label ?dtuSubOrgName ;
+        vivo:relatedBy ?address .
+    ?address a wos:Address ;
+        vivo:relates ?pub .
+    ?collab a wos:UnifiedOrganization ;
+        vivo:relatedBy ?address2 .
+    ?address2 a wos:Address ;
+        vivo:relates ?pub .
+    ?subOrg a wos:SubOrganization ;
+        wos:subOrganizationName ?subOrgName ;
+        vivo:relatedBy ?address2 .
+    ?pub a wos:Publication .
+  }
+ }
