@@ -8,7 +8,9 @@ import org.apache.axis.components.logger.LogFactory;
 import org.apache.commons.logging.Log;
 
 import com.hp.hpl.jena.query.ParameterizedSparqlString;
+import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -17,6 +19,7 @@ import dk.dtu.adm.rap.utils.StoreUtils;
 import edu.cornell.mannlib.vitro.webapp.controller.VitroRequest;
 import edu.cornell.mannlib.vitro.webapp.controller.freemarker.responsevalues.ResponseValues;
 import edu.cornell.mannlib.vitro.webapp.controller.freemarker.responsevalues.TemplateResponseValues;
+import edu.cornell.mannlib.vitro.webapp.rdfservice.impl.RDFServiceUtils;
 
 /**
  * Individual copublication report display.
@@ -26,6 +29,7 @@ public class CoPubsByDept extends CoPubsHttpServlet {
     private static final Log log = LogFactory.getLog(CoPubsByDept.class.getName());
     private StoreUtils storeUtils;
     private static final String ORG_INFO_QUERY = "coPubByDept/info.rq";
+    private static final String PUBS_FOR_COLLAB_QUERY = "coPubByDept/getPubsForCollab.rq";
     private static final String PUB_MODEL_QUERY = "coPubByDept/getModel.rq";
     private static final String PUB_CONSTRUCT_QUERY = "coPubByDept/getPub.rq";
     private static final String PUB_META_QUERY = "coPubByDept/getPubs.rq";
@@ -72,8 +76,34 @@ public class CoPubsByDept extends CoPubsHttpServlet {
         return new TemplateResponseValues(TEMPLATE, body);
     }
 
+    /*
+     * Another attempt to avoid impossibly-long temporary tables in SDB.
+     * Here we get all publication URIs associated with the collab organization, 
+     * and then we will bind each one in turn in the existing query and accumulate
+     * the results in a model.  If this proves successful, the subsequent two
+     * queries can be recombined into one.
+     */
     private Model getPubModel(ArrayList<HashMap> meta, String collabUri, 
             String collabSubOrg, String namespace, Integer startYear, Integer endYear) {
+        Model model = ModelFactory.createDefaultModel();
+        String rq = readQuery(PUBS_FOR_COLLAB_QUERY);
+        ParameterizedSparqlString prq = this.storeUtils.getQuery(rq);
+        prq.setIri("collab", collabUri);
+        ArrayList<HashMap> results = this.storeUtils.getFromStore(prq.toString());
+        for(HashMap solution : results) {
+            Object o = solution.get("pub");
+            if(o instanceof String) {
+                String pubUri = (String) o;
+                model.add(getPubModel(
+                        meta, collabUri, collabSubOrg, pubUri, namespace, 
+                        startYear, endYear));
+            }
+        }
+        return model;
+    }
+    
+    private Model getPubModel(ArrayList<HashMap> meta, String collabUri, 
+            String collabSubOrg, String pubUri, String namespace, Integer startYear, Integer endYear) {
         String rq = readQuery(PUB_MODEL_QUERY);
         ParameterizedSparqlString prq = this.storeUtils.getQuery(rq);
         prq.setIri("org", meta.get(0).get("org").toString());
@@ -81,6 +111,8 @@ public class CoPubsByDept extends CoPubsHttpServlet {
         if (collabSubOrg != null && !collabSubOrg.isEmpty()) {
             prq.setIri("subOrg", namespace + collabSubOrg);
         }
+        // addition to bind the publication URI
+        prq.setIri("pub", pubUri);
         log.debug("Pubs query:\n " + prq.toString());
         Model pubModel = this.storeUtils.getModelFromStore(prq.toString());
         // Because the original single query for retrieving publications along 
