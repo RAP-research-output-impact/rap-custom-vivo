@@ -8,7 +8,8 @@ import org.apache.axis.components.logger.LogFactory;
 import org.apache.commons.logging.Log;
 
 import com.hp.hpl.jena.query.ParameterizedSparqlString;
-import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.ResIterator;
@@ -19,7 +20,6 @@ import dk.dtu.adm.rap.utils.StoreUtils;
 import edu.cornell.mannlib.vitro.webapp.controller.VitroRequest;
 import edu.cornell.mannlib.vitro.webapp.controller.freemarker.responsevalues.ResponseValues;
 import edu.cornell.mannlib.vitro.webapp.controller.freemarker.responsevalues.TemplateResponseValues;
-import edu.cornell.mannlib.vitro.webapp.rdfservice.impl.RDFServiceUtils;
 
 /**
  * Individual copublication report display.
@@ -31,6 +31,8 @@ public class CoPubsByDept extends CoPubsHttpServlet {
     private static final String ORG_INFO_QUERY = "coPubByDept/info.rq";
     private static final String PUBS_FOR_COLLAB_QUERY = "coPubByDept/getPubsForCollab.rq";
     private static final String PUB_MODEL_QUERY = "coPubByDept/getModel.rq";
+    private static final String PUB_MODEL_BY_ORG_QUERY = "coPubByDept/getModelByOrg.rq";
+    private static final String PUB_MODEL_BY_COLLAB_QUERY = "coPubByDept/getModelByCollab.rq";
     private static final String PUB_CONSTRUCT_QUERY = "coPubByDept/getPub.rq";
     private static final String PUB_META_QUERY = "coPubByDept/getPubs.rq";
     private static final String SUBORG_AUTHORS_QUERY = "coPubByDept/getSubOrgsAuthors.rq";
@@ -83,27 +85,51 @@ public class CoPubsByDept extends CoPubsHttpServlet {
      * the results in a model.  If this proves successful, the subsequent two
      * queries can be recombined into one.
      */
+//    private Model getPubModel(ArrayList<HashMap> meta, String collabUri, 
+//            String collabSubOrg, String namespace, Integer startYear, Integer endYear) {
+//        Model model = ModelFactory.createDefaultModel();
+//        String rq = readQuery(PUBS_FOR_COLLAB_QUERY);
+//        ParameterizedSparqlString prq = this.storeUtils.getQuery(rq);
+//        prq.setIri("collab", collabUri);
+//        ArrayList<HashMap> results = this.storeUtils.getFromStore(prq.toString());
+//        for(HashMap solution : results) {
+//            Object o = solution.get("pub");
+//            if(o instanceof String) {
+//                String pubUri = (String) o;
+//                model.add(getPubModel(
+//                        meta, collabUri, collabSubOrg, pubUri, namespace, 
+//                        startYear, endYear));
+//            }
+//        }
+//        return model;
+//    }
+    
+    /*
+     * Another approach to avoiding impossibly-long temporary tables.
+     * Construct separate models using org and collab+suborg, then run 
+     * the complex query against the in-memory model. 
+     */
     private Model getPubModel(ArrayList<HashMap> meta, String collabUri, 
             String collabSubOrg, String namespace, Integer startYear, Integer endYear) {
         Model model = ModelFactory.createDefaultModel();
-        String rq = readQuery(PUBS_FOR_COLLAB_QUERY);
+        String rq = readQuery(PUB_MODEL_BY_ORG_QUERY);
         ParameterizedSparqlString prq = this.storeUtils.getQuery(rq);
+        prq.setIri("org", meta.get(0).get("org").toString());
+        log.debug("Pubs query by org:\n " + prq.toString());
+        model.add(this.storeUtils.getModelFromStore(prq.toString()));
+        rq = readQuery(PUB_MODEL_BY_COLLAB_QUERY);
+        prq = this.storeUtils.getQuery(rq);
         prq.setIri("collab", collabUri);
-        ArrayList<HashMap> results = this.storeUtils.getFromStore(prq.toString());
-        for(HashMap solution : results) {
-            Object o = solution.get("pub");
-            if(o instanceof String) {
-                String pubUri = (String) o;
-                model.add(getPubModel(
-                        meta, collabUri, collabSubOrg, pubUri, namespace, 
-                        startYear, endYear));
-            }
+        if (collabSubOrg != null && !collabSubOrg.isEmpty()) {
+            prq.setIri("subOrg", namespace + collabSubOrg);
         }
-        return model;
+        log.debug("Pubs query by collab:\n " + prq.toString());
+        model.add(this.storeUtils.getModelFromStore(prq.toString()));
+        return getPubModel(meta, collabUri, collabSubOrg, null, namespace, startYear, endYear, model);   
     }
     
     private Model getPubModel(ArrayList<HashMap> meta, String collabUri, 
-            String collabSubOrg, String pubUri, String namespace, Integer startYear, Integer endYear) {
+            String collabSubOrg, String pubUri, String namespace, Integer startYear, Integer endYear, Model model) {
         String rq = readQuery(PUB_MODEL_QUERY);
         ParameterizedSparqlString prq = this.storeUtils.getQuery(rq);
         prq.setIri("org", meta.get(0).get("org").toString());
@@ -111,10 +137,22 @@ public class CoPubsByDept extends CoPubsHttpServlet {
         if (collabSubOrg != null && !collabSubOrg.isEmpty()) {
             prq.setIri("subOrg", namespace + collabSubOrg);
         }
-        // addition to bind the publication URI
-        prq.setIri("pub", pubUri);
+        // addition to bind the publication URI if set
+        if(pubUri != null) {
+            prq.setIri("pub", pubUri);
+        }
         log.debug("Pubs query:\n " + prq.toString());
-        Model pubModel = this.storeUtils.getModelFromStore(prq.toString());
+        Model pubModel;
+        if(model != null) {
+            QueryExecution qe = QueryExecutionFactory.create(prq.toString(), model);
+            try {
+                pubModel = qe.execConstruct();
+            } finally {
+                qe.close();
+            }
+        } else {
+            pubModel = this.storeUtils.getModelFromStore(prq.toString());
+        }
         // Because the original single query for retrieving publications along 
         // with the authorships tends to be too complex for SDB and TDB to 
         // handle efficiently, we will now retrieve the triples describing each 

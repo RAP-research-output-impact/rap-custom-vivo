@@ -1,0 +1,29 @@
+CONSTRUCT {
+    ?pub a wos:Publication ;
+        tmp:relates ?org, ?authorship .
+    ?org a tmp:DtuSubOrg ;
+        tmp:name ?dtuSubOrgName .
+    ?authorship a tmp:Authorship ;
+            tmp:name ?name ;
+            tmp:relates ?org .
+}
+WHERE {
+  {
+    ?org a wos:SubOrganization ;
+        rdfs:label ?dtuSubOrgName ;
+        vivo:relatedBy ?address .
+    ?address a wos:Address ;
+        vivo:relates ?pub .
+    ?authorship a vivo:Authorship ;
+            wos:fullName ?name ;
+            vivo:relates ?pub, ?address .
+    ?pub a wos:Publication .
+  } UNION {
+    ?org a wos:SubOrganization ;
+        rdfs:label ?dtuSubOrgName ;
+        vivo:relatedBy ?address .
+    ?address a wos:Address ;
+        vivo:relates ?pub .
+    ?pub a wos:Publication .
+  }
+ }
