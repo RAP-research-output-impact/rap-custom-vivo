@@ -227,7 +227,8 @@ public class PagedSearchController extends FreemarkerHttpServlet {
                 }
             }
 
-            ParamMap pagingLinkParams = new ParamMap();
+//          ParamMap pagingLinkParams = new ParamMap();
+            ParamMap pagingLinkParams = RAPgetQueryParamMap(vreq);
             pagingLinkParams.put(PARAM_QUERY_TEXT, queryText);
             pagingLinkParams.put(PARAM_HITS_PER_PAGE, String.valueOf(hitsPerPage));
 
