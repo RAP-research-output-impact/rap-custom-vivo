@@ -12,6 +12,7 @@
 
 
 <#include "individual.ftl">
+<div style="height: 60px;"></div>
 
 <script>
 var individualUri = "${individual.uri}";
@@ -58,10 +59,10 @@ if (individualLocalName != "org-technical-university-of-denmark") {
         } else if (hasClass(e.target, 'view-dept')) {
             $(e.target).parents('tr').nextUntil('.copubdept-head').toggle();
             label = $(e.target);
-            if(label.html()=="Show details"){
-                label.html('Hide details');
+            if(label.html()=="Expand to show details"){
+                label.html('Collapse to hide details');
             }else{
-                label.html('Show details');
+                label.html('Expand to show details');
             }
             return false;
         }
@@ -83,18 +84,17 @@ function addDateSelector() {
 }
 
 function info_message_setup() {
-    $("#individual-info").append("<div id=\"info-message\"></div><div id=\"info-message-spacer\"></div>");
-    $("ul.propertyTabsList").before("<div id=\"group-tab-spacer\"></div>");
+    $("ul.propertyTabsList").hide();
+    $("section.property-group").hide();
+    $("#individual-info").append("<div id=\"info-message\"></div>");
 }
 
 function info_message(msg) {
     $("#info-message").html(msg + "<img src=\"${urls.theme}/images/loading.gif\"/>");
-    $("#info-message-spacer").show();
 }
 
 function info_message_reset() {
     $("div#info-message").html ("");
-    $("#info-message-spacer").hide();
     $("td.rep-num").each(function() {
         if ($(this).find("a").length) {
             $(this).find("a").each(function() {
@@ -222,7 +222,7 @@ function doTopCategoryTable(response) {
     <table id="rep3" class="pub-counts" style="display: inline-block; vertical-align: top;">
         <tr>
             <th class="col1">Partner&apos;s top research subjects</th>
-            <th class="col2">Number</th>
+            <th class="col2">Publications</th>
         </tr>
     `;
     $.each( response.top_categories, function( key, value ) {
@@ -244,7 +244,7 @@ function doPubCategoryTable(totals, startYear, endYear) {
     <table id="rep4" class="pub-counts" style="display: inline-block; vertical-align: top;">
       <tr>
         <th class="col1">Collaboration top research subjects</th>
-        <th class="col2">Number</th>
+        <th class="col2">Publications</th>
       </tr>
     `;
     $.each( totals.slice(0, 20), function( key, value ) {
@@ -274,7 +274,7 @@ function doDepartmentTable(totals, name, startYear, endYear) {
     <table id="rep5" class="pub-counts">
       <tr>
         <th class="col1">DTU department</th>
-        <th class="col2">Number</th>
+        <th class="col2">Publications</th>
         <th class="col3">`;
     html += name + ' department';
     html += `</th>
@@ -298,7 +298,7 @@ function doDepartmentTable(totals, name, startYear, endYear) {
             var coPubLink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + yearParams + "\" target=\"_blank\">" +  value.num + "</a>";
             //link = value.name;
             var row = "<tr class=\"copubdept-head\"><td class=\"rep-label\">";
-            row += value.name + "</td><td class=\"dtu-dept-num\">" + coPubLink + "</td><td><a class=\"view-dept\">Show details</a></td></tr>"
+            row += value.name + "</td><td class=\"dtu-dept-num\">" + coPubLink + "</td><td><a class=\"view-dept\">Expand to show details</a></td></tr>"
             html += row
         }
         $.each( value.sub_orgs, function( k2, subOrg ) {
