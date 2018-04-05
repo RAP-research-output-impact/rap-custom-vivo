@@ -124,7 +124,7 @@ Zoom.prototype._animate = function(translate, scale) {
 Zoom.prototype._displayPercentage = function(scale) {
     var value;
 
-    value = Math.round(Math.log(scale) / Math.log(this.scale.max) * 100);
+    value = 100 + Math.round(Math.log(scale) / Math.log(this.scale.max) * 100);
     this.info.text(value + "%");
 };
 
