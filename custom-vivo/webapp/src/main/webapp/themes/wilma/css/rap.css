@@ -33,8 +33,9 @@
 .rep-num {
     text-align: right;
 }
-.dtu-dept-num {
+td.dtu-dept-num {
     text-align: right;
+    padding-right: 15px;
 }
 
 
@@ -177,13 +178,11 @@ ul.copubdept {
     height: 30px;
     border-radius: 4px;
     border: none;
-    background: silver;
-    font-size: 16px;
+    background: #b50404;
+    font-size: 18px;
+    font-weight: bold;
     color: white;
     cursor: pointer;
-    z-index: 1001;
-    position: absolute;
-    outline: none;
 }
 #zoom-button-out {
     top: 20px;
@@ -196,13 +195,11 @@ ul.copubdept {
 #zoom-info {
     display: inline-block;
     padding: 10px;
-    z-index: 1001;
-    position: absolute;
     top: 50px;
     right: 8px;
-    font-size: 12px
+    font-size: 14px;
+    font-weight: bold;
 }
-
 #page-home-search {
     position: absolute;
     top: 220px;
@@ -314,14 +311,17 @@ table#rep2 th.col2 {
     text-align: right;
 }
 table#rep3 th.col1 {
-    width: 300px;
+    width: 400px;
 }
 table#rep3 th.col2 {
     width: 100px;
     text-align: right;
 }
+table#rep4 {
+    margin-left: 20px;
+}
 table#rep4 th.col1 {
-    width: 300px;
+    width: 400px;
 }
 table#rep4 th.col2 {
     width: 100px;
@@ -333,13 +333,31 @@ table#rep5 th.col1 {
 table#rep5 th.col2 {
     width: 100px;
     text-align: right;
+    padding-right: 15px;
 }
 table#rep5 th.col3 {
     width: 412px;
 }
 .sort-dir {
+    display: inline-block;
+}
+.sort-dir-button {
+    display: inline-block;
+    text-align: center;
+    width: 60px;
+    height: 30px;
+    border-radius: 4px;
+    border: none;
+    background: #b50404;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+}
+.sort-dir-arrow {
     font-size: 24px;
     font-weight: 1000;
+    color: white;
 }
 #sort-org {
     display: inline-block;
@@ -350,10 +368,31 @@ table#rep5 th.col3 {
 #sort-pub {
     cursor: pointer;
 }
-#copub-title {
+#copub-map-title {
     margin: 30px 0px 0px 16px;
     font-size 18px;
     font-weight: bold;
+    text-align: center;
+}
+#copub-map-sub-title {
+    text-align: center;
+}
+#copub-list-title {
+    margin: 30px 0px 0px 16px;
+    font-size 18px;
+    font-weight: bold;
+    text-align: left;
+}
+#copub-list-sub-title {
+    text-align: left;
+    background-color: #b50404;
+    color: white;
+    font-size: 16px;
+    padding: 8px 16px;
+    font-weight: bold;
+    border: #aaaaaa solid 1px;
+    width: 200px;
+    margin-left: 16px;
 }
 .copubs-by-dept h2 {
     margin-left: 10px;
@@ -372,4 +411,33 @@ table#rep5 th.col3 {
 }
 .copubs-by-category div {
     margin-left: 10px;
+}
+
+html, body {
+    min-height: 100vh;
+    margin: 0;
+}
+div#main-content {
+    min-height: 100vh;
+    margin-bottom: -60px;
+}
+footer {
+    height: 60px;
+}
+div#footer-spacer {
+    min-height: 40px;
+}
+table#copub-authors {
+    padding: 5px;
+}
+table#copub-authors th {
+    font-weight: bold;
+    text-align: left;
+    padding: 5px;
+    border: 1px solid gray;
+}
+table#copub-authors td {
+    text-align: left;
+    padding: 5px;
+    border: 1px solid gray;
 }
