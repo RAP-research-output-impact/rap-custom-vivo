@@ -149,7 +149,7 @@ function collabSummary(response, startYear, endYear) {
     }
     doSummaryTable(response);
     if (response.org_totals.length != 0) {
-        doPubCountTable(response.org_totals);
+        doPubCountTable(response.org_totals, response.dtu_totals);
     }
     var html = `
     <hr/>
@@ -315,7 +315,26 @@ function doDepartmentTable(totals, name, startYear, endYear) {
 
 }
 
-function doPubCountTable(totals, startYear) {
+function doPubCountTable(totals, DTUtotals) {
+    var years = {};
+    $.each(totals, function(key, value) {
+        var year = value.year.toString();
+        if (year in years) {
+            years[year]["org"] = value.number;
+        } else {
+            years[year] = [];
+            years[year]["org"] = value.number;
+        }
+    });
+    $.each(DTUtotals, function(key, value) {
+        var year = value.year.toString();
+        if (year in years) {
+            years[year]["dtu"] = value.number;
+        } else {
+            years[year] = [];
+            years[year]["dtu"] = value.number;
+        }
+    });
     var html = `
     <div id="pubCountTable">
     <hr/>
@@ -325,14 +344,24 @@ function doPubCountTable(totals, startYear) {
         <th class="col1">Year</th>
         <th class="col2">
     `;
-    html += uni.trim() + "</th></tr>";
-    var closeHtml = "</table></div>";
-    $.each( totals, function( key, value ) {
-        //console.log(value);
-        var row = "<tr><td class=\"rep-label\">" + value.year + "</td><td class=\"rep-num\">" + value.number + "</td></tr>";
-        html += row;
+    html += uni.trim() + "</th>";
+    html += "<th class=\"col3\">Technical University of Denmark</th></tr>";
+    $.each(years, function(key, value) {
+        html += "<tr><td class=\"rep-label\">" + key + "</td><td class=\"rep-num\">";
+        if ("org" in years[key]) {
+            html += years[key]["org"];
+        } else {
+            html += "0";
+        }
+        html += "</td><td class=\"rep-num\">";
+        if ("dtu" in years[key]) {
+            html += years[key]["dtu"];
+        } else {
+            html += "0";
+        }
+        html += "</td></tr>";
     });
-    html += closeHtml;
+    html += "</table></div>";
     $("#collab-summary-container").append(html);
 }
 
