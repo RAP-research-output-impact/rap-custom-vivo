@@ -98,6 +98,7 @@ public class DataService {
                 jo.put("summary", getSummary(uri, startYearInt, endYearInt));
                 jo.put("categories", getRelatedPubCategories(uri, startYearInt, endYearInt));
                 jo.put("org_totals", getSummaryPubCount(uri, startYearInt, endYearInt));
+                jo.put("dtu_totals", getSummaryPubCount(namespace + "org-technical-university-of-denmark", startYearInt, endYearInt));
                 jo.put("top_categories", getTopCategories(uri, startYearInt, endYearInt));
                 jo.put("by_department", getCoPubsByDepartment(uri, startYearInt, endYearInt));
             } catch (JSONException e) {
@@ -248,6 +249,7 @@ public class DataService {
 
         // cached resource did change -> serve updated content
         if (builder == null) {
+            log.info("worldmap - not using cache - " + wosDataVersion + "worldmap");
             JSONObject jo = new JSONObject();
             try {
                 jo.put("summary", getWorldwidePubs());
@@ -257,8 +259,11 @@ public class DataService {
 
             String outJson = jo.toString();
             builder = Response.ok(outJson);
+        } else {
+            log.info("worldmap - using cache - " + wosDataVersion + "worldmap");
         }
 
+        log.info("worldmap - setting tag");
         builder.tag(etag);
         return builder.build();
     }
