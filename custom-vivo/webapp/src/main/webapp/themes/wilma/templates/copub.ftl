@@ -9,38 +9,54 @@
 
 <!-- worldmap -->
 <section class="home-sections" id="worldmap">
-    <h1 id="copub-title">DTU collaboration - zoom-in and select a country</h1>
+    <div id="copub-map-heading">
+        <h1 id="copub-map-title">DTU global collaboration map</h1>
+        <div id="copub-map-sub-title" style="text-align: center;">
+            Zoom using your mouse scroll wheel, or the controls top right, and select a country.
+        </div>
+    </div>
+    <div id="copub-list-heading">
+        <h1 id="copub-list-title">DTU collaboration</h1>
+        <div id="copub-list-sub-title" style="text-align: center;">
+            Back to world view
+        </div>
+    </div>
     <div id="copub-map-container">
         <div id="copub-map">
-            <button id="zoom-button-out" class="zoom-button" data-zoom="out">-</button>
-            <div id="zoom-info"></div>
-            <button id="zoom-button-in" class="zoom-button" data-zoom="in">+</button>
+            <div style="float: right; margin-right: 5px;">
+                <button id="zoom-button-out" class="zoom-button" data-zoom="out">-</button>
+                <div id="zoom-info"></div>
+                <button id="zoom-button-in" class="zoom-button" data-zoom="in">+</button>
+            </div>
         </div>
         <div id="copub-map-info" style="display: inline-block; float: left;">
-            <table id="map-org-list">
-                <thead>
-                    <tr>
-                        <th style="text-align: left; vertical-align: middle; width: 600px;">
-                            <div id="sort-org">
-                                Co-publications with
-                                <span class="sort-dir"></span>
-                            </div>
-                            <form style="display: inline-block; float: right;">
-                                <input id="copub-filter" type="text" size="30" placeholder="filter by..." style="margin: 0px;"/>
-                            </form>
-                        </th>
-                        <th id="sort-pub" style="text-align: right; vertical-align: middle; width: 100px;">
-                            Number
-                            <span class="sort-dir"></span>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
+            <table>
+                <tr>
+                    <td>
+                        <table id="map-org-list">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left; vertical-align: middle; min-width: 600px; background-color: #3d423d; color: white;">
+                                        <div id="sort-org" style="color: white;">
+                                            Collaboration partners
+                                            <div class="sort-dir" style="height: 23px;"></div>
+                                        </div>
+                                        <form style="display: inline-block; float: right;" onSubmit="return (false);">
+                                            <input id="copub-filter" type="text" size="30" placeholder="Type here to shorten list" style="margin: 0px;"/>
+                                        </form>
+                                    </th>
+                                    <th id="sort-pub" style="text-align: right; vertical-align: middle; min-width: 200px; background-color: #3d423d; color: white;">
+                                        Co-publications
+                                        <div class="sort-dir"></div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
             </table>
-        </div>
-        <div id="min-map" style="display: inline-block; float: right; margin-top: 20px; border: 1px solid #aaaaaa; background-color: white;">
-            <img src="${urls.theme}/images/worldmap.png"/>
         </div>
     </div>
 </section>
@@ -50,7 +66,7 @@
 
 <script>
     $("#copub-map-info").hide();
-    $('#min-map').hide();
+    $("#copub-list-heading").hide();
     $("#copub-filter").keyup(function() {
         $(".map-org-org").each(function() {
             if ($(this).text().search(new RegExp($("#copub-filter").val(), "i")) != -1) {
@@ -139,26 +155,28 @@
                     return '<div class="hoverinfo">' + country + ' ' + data.publications + ' co-publications</div>'
                 }
         });
-        $("#min-map").click(function() {
-            $("#copub-title").html("DTU collaboration - zoom-in and select a country");
+        $("#copub-list-sub-title").click(function() {
+            $("#copub-map-heading").show();
+            $("#copub-list-heading").hide();
             $('#copub-map').show();
             $('#copub-map-info').hide();
-            $('#min-map').hide();
         });
         d3.selectAll(".datamaps-bubble").on('click', function(bubble) {
-            $("#copub-filter").val("")
+            $("#copub-filter").val("");
+            $("#map-org-list tbody").html("<tr><td colspan=\"2\">Loading...</td></tr>");
             loadData(countryData + bubble.centered, orgList);
             var irec = $('#copub-map-info').get(0).getBoundingClientRect();
             var view = Math.max(document.documentElement.clientHeight, window.innerHeight);
             console.log (irec);
             console.log (view);
             if (countryKey[bubble.centered]) {
-                $("#copub-title").html("DTU collaboration with " + countryKey[bubble.centered]);
+                $("#copub-list-title").html("DTU collaboration with " + countryKey[bubble.centered]);
             } else {
-                $("#copub-title").html("DTU collaboration with " + bubble.centered);
+                $("#copub-list-title").html("DTU collaboration with " + bubble.centered);
             }
+            $("#copub-map-heading").hide();
+            $("#copub-list-heading").show();
             $('#copub-map').hide();
-            $('#min-map').show();
             $('#copub-map-info').show();
         });
         map.instance.svg.selectAll('.datamaps-bubble')
@@ -175,7 +193,7 @@
                      "</a></td><td class=\"sort-pub\" style=\"text-align: right;\">" + data.orgs[i].publications + "</td></tr>";
         }
         $("#map-org-list tbody").html(tbody);
-        $("#sort-pub .sort-dir").html ('&uarr;');
+        $("#sort-pub .sort-dir").html ('<div class="sort-dir-button"><span class="sort-dir-arrow">&uarr;</span>&nbsp;Sort</div>');
         $('#sort-org').each(function() {
             var inverse = false;
             $(this).click(function() {
@@ -187,9 +205,9 @@
                     return this.parentNode;
                 });
                 if (inverse) {
-                    $("#sort-org .sort-dir").html ('&uarr;');
+                    $("#sort-org .sort-dir").html ('<div class="sort-dir-button"><span class="sort-dir-arrow">&uarr;</span>&nbsp;Sort</div>');
                 } else {
-                    $("#sort-org .sort-dir").html ('&darr;');
+                    $("#sort-org .sort-dir").html ('<div class="sort-dir-button"><span class="sort-dir-arrow">&darr;</span>&nbsp;Sort</div>');
                 }
                 $("#sort-pub .sort-dir").html ('');
                 inverse = !inverse;
@@ -206,9 +224,9 @@
                     return this.parentNode;
                 });
                 if (inverse) {
-                    $("#sort-pub .sort-dir").html ('&uarr;');
+                    $("#sort-pub .sort-dir").html ('<div class="sort-dir-button"><span class="sort-dir-arrow">&uarr;</span>&nbsp;Sort</div>');
                 } else {
-                    $("#sort-pub .sort-dir").html ('&darr;');
+                    $("#sort-pub .sort-dir").html ('<div class="sort-dir-button"><span class="sort-dir-arrow">&darr;</span>&nbsp;Sort</div>');
                 }
                 $("#sort-org .sort-dir").html ('');
                 inverse = !inverse;
