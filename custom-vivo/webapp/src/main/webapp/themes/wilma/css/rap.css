@@ -310,6 +310,10 @@ table#rep2 th.col2 {
     width: 300px;
     text-align: right;
 }
+table#rep2 th.col3 {
+    width: 300px;
+    text-align: right;
+}
 table#rep3 th.col1 {
     width: 400px;
 }
