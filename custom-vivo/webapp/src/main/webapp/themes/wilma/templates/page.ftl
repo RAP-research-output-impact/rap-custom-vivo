@@ -4,23 +4,22 @@
 
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <#include "head.ftl">
-    </head>
-    
-    <body class="${bodyClasses!}" onload="${bodyOnload!}">
+<head>
+    <#include "head.ftl">
+</head>
+<body class="${bodyClasses!}" onload="${bodyOnload!}">
+    <div id="main-content">
         <#include "identity.ftl">
         <#include "menu.ftl">
 
-		<#-- VIVO OpenSocial Extension by UCSF -->
-		<#if openSocial??>
-			<#if openSocial.visible>
-            	<div id="gadgets-tools" class="gadgets-gadget-parent"></div>
-            </#if>	
-		</#if>	
-        
+        <#-- VIVO OpenSocial Extension by UCSF -->
+        <#if openSocial??>
+            <#if openSocial.visible>
+                <div id="gadgets-tools" class="gadgets-gadget-parent"></div>
+            </#if>    
+        </#if>    
         ${body}
-        
-        <#include "footer.ftl">
-    </body>
+    </div>
+    <#include "footer.ftl">
+</body>
 </html>

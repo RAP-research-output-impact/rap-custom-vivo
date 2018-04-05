@@ -29,60 +29,62 @@
     </head>
 
     <body class="${bodyClasses!}" onload="${bodyOnload!}">
-    <#-- supplies the faculty count to the js function that generates a random row number for the search query -->
-        <@lh.facultyMemberCount  vClassGroups! />
-        <#include "identity.ftl">
+        <div id="main-content">
+            <#-- supplies the faculty count to the js function that generates a random row number for the search query -->
+            <@lh.facultyMemberCount  vClassGroups! />
+            <#include "identity.ftl">
 
-        <#include "menu.ftl">
+            <#include "menu.ftl">
 
-        <section id="intro" role="region">
-            <table class="hbox-container" width="100%" height="100%" border="1" style="min-height: 600px; margin-top: 60px;">
-                <tr height="50%">
-                    <td width="50%" align="right" style="marging-right: 20px;">
-                        <div class="hbox">
-                            <p class="hbox-title">
-                                DTU collaboration
-                            </p>
-                            <p>
-                                <a href="${urls.base}/copub"><img src="${urls.theme}/images/worldmap.png"/></a>
-                            </p>
-                            <div class="page-home-go">
-                                <button class="go-button" onClick="window.location.href='${urls.base}/copub'">Go</button>
+            <section id="intro" role="region">
+                <table class="hbox-container" width="100%" height="100%" border="1" style="min-height: 600px; margin-top: 60px;">
+                    <tr height="50%">
+                        <td width="50%" align="right" style="marging-right: 20px;">
+                            <div class="hbox">
+                                <p class="hbox-title">
+                                    DTU collaboration
+                                </p>
+                                <p>
+                                    <a href="${urls.base}/copub"><img src="${urls.theme}/images/worldmap.png"/></a>
+                                </p>
+                                <div class="page-home-go">
+                                    <button class="go-button" onClick="window.location.href='${urls.base}/copub'">Go</button>
+                                </div>
+                                <div class="page-home-test">
+                                    &beta; test
+                                <div>
                             </div>
-                            <div class="page-home-test">
-                                &beta; test
-                            <div>
-                        </div>
-                    </td>
-                    <td width="50%" align="left" style="marging-left: 20px;">
-                        <div class="hbox">
-                            <p class="hbox-title">
-                                DTU publications
-                            </p>
-                            <p>
-                                <a href="${urls.base}/search?querytext=&classgroup=http%3A%2F%2Fvivoweb.org%2Fontology%23vitroClassGrouppublications"
-                                   title="Publications"><img src="${urls.theme}/images/publications.png"/></a>
-                            </p>
-                            <div class="page-home-go">
-                                <button class="go-button" onClick="window.location.href='${urls.base}/search?querytext=&classgroup=http%3A%2F%2Fvivoweb.org%2Fontology%23vitroClassGrouppublications'">Go</button>
+                        </td>
+                        <td width="50%" align="left" style="marging-left: 20px;">
+                            <div class="hbox">
+                                <p class="hbox-title">
+                                    DTU publications
+                                </p>
+                                <p>
+                                    <a href="${urls.base}/search?querytext=&classgroup=http%3A%2F%2Fvivoweb.org%2Fontology%23vitroClassGrouppublications"
+                                       title="Publications"><img src="${urls.theme}/images/publications.png"/></a>
+                                </p>
+                                <div class="page-home-go">
+                                    <button class="go-button" onClick="window.location.href='${urls.base}/search?querytext=&classgroup=http%3A%2F%2Fvivoweb.org%2Fontology%23vitroClassGrouppublications'">Go</button>
+                                </div>
+                                <div class="page-home-test">
+                                    &alpha; test
+                                <div>
                             </div>
-                            <div class="page-home-test">
-                                &alpha; test
-                            <div>
-                        </div>
-                    </td>
-                </tr>
-                <tr height="50%">
-                    <td width="50%" align="right" style="marging-right: 20px;">
-                    </td>
-                    <td width="50%" align="left" style="marging-left: 20px;">
-                    </td>
-                </tr>
-            </table>
-        </section> <!-- #intro -->
+                        </td>
+                    </tr>
+                    <tr height="50%">
+                        <td width="50%" align="right" style="marging-right: 20px;">
+                        </td>
+                        <td width="50%" align="left" style="marging-left: 20px;">
+                        </td>
+                    </tr>
+                </table>
+            </section>
 
-        <@widget name="login" />
+            <@widget name="login" />
 
+        </div>
         <#include "footer.ftl">
         <#-- builds a json object that is used by js to render the academic departments section -->
         <@lh.listAcademicDepartments />
