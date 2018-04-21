@@ -1516,6 +1516,15 @@
     <servlet-name>StaticTemplateController</servlet-name>
     <url-pattern>/copub</url-pattern>
   </servlet-mapping>
+ 
+  <servlet>
+    <servlet-name>ExcelExportController</servlet-name>
+    <servlet-class>dk.dtu.adm.rap.controller.ExcelExport</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ExcelExportController</servlet-name>
+    <url-pattern>/excelExport</url-pattern>
+  </servlet-mapping>
   
   <!-- ==================== mime types ============================== -->
   
