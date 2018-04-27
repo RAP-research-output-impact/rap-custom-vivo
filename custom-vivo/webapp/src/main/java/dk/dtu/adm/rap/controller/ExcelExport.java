@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -16,6 +18,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
 import org.apache.poi.ss.usermodel.BorderExtent;
 import org.apache.poi.ss.usermodel.BorderStyle;
@@ -38,7 +43,6 @@ import org.json.JSONObject;
 
 import edu.cornell.mannlib.vitro.webapp.controller.VitroHttpServlet;
 import edu.cornell.mannlib.vitro.webapp.controller.VitroRequest;
-import edu.cornell.mannlib.vitro.webapp.utils.http.HttpClientFactory;
 
 public class ExcelExport extends VitroHttpServlet {
 
@@ -64,7 +68,7 @@ public class ExcelExport extends VitroHttpServlet {
         }
         JSONObject json;
         try {
-            json = getJson(getBaseURI(vreq), orgLocalName);
+            json = getJson(getBaseURI(vreq), orgLocalName, vreq);
             XSSFWorkbook wb = generateWorkbook(json);        
             response.setContentType(CONTENT_TYPE);
             OutputStream out = response.getOutputStream();        
@@ -191,12 +195,27 @@ public class ExcelExport extends VitroHttpServlet {
         return null;
     }
 
-    private JSONObject getJson(String baseURI, String orgLocalName) 
+    private JSONObject getJson(String baseURI, String orgLocalName, VitroRequest vreq) 
             throws ClientProtocolException, IOException, JSONException {
-        HttpClient httpClient = HttpClientFactory.getHttpClient();
+        HttpClient httpClient = getHttpClient(vreq.getCookies());       
         String request = baseURI + DATA_SERVICE + orgLocalName;
         log.info("Requesting JSON from " + request);
         HttpGet get = new HttpGet(request);
+        log.info("Setting headers on GET");
+        Enumeration<String> headerNames = vreq.getHeaderNames();
+        while(headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            if("accept".equalsIgnoreCase(headerName)) {
+                // we don't want to ask for HTML or whatever the browser wanted
+                continue;
+            }
+            Enumeration<String> headerValues = vreq.getHeaders(headerName);
+            while(headerValues.hasMoreElements()) {
+                String headerValue = headerValues.nextElement();
+                get.setHeader(headerName, headerValue);
+                log.info("Setting header " + headerName + " with value " + headerValue);
+            }
+        }
         HttpResponse response = null;
         try {
             response = httpClient.execute(get);
@@ -208,6 +227,27 @@ public class ExcelExport extends VitroHttpServlet {
                 EntityUtils.consume(response.getEntity());
             }
         }
+    }
+    
+    private HttpClient getHttpClient(Cookie[] cookies) {
+        //HttpClient httpClient = HttpClientFactory.getHttpClient();        
+        BasicCookieStore cookieStore = new BasicCookieStore();
+        DefaultHttpClient httpClient = new DefaultHttpClient();
+        httpClient.setCookieStore(cookieStore);
+        // forward the caller's cookies to the web service for authentication
+        log.info("Setting cookies");
+        for(int i = 0; i < cookies.length; i++) {
+            Cookie c = cookies[i];            
+            BasicClientCookie cookie = new BasicClientCookie(c.getName(), c.getValue());
+            cookie.setDomain(c.getDomain());
+            cookie.setPath(c.getPath());
+            cookie.setSecure(c.getSecure());
+            cookie.setVersion(c.getVersion());
+            // Do we need to convert c.getMaxAge() to cookie.setExpiryDate() ? 
+            cookieStore.addCookie(cookie);      
+            log.info("Setting cookie " + c.getName() + " with value " + c.getValue());
+        }
+        return httpClient;
     }
     
     private XSSFCell addBoldText(XSSFWorkbook wb, XSSFRow row, int column, 
