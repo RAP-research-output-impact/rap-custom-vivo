@@ -56,7 +56,7 @@ public class ExcelExport extends VitroHttpServlet {
     private static final String EXTENSION = "xslx";
     private static final String DTU = "Technical University of Denmark";
     private static final String YEAR = "Year";
-    private static final int WIDTH = 3;
+    //private static final int WIDTH = 3;
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -68,6 +68,7 @@ public class ExcelExport extends VitroHttpServlet {
         }
         JSONObject json;
         try {
+            // TODO pass the year parameters to the service
             json = getJson(getBaseURI(vreq), orgLocalName, vreq);
             XSSFWorkbook wb = generateWorkbook(json);        
             response.setContentType(CONTENT_TYPE);
@@ -103,6 +104,8 @@ public class ExcelExport extends VitroHttpServlet {
         List<Integer> years = getYears(json);
         rowCreator.createRow();
         addTotals(years, json, wb, sheet, rowCreator, pt);
+        rowCreator.createRow();
+        addCategories(json, wb, sheet, rowCreator, pt);
         pt.applyBorders(sheet);
 //        for (int i = 0; i < WIDTH; i++) {
 //            try {
@@ -128,13 +131,92 @@ public class ExcelExport extends VitroHttpServlet {
             RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
         int startingIndex = rowCreator.getRowIndex();
         XSSFRow header = rowCreator.createRow();
-        CellStyle headerStyle = wb.createCellStyle();
-        headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        headerStyle.setAlignment(HorizontalAlignment.CENTER);
-        headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        headerStyle.setBorderBottom(BorderStyle.MEDIUM);
-        headerStyle.setWrapText(true);
+        CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
+        CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
+        XSSFCell yearHeader = addBoldText(wb, header, 0, YEAR);
+        yearHeader.setCellStyle(headerStyleFirstColumn);
+        XSSFCell orgHeader = addBoldText(wb, header, 1, getOrgName(data));
+        orgHeader.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell dtuHeader = addBoldText(wb, header, 2, DTU);
+        dtuHeader.setCellStyle(headerStyleRemainingColumns);
+        for(Integer year : years) {
+            XSSFRow row = rowCreator.createRow();
+            XSSFCell cell = row.createCell(0);
+            cell.setCellValue(year);
+            cell.setCellStyle(getDataStyleText(wb));
+            cell.setCellStyle(getDataStyle(wb));
+            Integer orgTotal = getTotal(data, "org_totals", year);
+            cell = row.createCell(1);
+            if(orgTotal != null) {
+                cell.setCellValue(orgTotal);
+
+            }
+            cell = row.createCell(2);
+            cell.setCellStyle(getDataStyle(wb));
+            Integer dtuTotal = getTotal(data, "dtu_totals", year);
+            if(dtuTotal != null) {        
+                cell.setCellValue(dtuTotal);
+            }
+        }
+        drawBorders(3, pt, startingIndex, rowCreator);
+    }
+    
+    private void addCategories(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
+            RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
+        int startingIndex = rowCreator.getRowIndex();
+        XSSFRow header = rowCreator.createRow();
+        CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
+        CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
+        XSSFCell header0 = addBoldText(wb, header, 0, "Partner's top research subjects");
+        header0.setCellStyle(headerStyleFirstColumn);
+        XSSFCell header1 = header.createCell(1);
+        header1.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell header2 = addBoldText(wb, header, 2, "Publications");
+        header2.setCellStyle(headerStyleRemainingColumns);
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
+        JSONArray array = data.getJSONArray("categories");
+        for(int i = 0; i < array.length(); i++) {
+            JSONObject object = array.getJSONObject(i);
+            int value = object.getInt("number");
+            String name = object.getString("name");
+            XSSFRow row = rowCreator.createRow();
+            XSSFCell cell = row.createCell(0);
+            cell.setCellValue(name);
+            cell.setCellStyle(getDataStyleText(wb));
+            cell = row.createCell(1);
+            cell.setCellStyle(getDataStyle(wb));
+            cell = row.createCell(2);
+            cell.setCellValue(value);
+            cell.setCellStyle(getDataStyle(wb));
+            sheet.addMergedRegion(new CellRangeAddress(
+                    rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
+        }
+        drawBorders(3, pt, startingIndex, rowCreator);        
+    }
+    
+    private void drawBorders(int width, PropertyTemplate pt, int startingIndex, RowCreator rowCreator) {
+        pt.drawBorders(new CellRangeAddress(
+                startingIndex, startingIndex, 0, width - 1),
+                BorderStyle.MEDIUM, IndexedColors.BLACK.getIndex(), BorderExtent.HORIZONTAL);
+        pt.drawBorders(new CellRangeAddress(
+                startingIndex, rowCreator.getRowIndex(), 0, 0),
+                BorderStyle.MEDIUM, IndexedColors.BLACK.getIndex(), BorderExtent.LEFT);
+        pt.drawBorders(new CellRangeAddress(
+                startingIndex, rowCreator.getRowIndex(), width - 1, width - 1),
+                BorderStyle.MEDIUM, IndexedColors.BLACK.getIndex(), BorderExtent.RIGHT);
+        pt.drawBorders(new CellRangeAddress(
+                rowCreator.getRowIndex(), rowCreator.getRowIndex(), 0, width - 1),
+                BorderStyle.MEDIUM, IndexedColors.BLACK.getIndex(), BorderExtent.BOTTOM);
+    }
+    
+    private CellStyle getDataStyleText(XSSFWorkbook wb) {
+        CellStyle dataStyle = getDataStyle(wb);
+        dataStyle.setAlignment(HorizontalAlignment.LEFT);
+        return dataStyle;
+    }
+    
+    private CellStyle getDataStyle(XSSFWorkbook wb) {
         CellStyle dataStyle = wb.createCellStyle();
         dataStyle.setBorderTop(BorderStyle.THIN);
         dataStyle.setBorderBottom(BorderStyle.THIN);
@@ -142,42 +224,33 @@ public class ExcelExport extends VitroHttpServlet {
         dataStyle.setBorderRight(BorderStyle.THIN);
         dataStyle.setFillForegroundColor(IndexedColors.WHITE.getIndex());
         dataStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        XSSFCell yearHeader = addBoldText(wb, header, 0, YEAR);
-        yearHeader.setCellStyle(headerStyle);
-        XSSFCell orgHeader = addBoldText(wb, header, 1, getOrgName(data));
-        orgHeader.setCellStyle(headerStyle);
-        XSSFCell dtuHeader = addBoldText(wb, header, 2, DTU);
-        dtuHeader.setCellStyle(headerStyle);
-        for(Integer year : years) {
-            XSSFRow row = rowCreator.createRow();
-            XSSFCell cell = row.createCell(0);
-            cell.setCellValue(year);
-            cell.setCellStyle(dataStyle);
-            Integer orgTotal = getTotal(data, "org_totals", year);
-            if(orgTotal != null) {
-                cell = row.createCell(1);
-                cell.setCellValue(orgTotal);
-                cell.setCellStyle(dataStyle);
-            }
-            Integer dtuTotal = getTotal(data, "dtu_totals", year);
-            if(dtuTotal != null) {        
-                cell = row.createCell(2);
-                cell.setCellValue(dtuTotal);
-                cell.setCellValue(dtuTotal);
-            }
-        }
-        pt.drawBorders(new CellRangeAddress(
-                startingIndex, startingIndex, 0, WIDTH - 1),
-                BorderStyle.MEDIUM, IndexedColors.BLACK.getIndex(), BorderExtent.HORIZONTAL);
-        pt.drawBorders(new CellRangeAddress(
-                startingIndex, rowCreator.getRowIndex(), 0, 0),
-                BorderStyle.MEDIUM, IndexedColors.BLACK.getIndex(), BorderExtent.LEFT);
-        pt.drawBorders(new CellRangeAddress(
-                startingIndex, rowCreator.getRowIndex(), WIDTH - 1, WIDTH - 1),
-                BorderStyle.MEDIUM, IndexedColors.BLACK.getIndex(), BorderExtent.RIGHT);
-        pt.drawBorders(new CellRangeAddress(
-                rowCreator.getRowIndex(), rowCreator.getRowIndex(), 0, WIDTH - 1),
-                BorderStyle.MEDIUM, IndexedColors.BLACK.getIndex(), BorderExtent.BOTTOM);
+        dataStyle.setAlignment(HorizontalAlignment.CENTER);
+        return dataStyle;
+    }
+    
+    private CellStyle getHeaderStyleFirstColumn(XSSFWorkbook wb) {
+        CellStyle headerStyle = getHeaderStyle(wb);
+        headerStyle.setAlignment(HorizontalAlignment.LEFT);
+        return headerStyle;
+    }
+    
+    private CellStyle getHeaderStyleRemainingColumns(XSSFWorkbook wb) {
+        CellStyle headerStyle = getHeaderStyle(wb);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+        return headerStyle;
+    }
+    
+    private CellStyle getHeaderStyle(XSSFWorkbook wb) {
+        CellStyle headerStyle = wb.createCellStyle();        
+        headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        headerStyle.setBorderBottom(BorderStyle.MEDIUM);
+        headerStyle.setBorderTop(BorderStyle.THIN);       
+        headerStyle.setBorderLeft(BorderStyle.THIN);
+        headerStyle.setBorderRight(BorderStyle.THIN);
+        headerStyle.setWrapText(true);
+        return headerStyle;
     }
     
     private Integer getTotal(JSONObject data, String arrayName, int year) 
