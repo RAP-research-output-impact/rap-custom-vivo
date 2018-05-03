@@ -434,7 +434,7 @@ function downloadCsv(csv, filename) {
 }
 
 function setExportLink(individualLocalName, startYear, endYear) {
-    var href = "${urls.base}/excelExport?orgLocalName=" + individualLocalName;
+    var href = "${urls.base}/excelExport/" + individualLocalName + ".xlsx?orgLocalName=" + individualLocalName;
     if(startYear != null) {
         href += "&startYear=" + startYear;
     }

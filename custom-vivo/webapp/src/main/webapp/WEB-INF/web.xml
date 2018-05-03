@@ -1523,7 +1523,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>ExcelExportController</servlet-name>
-    <url-pattern>/excelExport</url-pattern>
+    <url-pattern>/excelExport/*</url-pattern>
   </servlet-mapping>
   
   <!-- ==================== mime types ============================== -->
