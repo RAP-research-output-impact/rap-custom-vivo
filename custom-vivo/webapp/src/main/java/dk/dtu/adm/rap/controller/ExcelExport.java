@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -90,8 +91,7 @@ public class ExcelExport extends VitroHttpServlet {
     }
     
     private String getBaseURI(VitroRequest vreq) {
-        return vreq.getRequestURL().toString().split("\\?")[0]
-                .replaceAll(THIS_SERVLET, "");
+        return vreq.getRequestURL().toString().split(Pattern.quote(THIS_SERVLET))[0];
     }
     
     private List<Integer> getYears(JSONObject json) throws JSONException {
