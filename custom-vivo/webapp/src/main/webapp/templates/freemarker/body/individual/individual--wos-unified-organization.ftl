@@ -36,7 +36,10 @@ if (individualLocalName != "org-technical-university-of-denmark") {
         <h2 id="collab-summary">
             <span id="collab-summary-total"></span> co-publications
             <span id="collab-summary-cat"></span>
-            <a class="report-export" href="#">Export</a>
+	    <a id="report-export" class="report-export" href="#">Export</a>
+            <#-- original Javascript export 
+	    <a class="report-export" href="#">Export</a>
+	    -->
         </h2>
         <p><a href="--link--">Show list</a> of all publications since 2007</p>
     `.replace('--link--', searchLink);
@@ -44,18 +47,22 @@ if (individualLocalName != "org-technical-university-of-denmark") {
     $("#endYear").corner();
     $("#individual-info").append(html);
     $("#startYear").change(function() {
+        setExportLink(individualLocalName, $("#startYear").val(), $("#endYear").val());
         info_message("Updating Co-publication report for start year " + $("#startYear").val());
         loadPubInfoByStartYear(vds, $("#startYear").val(), $("#endYear").val(), collabSummary);
     });
     $("#endYear").change(function() {
+        setExportLink(individualLocalName, $("#startYear").val(), $("#endYear").val());
         info_message("Updating Co-publication report for end year " + $("#endYear").val());
         loadPubInfoByStartYear(vds, $("#startYear").val(), $("#endYear").val(), collabSummary);
     });
+    setExportLink(individualLocalName, $("#startYear").val(), $("#endYear").val());
     loadPubInfo(vds, collabSummary);
     document.addEventListener('click', function (e) {
         if (hasClass(e.target, 'report-export')) {
-            var html = document.querySelector("table").outerHTML
-            exportTable(html, "co-publication-" + individualLocalName + ".tsv");
+	    // Original Javascript export
+            // var html = document.querySelector("table").outerHTML
+            // exportTable(html, "co-publication-" + individualLocalName + ".tsv");
         } else if (hasClass(e.target, 'view-dept')) {
             $(e.target).parents('tr').nextUntil('.copubdept-head').toggle();
             label = $(e.target);
@@ -424,6 +431,17 @@ function downloadCsv(csv, filename) {
     document.body.appendChild(downloadLink);
 
     downloadLink.click();
+}
+
+function setExportLink(individualLocalName, startYear, endYear) {
+    var href = "${urls.base}/excelExport?orgLocalName=" + individualLocalName;
+    if(startYear != null) {
+        href += "&startYear=" + startYear;
+    }
+    if(endYear != null) {
+        href += "&endYear=" + endYear;
+    }
+    $("#report-export").attr("href", href);
 }
 
 function exportTable(html, filename) {

@@ -41,14 +41,21 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.itextpdf.text.Font;
+
 import edu.cornell.mannlib.vitro.webapp.controller.VitroHttpServlet;
 import edu.cornell.mannlib.vitro.webapp.controller.VitroRequest;
+import net.sf.jga.swing.spreadsheet.Cell;
 
 public class ExcelExport extends VitroHttpServlet {
 
+    // TODO protect the servlet
+    
     private static final long serialVersionUID = 1L;
     private final static Log log = LogFactory.getLog(ExcelExport.class);
     private final static String ORG_PARAM = "orgLocalName";
+    private final static String STARTYEAR_PARAM = "startYear";
+    private final static String ENDYEAR_PARAM = "endYear";
     private final static String DATA_SERVICE = "/vds/report/org/";
     private final static String THIS_SERVLET = "/excelExport";
     private static final String CONTENT_TYPE = 
@@ -66,10 +73,13 @@ public class ExcelExport extends VitroHttpServlet {
         if(orgLocalName == null) {
             throw new ServletException("Parameter " + ORG_PARAM + " most be supplied");
         }
+        String startYear = vreq.getParameter(STARTYEAR_PARAM);
+        String endYear = vreq.getParameter(ENDYEAR_PARAM);
         JSONObject json;
         try {
             // TODO pass the year parameters to the service
-            json = getJson(getBaseURI(vreq), orgLocalName, vreq);
+            //json = getJson(getBaseURI(vreq), orgLocalName, startYear, endYear, vreq);
+            json = new JSONObject(DataService.readQuery("/excel/testData-org-university-of-toronto.json"));
             XSSFWorkbook wb = generateWorkbook(json);        
             response.setContentType(CONTENT_TYPE);
             OutputStream out = response.getOutputStream();        
@@ -102,20 +112,42 @@ public class ExcelExport extends VitroHttpServlet {
         PropertyTemplate pt = new PropertyTemplate();
         RowCreator rowCreator = new RowCreator(sheet);
         List<Integer> years = getYears(json);
+        try {
+            addTitle(years, json, wb, sheet, rowCreator, pt);
+        } catch (JSONException e) {
+            log.error(e, e);
+        }
         rowCreator.createRow();
-        addTotals(years, json, wb, sheet, rowCreator, pt);
+        try {
+            addSummary(years, json, wb, sheet, rowCreator, pt);
+        } catch (JSONException e) {
+            log.error(e, e);
+        }
         rowCreator.createRow();
-        addCategories(json, wb, sheet, rowCreator, pt);
-        pt.applyBorders(sheet);
-//        for (int i = 0; i < WIDTH; i++) {
-//            try {
-//                if(i != 4) {
-//                    sheet.autoSizeColumn(i);
-//                }
-//            } catch (Exception e) {
-//                log.error("Unable to set width of column " + i);
-//            }
-//        }        
+        try {
+            addTotals(years, json, wb, sheet, rowCreator, pt);
+        } catch (JSONException e) {
+            log.error(e, e);
+        }
+        rowCreator.createRow();
+        try {
+            addCategories(json, wb, sheet, rowCreator, pt);
+        } catch (JSONException e) {
+            log.error(e, e);
+        }
+        rowCreator.createRow();
+        try {
+            addTopCategories(json, wb, sheet, rowCreator, pt);
+        } catch (JSONException e) {
+            log.error(e, e);
+        }
+        rowCreator.createRow();
+        try {
+            addByDepartment(json, wb, sheet, rowCreator, pt);
+        } catch (JSONException e) {
+            log.error(e, e);
+        }
+        pt.applyBorders(sheet);     
         sheet.setColumnWidth(0, 7500);
         sheet.setColumnWidth(1, 6000);
         sheet.setColumnWidth(2, 6000);
@@ -127,10 +159,95 @@ public class ExcelExport extends VitroHttpServlet {
         return summary.getString("name");
     }
     
+    private int getTotalPubs(JSONObject data) throws JSONException {
+        JSONObject summary = data.getJSONObject("summary");
+        return summary.getInt("coPubTotal");
+    }
+    
+    private int getTotalCategories(JSONObject data) throws JSONException {
+        JSONObject summary = data.getJSONObject("summary");
+        return summary.getInt("categories");
+    }
+    
+    private void addTitle(List<Integer> years, JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
+            RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
+        XSSFRow titleRow = rowCreator.createRow();
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
+        CellStyle titleStyle = wb.createCellStyle();
+        XSSFFont titleFont = wb.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontHeightInPoints((short) 14);
+        titleStyle.setFont(titleFont);
+        XSSFCell titleCell = titleRow.createCell(0);        
+        int startYear = years.get(0);
+        int endYear = years.get(years.size() - 1);
+        String yearsStr = Integer.toString(startYear);
+        if(endYear != startYear) {
+            yearsStr += "-" + Integer.toString(endYear);
+        }
+        titleCell.setCellValue("DTU Collaboration with " + getOrgName(data) + ", " + yearsStr);
+        titleCell.setCellStyle(titleStyle);
+        rowCreator.createRow();
+        XSSFRow subtitleRow = rowCreator.createRow();
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
+        String coPubTotal = Integer.toString(getTotalPubs(data));
+        String categories = Integer.toString(getTotalCategories(data));
+        XSSFCell subtitle = addBoldText(wb, subtitleRow, 0, coPubTotal 
+                + " co-publication in " + categories + " subject categories");
+    }
+    
+    private void addSummary(List<Integer> years, JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
+            RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
+        JSONObject summary = data.getJSONObject("summary");
+        XSSFRow header = rowCreator.createRow();
+        int startingIndex = rowCreator.getRowIndex();
+        CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
+        CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
+        XSSFCell blankHeader = addBoldText(wb, header, 0, " ");
+        blankHeader.setCellStyle(headerStyleFirstColumn);
+        XSSFCell orgHeader = addBoldText(wb, header, 1, getOrgName(data));
+        orgHeader.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell dtuHeader = addBoldText(wb, header, 2, DTU);
+        dtuHeader.setCellStyle(headerStyleRemainingColumns);
+        XSSFRow row = rowCreator.createRow();
+        XSSFCell cell = row.createCell(0);
+        cell.setCellValue("Publications");
+        cell.setCellStyle(getDataStyleText(wb));            
+        cell = row.createCell(1);
+        cell.setCellValue(summary.getInt("orgTotal"));
+        cell.setCellStyle(getDataStyle(wb));
+        cell = row.createCell(2);
+        cell.setCellStyle(getDataStyle(wb));
+        cell.setCellValue(summary.getInt("dtuTotal"));
+        row = rowCreator.createRow();
+        cell = row.createCell(0);
+        cell.setCellValue("Citations");
+        cell.setCellStyle(getDataStyleText(wb));            
+        cell = row.createCell(1);
+        cell.setCellValue(summary.getInt("orgCitesTotal"));
+        cell.setCellStyle(getDataStyle(wb));
+        cell = row.createCell(2);
+        cell.setCellStyle(getDataStyle(wb));
+        cell.setCellValue(summary.getInt("dtuCitesTotal"));
+        row = rowCreator.createRow();
+        cell = row.createCell(0);
+        cell.setCellValue("Impact");
+        cell.setCellStyle(getDataStyleText(wb));            
+        cell = row.createCell(1);
+        cell.setCellValue(summary.getDouble("orgImpact"));
+        cell.setCellStyle(getDataStyle(wb));
+        cell = row.createCell(2);
+        cell.setCellStyle(getDataStyle(wb));
+        cell.setCellValue(summary.getDouble("dtuImpact"));
+        drawBorders(3, pt, startingIndex, rowCreator);
+    }
+    
     private void addTotals(List<Integer> years, JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
             RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
-        int startingIndex = rowCreator.getRowIndex();
         XSSFRow header = rowCreator.createRow();
+        int startingIndex = rowCreator.getRowIndex();
         CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
         XSSFCell yearHeader = addBoldText(wb, header, 0, YEAR);
@@ -144,13 +261,12 @@ public class ExcelExport extends VitroHttpServlet {
             XSSFCell cell = row.createCell(0);
             cell.setCellValue(year);
             cell.setCellStyle(getDataStyleText(wb));
-            cell.setCellStyle(getDataStyle(wb));
             Integer orgTotal = getTotal(data, "org_totals", year);
             cell = row.createCell(1);
             if(orgTotal != null) {
                 cell.setCellValue(orgTotal);
-
             }
+            cell.setCellStyle(getDataStyle(wb));
             cell = row.createCell(2);
             cell.setCellStyle(getDataStyle(wb));
             Integer dtuTotal = getTotal(data, "dtu_totals", year);
@@ -163,34 +279,86 @@ public class ExcelExport extends VitroHttpServlet {
     
     private void addCategories(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
             RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
-        int startingIndex = rowCreator.getRowIndex();
         XSSFRow header = rowCreator.createRow();
+        int startingIndex = rowCreator.getRowIndex();
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
         CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
         XSSFCell header0 = addBoldText(wb, header, 0, "Partner's top research subjects");
         header0.setCellStyle(headerStyleFirstColumn);
-        XSSFCell header1 = header.createCell(1);
-        header1.setCellStyle(headerStyleRemainingColumns);
         XSSFCell header2 = addBoldText(wb, header, 2, "Publications");
         header2.setCellStyle(headerStyleRemainingColumns);
+        JSONArray array = data.getJSONArray("categories");
+        addNameNumberArray(array, rowCreator, wb, sheet);
+        drawBorders(3, pt, startingIndex, rowCreator);        
+    }
+    
+    private void addTopCategories(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
+            RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
+        XSSFRow header = rowCreator.createRow();
+        int startingIndex = rowCreator.getRowIndex();
         sheet.addMergedRegion(new CellRangeAddress(
                 rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
-        JSONArray array = data.getJSONArray("categories");
+        CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
+        CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
+        XSSFCell header0 = addBoldText(wb, header, 0, "Collaboration top research subjects");
+        header0.setCellStyle(headerStyleFirstColumn);
+        XSSFCell header2 = addBoldText(wb, header, 2, "Publications");
+        header2.setCellStyle(headerStyleRemainingColumns);
+        JSONArray array = data.getJSONArray("top_categories");
+        addNameNumberArray(array, rowCreator, wb, sheet);
+        drawBorders(3, pt, startingIndex, rowCreator);        
+    }
+    
+    private void addNameNumberArray(JSONArray array, RowCreator rowCreator,
+            XSSFWorkbook wb, XSSFSheet sheet) throws JSONException {
         for(int i = 0; i < array.length(); i++) {
             JSONObject object = array.getJSONObject(i);
             int value = object.getInt("number");
             String name = object.getString("name");
             XSSFRow row = rowCreator.createRow();
+            sheet.addMergedRegion(new CellRangeAddress(
+                    rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
             XSSFCell cell = row.createCell(0);
             cell.setCellValue(name);
             cell.setCellStyle(getDataStyleText(wb));
             cell = row.createCell(1);
-            cell.setCellStyle(getDataStyle(wb));
+            cell.setCellStyle(getDataStyleText(wb));
             cell = row.createCell(2);
             cell.setCellValue(value);
             cell.setCellStyle(getDataStyle(wb));
+        }
+    }
+    
+    private void addByDepartment(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
+            RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
+        XSSFRow header = rowCreator.createRow();
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
+        int startingIndex = rowCreator.getRowIndex();
+        CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
+        CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
+        XSSFCell header0 = addBoldText(wb, header, 0, "DTU department");
+        header0.setCellStyle(headerStyleFirstColumn);
+        XSSFCell header2 = addBoldText(wb, header, 2, "Publications");
+        header2.setCellStyle(headerStyleRemainingColumns);
+        JSONArray array = data.getJSONArray("by_department");
+        for(int i = 0; i < array.length(); i++) {
+            JSONObject object = array.getJSONObject(i);
+            int value = object.getInt("number");
+            String name = object.getString("dtuSubOrgName");
+            XSSFRow row = rowCreator.createRow();
             sheet.addMergedRegion(new CellRangeAddress(
                     rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
+            XSSFCell cell = row.createCell(0);
+            cell.setCellValue(name);
+            cell.setCellStyle(getDataStyleText(wb));
+            cell = row.createCell(1);
+            cell.setCellStyle(getDataStyleText(wb));
+            cell = row.createCell(2);
+            cell.setCellValue(value);
+            cell.setCellStyle(getDataStyle(wb));
         }
         drawBorders(3, pt, startingIndex, rowCreator);        
     }
@@ -255,23 +423,35 @@ public class ExcelExport extends VitroHttpServlet {
     
     private Integer getTotal(JSONObject data, String arrayName, int year) 
             throws JSONException {
-        JSONArray array = data.getJSONArray(arrayName);
-        // This should be faster than making a hashmap unless we have an
-        // insane number of years
-        for(int i = 0; i < array.length(); i++) {
-            JSONObject object = array.getJSONObject(i);
-            int value = object.getInt("year");
-            if(year == value) {
-                return object.getInt("number");
+        try {
+            JSONArray array = data.getJSONArray(arrayName);
+            // This should be faster than making a hashmap unless we have an
+            // insane number of years
+            for(int i = 0; i < array.length(); i++) {
+                JSONObject object = array.getJSONObject(i);
+                int value = object.getInt("year");
+                if(year == value) {
+                    return object.getInt("number");
+                }
             }
+            return null;
+        } catch (JSONException e) {
+            log.error(e, e);
+            return null;
         }
-        return null;
     }
 
-    private JSONObject getJson(String baseURI, String orgLocalName, VitroRequest vreq) 
+    private JSONObject getJson(String baseURI, String orgLocalName, 
+            String startYear, String endYear, VitroRequest vreq) 
             throws ClientProtocolException, IOException, JSONException {
         HttpClient httpClient = getHttpClient(vreq.getCookies());       
         String request = baseURI + DATA_SERVICE + orgLocalName;
+        if(startYear != null) {
+            request += "/" + startYear;
+            if(endYear != null) {
+                request += "/" + endYear;
+            }
+        }
         log.info("Requesting JSON from " + request);
         HttpGet get = new HttpGet(request);
         log.info("Setting headers on GET");
