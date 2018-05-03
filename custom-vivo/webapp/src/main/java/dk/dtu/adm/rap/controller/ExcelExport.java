@@ -184,7 +184,7 @@ public class ExcelExport extends VitroHttpServlet {
             RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
         XSSFRow titleRow = rowCreator.createRow();
         sheet.addMergedRegion(new CellRangeAddress(
-                rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 3));
         CellStyle titleStyle = wb.createCellStyle();
         XSSFFont titleFont = wb.createFont();
         titleFont.setBold(true);
