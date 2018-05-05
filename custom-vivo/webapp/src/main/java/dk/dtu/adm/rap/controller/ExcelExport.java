@@ -2,6 +2,7 @@ package dk.dtu.adm.rap.controller;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -25,6 +26,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
 import org.apache.poi.ss.usermodel.BorderExtent;
 import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -59,6 +61,7 @@ public class ExcelExport extends VitroHttpServlet {
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String DTU = "Technical University of Denmark";
     private static final String YEAR = "Year";
+    private static final int SUBJECTS_CUTOFF = 20;
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -132,11 +135,13 @@ public class ExcelExport extends VitroHttpServlet {
             log.error(e, e);
         }
         rowCreator.createRow();
+        rowCreator.createRow();
         try {
             addTotals(years, json, wb, sheet, rowCreator, pt);
         } catch (JSONException e) {
             log.error(e, e);
         }
+        rowCreator.createRow();
         rowCreator.createRow();
         try {
             addCategories(json, wb, sheet, rowCreator, pt);
@@ -144,11 +149,13 @@ public class ExcelExport extends VitroHttpServlet {
             log.error(e, e);
         }
         rowCreator.createRow();
+        rowCreator.createRow();
         try {
             addTopCategories(json, wb, sheet, rowCreator, pt);
         } catch (JSONException e) {
             log.error(e, e);
         }
+        rowCreator.createRow();
         rowCreator.createRow();
         try {
             addByDepartment(byDeptJson, wb, sheet, rowCreator, pt, details);
@@ -254,11 +261,11 @@ public class ExcelExport extends VitroHttpServlet {
         cell.setCellValue("Impact");
         cell.setCellStyle(getDataStyleText(wb));            
         cell = row.createCell(1);
-        cell.setCellValue(summary.getDouble("orgImpact"));
+        cell.setCellValue(formatImpact(summary.getDouble("orgImpact")));
         cell.setCellStyle(getDataStyle(wb));
         cell = row.createCell(2);
         cell.setCellStyle(getDataStyle(wb));
-        cell.setCellValue(summary.getDouble("dtuImpact"));
+        cell.setCellValue(formatImpact(summary.getDouble("dtuImpact")));
         drawBorders(3, pt, startingIndex, rowCreator);
     }
     
@@ -310,6 +317,7 @@ public class ExcelExport extends VitroHttpServlet {
     private void addCategories(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
             RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
         XSSFRow header = rowCreator.createRow();
+        header.setHeight((short) (header.getHeight() * 2));
         int startingIndex = rowCreator.getRowIndex();
         sheet.addMergedRegion(new CellRangeAddress(
                 rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
@@ -327,6 +335,7 @@ public class ExcelExport extends VitroHttpServlet {
     private void addTopCategories(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
             RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
         XSSFRow header = rowCreator.createRow();
+        header.setHeight((short) (header.getHeight() * 2));
         int startingIndex = rowCreator.getRowIndex();
         sheet.addMergedRegion(new CellRangeAddress(
                 rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
@@ -344,6 +353,9 @@ public class ExcelExport extends VitroHttpServlet {
     private void addNameNumberArray(JSONArray array, RowCreator rowCreator,
             XSSFWorkbook wb, XSSFSheet sheet) throws JSONException {
         for(int i = 0; i < array.length(); i++) {
+            if(i == SUBJECTS_CUTOFF) {
+                break;
+            }
             JSONObject object = array.getJSONObject(i);
             int value = object.getInt("number");
             String name = object.getString("name");
@@ -365,6 +377,7 @@ public class ExcelExport extends VitroHttpServlet {
             RowCreator rowCreator, PropertyTemplate pt, boolean details) 
                     throws JSONException {
         XSSFRow header = rowCreator.createRow();
+        header.setHeight((short) (header.getHeight() * 2));
         int startingIndex = rowCreator.getRowIndex();
         CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
@@ -459,6 +472,7 @@ public class ExcelExport extends VitroHttpServlet {
         dataStyle.setFillForegroundColor(IndexedColors.WHITE.getIndex());
         dataStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         dataStyle.setAlignment(HorizontalAlignment.CENTER);
+        dataStyle.setDataFormat((short) BuiltinFormats.getBuiltinFormat("#,##0"));
         return dataStyle;
     }
     
@@ -591,7 +605,11 @@ public class ExcelExport extends VitroHttpServlet {
         cell.setCellValue(rtf);
         return cell;
     }
-    
+     
+    private String formatImpact(double impactValue) {
+        return new DecimalFormat("#.#").format(impactValue).replaceAll("\\,", ".");   
+    }
+        
     private class RowCreator {
 
         private int rowIndex = -1;
