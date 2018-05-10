@@ -6,6 +6,7 @@ import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.query.ParameterizedSparqlString;
 import com.hp.hpl.jena.rdf.model.Model;
 import dk.dtu.adm.rap.utils.StoreUtils;
+import dk.dtu.adm.rap.utils.DataCache;
 import edu.cornell.mannlib.vedit.beans.LoginStatusBean;
 import edu.cornell.mannlib.vitro.webapp.config.ConfigurationProperties;
 import edu.cornell.mannlib.vitro.webapp.controller.VitroRequest;
@@ -40,7 +41,7 @@ public class DataService {
     private static final Log log = LogFactory.getLog(DataService.class.getName());
     private static String namespace;
     private StoreUtils storeUtils;
-
+    private static final DataCache cache = new DataCache();
     
     @Path("/org/{vid}")
     @GET
@@ -65,36 +66,33 @@ public class DataService {
             @PathParam("startYear") String startYear,
             @PathParam("endYear") String endYear,
             @Context Request request) {
+
         VitroRequest vreq = new VitroRequest(httpRequest);
 
         Integer startYearInt = parseInt(startYear);
         Integer endYearInt = parseInt(endYear);
-        
-        if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
+
+        if (!authorized(vreq)) {
             return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
         }
-
         ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
-        namespace = props.getProperty("Vitro.defaultNamespace");
-        String wosDataVersion = props.getProperty("wos.dataVersion");
-        Boolean cacheActive = Boolean.parseBoolean(props.getProperty("wos.cacheActive"));
-        String uri = namespace + vid;
-
-        //setup storeUtils
-        this.storeUtils = new StoreUtils();
-        this.storeUtils.setRdfService(namespace, vreq.getRDFService());
-
-        ResponseBuilder builder = null;
-        EntityTag etag = new EntityTag(wosDataVersion + uri);
-        if (cacheActive.equals(true) && wosDataVersion != null) {
-            log.info("Etag caching active");
-            builder = request.evaluatePreconditions(etag);
+        String cacheRoot = props.getProperty("DataCache.root");
+        if (startYearInt == null) {
+            startYearInt = parseInt(props.getProperty("DataCache.year.start"));
         }
-
-        // cached resource did change -> serve updated content
-        if (builder == null) {
+        if (endYearInt == null) {
+            endYearInt = parseInt(props.getProperty("DataCache.year.end"));
+        }
+        String cachekey = "org-" + vid + "-" + Integer.toString(startYearInt) + "-" + Integer.toString(endYearInt);
+        String data = cache.read(cacheRoot, cachekey);
+        if (data == null) {
+            long start = System.currentTimeMillis();
             JSONObject jo = new JSONObject();
             try {
+                namespace = props.getProperty("Vitro.defaultNamespace");
+                String uri = namespace + vid;
+                this.storeUtils = new StoreUtils();
+                this.storeUtils.setRdfService(namespace, vreq.getRDFService());
                 jo.put("summary", getSummary(uri, startYearInt, endYearInt));
                 jo.put("categories", getRelatedPubCategories(uri, startYearInt, endYearInt));
                 jo.put("org_totals", getSummaryPubCount(uri, startYearInt, endYearInt));
@@ -104,15 +102,11 @@ public class DataService {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
-            String outJson = jo.toString();
-            builder = Response.ok(outJson);
+            data = jo.toString();
+            cache.write(cacheRoot, cachekey, data, (System.currentTimeMillis() - start));
         }
-
-        builder.tag(etag);
+        ResponseBuilder builder = Response.ok(data);
         return builder.build();
-
-        //return Response.status(200).entity(jo.toString()).cacheControl(cc).build();
     }
     
     private Integer parseInt(String value) {
@@ -220,95 +214,75 @@ public class DataService {
         return builder.build();
     }
 
+    private boolean authorized(VitroRequest vreq) {
+        if (LoginStatusBean.getBean(vreq).isLoggedIn()) {
+            return true;
+        }
+        String addr = httpRequest.getRemoteAddr();
+        if (addr.equals("127.0.0.1")) {
+            return true;
+        }
+        if (addr.equals("::1")) {
+            return true;
+        }
+        return false;
+    }
 
     @Path("/worldmap")
     @GET
     @Produces("application/json")
     public Response getWorldMap(@Context Request request) {
         VitroRequest vreq = new VitroRequest(httpRequest);
-
-        if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
+        if (!authorized(vreq)) {
             return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
         }
-
         ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
-        namespace = props.getProperty("Vitro.defaultNamespace");
-        String wosDataVersion = props.getProperty("wos.dataVersion");
-        Boolean cacheActive = Boolean.parseBoolean(props.getProperty("wos.cacheActive"));
-
-        //setup storeUtils
-        this.storeUtils = new StoreUtils();
-        this.storeUtils.setRdfService(namespace, vreq.getRDFService());
-
-        ResponseBuilder builder = null;
-        EntityTag etag = new EntityTag(wosDataVersion + "worldmap");
-        if (cacheActive.equals(true) && wosDataVersion != null) {
-            log.info("Etag caching active");
-            builder = request.evaluatePreconditions(etag);
-        }
-
-        // cached resource did change -> serve updated content
-        if (builder == null) {
-            log.info("worldmap - not using cache - " + wosDataVersion + "worldmap");
+        String cacheRoot = props.getProperty("DataCache.root");
+        String data = cache.read(cacheRoot, "worldmap");
+        if (data == null) {
+            long start = System.currentTimeMillis();
             JSONObject jo = new JSONObject();
             try {
+                namespace = props.getProperty("Vitro.defaultNamespace");
+                this.storeUtils = new StoreUtils();
+                this.storeUtils.setRdfService(namespace, vreq.getRDFService());
                 jo.put("summary", getWorldwidePubs());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
-            String outJson = jo.toString();
-            builder = Response.ok(outJson);
-        } else {
-            log.info("worldmap - using cache - " + wosDataVersion + "worldmap");
+            data = jo.toString();
+            cache.write(cacheRoot, "worldmap", data, (System.currentTimeMillis() - start));
         }
-
-        log.info("worldmap - setting tag");
-        builder.tag(etag);
+        ResponseBuilder builder = Response.ok(data);
         return builder.build();
     }
-
 
     @Path("/country/{cCode}")
     @GET
     @Produces("application/json")
     public Response getCountry(@PathParam("cCode") String cCode, @Context Request request) {
         VitroRequest vreq = new VitroRequest(httpRequest);
-
-        if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
+        if (!authorized(vreq)) {
             return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
         }
-
         ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
-        namespace = props.getProperty("Vitro.defaultNamespace");
-        String wosDataVersion = props.getProperty("wos.dataVersion");
-        Boolean cacheActive = Boolean.parseBoolean(props.getProperty("wos.cacheActive"));
-
-        //setup storeUtils
-        this.storeUtils = new StoreUtils();
-        this.storeUtils.setRdfService(namespace, vreq.getRDFService());
-
-        ResponseBuilder builder = null;
-        EntityTag etag = new EntityTag(wosDataVersion + "country" + cCode);
-        if (cacheActive.equals(true) && wosDataVersion != null) {
-            log.info("Etag caching active");
-            builder = request.evaluatePreconditions(etag);
-        }
-
-        // cached resource did change -> serve updated content
-        if (builder == null) {
+        String cacheRoot = props.getProperty("DataCache.root");
+        String data = cache.read(cacheRoot, "country-" + cCode);
+        if (data == null) {
+            long start = System.currentTimeMillis();
             JSONObject jo = new JSONObject();
             try {
+                namespace = props.getProperty("Vitro.defaultNamespace");
+                this.storeUtils = new StoreUtils();
+                this.storeUtils.setRdfService(namespace, vreq.getRDFService());
                 jo.put("orgs", getCoPubsCountry(cCode.toUpperCase()));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
-            String outJson = jo.toString();
-            builder = Response.ok(outJson);
+            data = jo.toString();
+            cache.write(cacheRoot, "country-" + cCode, data, (System.currentTimeMillis() - start));
         }
-
-        builder.tag(etag);
+        ResponseBuilder builder = Response.ok(data);
         return builder.build();
     }
     
