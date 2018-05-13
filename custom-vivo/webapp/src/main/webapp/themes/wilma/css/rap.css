@@ -445,3 +445,7 @@ table#copub-authors td {
     padding: 5px;
     border: 1px solid gray;
 }
+.footnote {
+    font-size: 12px;
+    font-style: italic;
+}

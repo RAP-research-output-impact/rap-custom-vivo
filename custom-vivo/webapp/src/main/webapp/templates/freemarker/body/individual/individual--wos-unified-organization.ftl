@@ -217,10 +217,9 @@ function doSummaryTable(response) {
     html += "<tr><td class=\"rep-label\">Publications</td><td class=\"rep-num\">" + orgTotal + "</td><td class=\"rep-num\">" + dtuTotal + "</td>";
     html += "<tr><td class=\"rep-label\">Citations</td><td class=\"rep-num\">" + orgTotalCites + "</td><td class=\"rep-num\">" + dtuTotalCites + "</td>";
     //Impact
-    html += "<tr><td class=\"rep-label\">Impact</td><td class=\"rep-num\">" + orgImpact + "</td><td class=\"rep-num\">" + dtuImpact + "</td>";
+    html += "<tr><td class=\"rep-label\">Impact<sup>*</sup></td><td class=\"rep-num\">" + orgImpact + "</td><td class=\"rep-num\">" + dtuImpact + "</td>";
 
-    var closeHtml = "</table></div>";
-    html += closeHtml;
+    html += "</table><sup>*</sup> <span class=\"footnote\">Citations per publication for the timespan selected.</span></div>";
     $("#collab-summary-container").append(html);
 }
 
@@ -354,7 +353,11 @@ function doPubCountTable(totals, DTUtotals) {
     html += uni.trim() + "</th>";
     html += "<th class=\"col3\">Technical University of Denmark</th></tr>";
     $.each(years, function(key, value) {
-        html += "<tr><td class=\"rep-label\">" + key + "</td><td class=\"rep-num\">";
+        html += "<tr><td class=\"rep-label\">" + key;
+        if (key > 2016) {
+            html += "<sup>*</sup>";
+        }
+        html += "</td><td class=\"rep-num\">";
         if ("org" in years[key]) {
             html += years[key]["org"];
         } else {
@@ -368,7 +371,7 @@ function doPubCountTable(totals, DTUtotals) {
         }
         html += "</td></tr>";
     });
-    html += "</table></div>";
+    html += "</table><sup>*</sup> <span class=\"footnote\">The number of publications for a year will not be complete until the middle of the following year due to latency of indexing publications in Web of Science.</span></div>";
     $("#collab-summary-container").append(html);
 }
 
@@ -462,5 +465,4 @@ function exportTable(html, filename) {
     // Download CSV
     downloadCsv(csv.join("\n"), filename);
 }
-
 </script>
