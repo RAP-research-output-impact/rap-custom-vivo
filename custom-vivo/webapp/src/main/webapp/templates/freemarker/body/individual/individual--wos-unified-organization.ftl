@@ -231,10 +231,13 @@ function doTopCategoryTable(response) {
             <th class="col2">Publications</th>
         </tr>
     `;
+    var n = 0;
     $.each( response.top_categories, function( key, value ) {
-        //console.log(value);
-        var row = "<tr class=\"rep-row\" id=\"tc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + value.number + "</td></tr>";
-        html += row;
+        if (n < 20) {
+            var row = "<tr class=\"rep-row\" id=\"tc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + value.number + "</td></tr>";
+            html += row;
+            n++;
+        }
     });
     html += "</table>";
     return html;
