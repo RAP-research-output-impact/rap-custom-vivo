@@ -43,7 +43,7 @@ public class DataCache {
 
     public void write(String path, String key, String data, long time) {
         if (path == null) {
-            return null;
+            return;
         }
         File root = new File(path);
         if (!root.exists()) {
