@@ -42,6 +42,9 @@ public class DataCache {
     private static final Log log = LogFactory.getLog(DataCache.class.getName());
 
     public void write(String path, String key, String data, long time) {
+        if (path == null) {
+            return null;
+        }
         File root = new File(path);
         if (!root.exists()) {
             if (root.mkdirs()) {
@@ -64,6 +67,9 @@ public class DataCache {
     }
 
     public String read(String path, String key) {
+        if (path == null) {
+            return null;
+        }
         File file = new File(path, key);
         if (!file.exists()) {
             log.info("cache miss for: " + key);
