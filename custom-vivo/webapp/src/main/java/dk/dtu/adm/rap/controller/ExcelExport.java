@@ -271,7 +271,7 @@ public class ExcelExport extends VitroHttpServlet {
             RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
         boolean dtuDataAvailable = true;
         try {
-            if(getTotal(data, "dtu_totals", years.get(0)) != null) {
+            if(getTotal(data, "dtu_totals", years.get(0)) == null) {
                 dtuDataAvailable = false;
             }
         } catch (JSONException e) {
