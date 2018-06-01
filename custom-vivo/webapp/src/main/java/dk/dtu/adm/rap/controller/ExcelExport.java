@@ -142,14 +142,14 @@ public class ExcelExport extends VitroHttpServlet {
         rowCreator.createRow();
         rowCreator.createRow();
         try {
-            addCategories(json, wb, sheet, rowCreator, pt);
+            addTopCategories(json, wb, sheet, rowCreator, pt);
         } catch (JSONException e) {
             log.error(e, e);
         }
         rowCreator.createRow();
         rowCreator.createRow();
         try {
-            addTopCategories(json, wb, sheet, rowCreator, pt);
+            addCategories(json, wb, sheet, rowCreator, pt);
         } catch (JSONException e) {
             log.error(e, e);
         }
@@ -321,7 +321,7 @@ public class ExcelExport extends VitroHttpServlet {
                 rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
         CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
-        XSSFCell header0 = addBoldText(wb, header, 0, "Partner's top research subjects");
+        XSSFCell header0 = addBoldText(wb, header, 0, "Collaboration top research subjects");
         header0.setCellStyle(headerStyleFirstColumn);
         XSSFCell header2 = addBoldText(wb, header, 2, "Publications");
         header2.setCellStyle(headerStyleRemainingColumns);
@@ -339,7 +339,7 @@ public class ExcelExport extends VitroHttpServlet {
                 rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
         CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
-        XSSFCell header0 = addBoldText(wb, header, 0, "Collaboration top research subjects");
+        XSSFCell header0 = addBoldText(wb, header, 0, "Partner's top research subjects");
         header0.setCellStyle(headerStyleFirstColumn);
         XSSFCell header2 = addBoldText(wb, header, 2, "Publications");
         header2.setCellStyle(headerStyleRemainingColumns);
