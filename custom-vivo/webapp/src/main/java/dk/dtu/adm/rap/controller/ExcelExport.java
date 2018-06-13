@@ -81,9 +81,7 @@ public class ExcelExport extends VitroHttpServlet {
         String endYear = vreq.getParameter(ENDYEAR_PARAM);
         try {
             JSONObject json = getJson(getBaseURI(vreq), orgLocalName, startYear, endYear, vreq);
-            JSONObject byDeptJson = getByDeptJson(getBaseURI(vreq), orgLocalName, startYear, endYear, vreq);
-            //JSONObject json = new JSONObject(DataService.readQuery("/excel/testData-org-university-of-toronto.json"));
-            //JSONObject byDeptJson = new JSONObject(DataService.readQuery("/excel/testData-org-university-of-toronto-byDept.json"));
+            JSONObject byDeptJson = getByDeptJson(getBaseURI(vreq), orgLocalName, startYear, endYear, vreq);            
             XSSFWorkbook wb = generateWorkbook(json, byDeptJson);        
             response.setContentType(CONTENT_TYPE);
             OutputStream out = response.getOutputStream();        
@@ -261,11 +259,11 @@ public class ExcelExport extends VitroHttpServlet {
         cell.setCellValue("Impact");
         cell.setCellStyle(getDataStyleText(wb));            
         cell = row.createCell(1);
-        cell.setCellValue(formatImpact(summary.getDouble("orgImpact")));
-        cell.setCellStyle(getDataStyle(wb));
+        cell.setCellValue(roundImpact(summary.getDouble("orgImpact")));
+        cell.setCellStyle(getImpactStyle(wb));
         cell = row.createCell(2);
-        cell.setCellStyle(getDataStyle(wb));
-        cell.setCellValue(formatImpact(summary.getDouble("dtuImpact")));
+        cell.setCellStyle(getImpactStyle(wb));
+        cell.setCellValue(roundImpact(summary.getDouble("dtuImpact")));
         drawBorders(3, pt, startingIndex, rowCreator);
     }
     
@@ -458,12 +456,24 @@ public class ExcelExport extends VitroHttpServlet {
     }
     
     private CellStyle getDataStyleText(XSSFWorkbook wb) {
-        CellStyle dataStyle = getDataStyle(wb);
+        CellStyle dataStyle = getBaseDataStyle(wb);
         dataStyle.setAlignment(HorizontalAlignment.LEFT);
         return dataStyle;
     }
     
+    private CellStyle getImpactStyle(XSSFWorkbook wb) {
+        CellStyle dataStyle = getBaseDataStyle(wb);
+        dataStyle.setDataFormat((short) BuiltinFormats.getBuiltinFormat("0.00"));
+        return dataStyle;        
+    }
+   
     private CellStyle getDataStyle(XSSFWorkbook wb) {
+        CellStyle dataStyle = getBaseDataStyle(wb);
+        dataStyle.setDataFormat((short) BuiltinFormats.getBuiltinFormat("#,##0"));
+        return dataStyle;
+    }
+    
+    private CellStyle getBaseDataStyle(XSSFWorkbook wb) {
         CellStyle dataStyle = wb.createCellStyle();
         dataStyle.setBorderTop(BorderStyle.THIN);
         dataStyle.setBorderBottom(BorderStyle.THIN);
@@ -472,7 +482,6 @@ public class ExcelExport extends VitroHttpServlet {
         dataStyle.setFillForegroundColor(IndexedColors.WHITE.getIndex());
         dataStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         dataStyle.setAlignment(HorizontalAlignment.CENTER);
-        dataStyle.setDataFormat((short) BuiltinFormats.getBuiltinFormat("#,##0"));
         return dataStyle;
     }
     
@@ -606,8 +615,13 @@ public class ExcelExport extends VitroHttpServlet {
         return cell;
     }
      
-    private String formatImpact(double impactValue) {
-        return new DecimalFormat("#.#").format(impactValue).replaceAll("\\,", ".");   
+    /* POI doesn't have a built-in format for a single decimal place,
+    nor does it seem that there is any alternative for constructing
+    custom formats.  So we will round to two decimal places and format 
+    likewise. */
+    private double roundImpact(double impactValue) {
+        int scale = (int) Math.pow(10, 2);
+        return (double) Math.round(impactValue * scale) / scale;  
     }
         
     private class RowCreator {
