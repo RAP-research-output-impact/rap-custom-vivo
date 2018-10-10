@@ -120,6 +120,8 @@ function info_message_reset() {
         $("#" + id.replace("tc-", "cc-")).css("background-color", "#f2f2f2");
         $("#" + id.replace("cc-", "tc-")).css("background-color", "#f2f2f2");
     });
+    $("ul.propertyTabsList").hide();
+    $("section.property-group").hide();
 }
 
 function collabSummary(response, startYear, endYear) {
