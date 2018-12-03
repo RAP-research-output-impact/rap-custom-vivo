@@ -61,13 +61,13 @@ public class ExcelExport extends VitroHttpServlet {
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String DTU = "Technical University of Denmark";
     private static final String YEAR = "Year";
-    private static final String IMPACT_FOOTNOTE = "* Citation per publication" 
-                                                + " for the timespan selected";
+    private static final String IMPACT_FOOTNOTE = "* Citations per publication" 
+                                                + " for the timespan selected.";
     private static final String LATENCY_FOOTNOTE = "* The number of"  
             + " publications for a year will not be complete until the middle"  
             + " of the following year due to latency of indexing publications" 
             + " in Web of Science.";
-    private static final int LATENCY_FOOTNOTE_START_YEAR = 2006;
+    private static final int LATENCY_FOOTNOTE_START_YEAR = 2018;
     private static final int SUBJECTS_CUTOFF = 20;
     
     @Override
@@ -195,8 +195,9 @@ public class ExcelExport extends VitroHttpServlet {
     private void addTitle(List<Integer> years, JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
             RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
         XSSFRow titleRow = rowCreator.createRow();
+        titleRow.setHeightInPoints(25);
         sheet.addMergedRegion(new CellRangeAddress(
-                rowCreator.rowIndex, rowCreator.rowIndex, 0, 3));
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
         CellStyle titleStyle = wb.createCellStyle();
         XSSFFont titleFont = wb.createFont();
         titleFont.setBold(true);
@@ -232,6 +233,7 @@ public class ExcelExport extends VitroHttpServlet {
             RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
         JSONObject summary = data.getJSONObject("summary");
         XSSFRow header = rowCreator.createRow();
+        header.setHeightInPoints(30);
         int startingIndex = rowCreator.getRowIndex();
         CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
@@ -271,11 +273,11 @@ public class ExcelExport extends VitroHttpServlet {
         cell = row.createCell(2);
         cell.setCellStyle(getImpactStyle(wb));
         cell.setCellValue(roundImpact(summary.getDouble("dtuImpact")));
+        drawBorders(3, pt, startingIndex, rowCreator);
         row = rowCreator.createRow();
         sheet.addMergedRegion(new CellRangeAddress(
                 rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
         addItalicText(wb, row, 0, IMPACT_FOOTNOTE);
-        drawBorders(3, pt, startingIndex, rowCreator);
     }
     
     private void addTotals(List<Integer> years, JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
@@ -289,6 +291,7 @@ public class ExcelExport extends VitroHttpServlet {
             dtuDataAvailable = false;
         }
         XSSFRow header = rowCreator.createRow();
+        header.setHeightInPoints(30);
         int startingIndex = rowCreator.getRowIndex();
         CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
@@ -303,11 +306,11 @@ public class ExcelExport extends VitroHttpServlet {
         for(Integer year : years) {
             XSSFRow row = rowCreator.createRow();
             XSSFCell cell = row.createCell(0);
-            String yearValue = Integer.toString(year);
             if(year >= LATENCY_FOOTNOTE_START_YEAR) {
-                yearValue += " *";
+                cell.setCellValue(year + " *");
+            } else {
+                cell.setCellValue(year);
             }
-            cell.setCellValue(yearValue);
             cell.setCellStyle(getDataStyleText(wb));
             Integer orgTotal = getTotal(data, "org_totals", year);
             cell = row.createCell(1);
@@ -324,11 +327,16 @@ public class ExcelExport extends VitroHttpServlet {
                 }
             }
         }
+        drawBorders(dtuDataAvailable? 3 : 2, pt, startingIndex, rowCreator);
         XSSFRow row = rowCreator.createRow();
+        row.setHeightInPoints(30);
         sheet.addMergedRegion(new CellRangeAddress(
                 rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
         addItalicText(wb, row, 0, LATENCY_FOOTNOTE);
-        drawBorders(dtuDataAvailable? 3 : 2, pt, startingIndex, rowCreator);
+        CellStyle style = wb.createCellStyle();
+        style.setWrapText(true);
+        XSSFCell cell = row.getCell(0);
+        cell.setCellStyle(style);
     }
     
     private void addCategories(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
