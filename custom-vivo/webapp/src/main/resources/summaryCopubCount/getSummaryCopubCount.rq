@@ -1,0 +1,41 @@
+# Retrieve the number of copubs between DTU and ?collab per year
+
+SELECT (COUNT(DISTINCT ?pub) AS ?number) ?year 
+WHERE {
+  {
+    ?collab a wos:UnifiedOrganization ;
+        vivo:relatedBy ?address .
+    ?address a wos:Address ;
+        vivo:relates ?pub .
+    ?authorship a vivo:Authorship ;
+            wos:fullName ?name ;
+            vivo:relates ?pub, ?address .
+    ?pub a wos:Publication ;
+        rdfs:label ?title ;
+        vivo:dateTimeValue ?dtv ;
+        vivo:relatedBy ?address .
+    ?dtv vivo:dateTime ?date .
+    FILTER(?startYear <= ?date)
+    FILTER(?endYear >= ?date)
+    BIND(STRBEFORE(STR(?date), "-") AS ?year)
+    ?pub vivo:relatedBy ?dtuAddress .
+    ?dtuAddress a wos:Address .
+    ?dtuAddress vivo:relates d:org-technical-university-of-denmark . 
+  } UNION {
+    ?collab a wos:UnifiedOrganization ;
+        vivo:relatedBy ?address .
+    ?address a wos:Address ;
+        vivo:relates ?pub .
+    ?pub a wos:Publication ;
+        rdfs:label ?title ;
+        vivo:dateTimeValue ?dtv ;
+        vivo:relatedBy ?address .
+    ?dtv vivo:dateTime ?date .
+    FILTER(?startYear <= ?date)
+    FILTER(?endYear >= ?date)
+    BIND(STRBEFORE(STR(?date), "-") AS ?year)
+    ?pub vivo:relatedBy ?dtuAddress .
+    ?dtuAddress a wos:Address .
+    ?dtuAddress vivo:relates d:org-technical-university-of-denmark . 
+  }
+ } GROUP BY ?year ORDER BY DESC(?year)
