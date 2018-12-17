@@ -312,7 +312,7 @@ function collabSummary(response, startYear, endYear) {
     }
     doSummaryTable(response);
     if (response.org_totals.length != 0) {
-        doPubCountTable(response.org_totals, response.dtu_totals);
+        doPubCountTable(response.org_totals, response.dtu_totals, response.copub_totals);
     }
     var html = `
     <hr/>
@@ -521,7 +521,7 @@ function doDepartmentTable(totals, name, startYear, endYear) {
 
 }
 
-function doPubCountTable(totals, DTUtotals) {
+function doPubCountTable(totals, DTUtotals, copubs) {
     var years = {};
     $.each(totals, function(key, value) {
         var year = value.year.toString();
@@ -541,6 +541,15 @@ function doPubCountTable(totals, DTUtotals) {
             years[year]["dtu"] = value.number;
         }
     });
+    $.each(copubs, function(key, value) {
+        var year = value.year.toString();
+        if (year in years) {
+            years[year]["copubs"] = value.number;
+        } else {
+            years[year] = [];
+            years[year]["copubs"] = value.number;
+        }
+    });
     var html = `
     <div id="pubCountTable">
     <hr/>
@@ -551,7 +560,8 @@ function doPubCountTable(totals, DTUtotals) {
         <th class="col2">
     `;
     html += uni.trim() + "</th>";
-    html += "<th class=\"col3\">Technical University of Denmark</th></tr>";
+    html += "<th class=\"col3\">Technical University of Denmark</th>";
+    html += "<th class=\"col4\">Co-publications</th></tr>";
     $.each(years, function(key, value) {
         html += "<tr><td class=\"rep-label\">" + key;
         if (key > 2017) {
@@ -566,6 +576,12 @@ function doPubCountTable(totals, DTUtotals) {
         html += "</td><td class=\"rep-num\">";
         if ("dtu" in years[key]) {
             html += years[key]["dtu"];
+        } else {
+            html += "0";
+        }
+        html += "</td><td class=\"rep-num\">";
+        if ("copubs" in years[key]) {
+            html += years[key]["copubs"];
         } else {
             html += "0";
         }
