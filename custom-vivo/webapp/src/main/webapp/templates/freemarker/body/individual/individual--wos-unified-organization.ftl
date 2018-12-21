@@ -126,6 +126,7 @@ function info_message_reset() {
     $("section.property-group").hide();
 }
 
+
 function barchart(options) {
 
   let width = options.width
@@ -137,6 +138,8 @@ function barchart(options) {
   let xDomain = options.data.xDomain
   let yDomain = options.data.yDomain
   let data = options.data.dataset
+  let xTick = options.ox.tick
+  let yTick = options.oy.tick
 
   let x = d3.scaleBand()
       .domain(xDomain)
@@ -152,85 +155,12 @@ function barchart(options) {
       d3.axisBottom(x)
       .tickSizeOuter(0)
     )
-    .call(g => g.selectAll(".tick line")
-            .remove()
-         )
-    .call(g => g.selectAll(".tick text")
-            .attr('font-size', '12px')
-            .call(wrap, x.bandwidth())
-            .call(center)
-         )
+
 
   let yAxis = (g) => g.attr("transform", 'translate(' + margin.left + ', 0)')
     .call(d3.axisLeft(y))
-    .call(g => g.selectAll(".tick line").remove())
     .call(g => g.select('.domain').remove())
 
-  function wrap(text, width) {
-      // fn to wrap text at first '&' character
-      // else, wrap it at second ' ' space character
-      // or at first, if only one found
-
-      function prepareWords(str, idx) {
-        let start = str.substr(0, idx)
-        let end = str.substr(idx+1)
-        let words = [start, end]
-
-        return words
-      }
-
-      function getSecondIdx(str, char) {
-        let lookFromIdx = str.indexOf(char)+1
-        let idx = str.indexOf(char, lookFromIdx)
-        return idx
-      }
-
-      text.each(function() {
-
-        var words,
-            text = d3.select(this),
-            string = text.text().trim(),
-            spaceChars = (string.match(/\s+/g) || []).length
-
-        if (!spaceChars) { words = [string] }
-
-        else {
-          let hasAmperS = string.includes('&') // we will split only at first '&'
-
-          if (hasAmperS) words = prepareWords(string, string.indexOf(' &'))
-
-          else if (spaceChars < 2) words = prepareWords(string, string.indexOf(' '))
-          else words = prepareWords(string, getSecondIdx(string, ' '))
-        }
-
-        let word,
-            line = [],
-            lineNumber = 0,
-            lineHeight = 1.1, // ems
-            y = text.attr("y"),
-            dy = parseFloat(text.attr("dy"))
-
-            text.text(null)
-
-        while (word = words.shift()) {
-          let tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-        }
-
-      });
-  }
-
-  function center(text) {
-
-    text.each(function() {
-      let text = d3.select(this),
-          bBox = text.node().getBBox(),
-          textH = bBox.height,
-          textW = bBox.width
-
-      text.attr("transform", 'rotate(-90) translate(-' + (textW/2 + 10) + '-' + (x.bandwidth()/2 + (bandPad * x.bandwidth()) + textH/2) + ')')
-
-    })
-  }
 
   function draw(opt) {
 
@@ -243,9 +173,9 @@ function barchart(options) {
     if (title) {
       svg.append('text')
         .attr("x", width/2)
-        .attr("y", margin.top-15)
+        .attr("y", margin.top - 30)
         .attr("text-anchor", "middle")
-        .attr('font-size', '18px')
+        .attr('font-size', '16px')
         .text(title)
     }
 
@@ -260,12 +190,13 @@ function barchart(options) {
       .attr('height', d => (y(0) - y(d.number)))
       .attr('width', d => (x.bandwidth()))
 
-    svg.append('g')
+    let ox = svg.append('g')
       .call(xAxis)
+    if (xTick) xTick(ox, {bandwidth: x.bandwidth()} )
 
-    svg.append('g')
+    let oy = svg.append('g')
       .call(yAxis)
-
+    if (yTick) yTick(oy)
 
     return svg.node()
   }
@@ -275,7 +206,85 @@ function barchart(options) {
     insertAt: options.insertAt
   }
   draw(drawOpt)
+
 }
+
+
+function wrap(text, width) {
+  // fn to wrap text at first '&' character
+  // else, wrap it at second ' ' space character
+  // or at first ' ', if only one found
+
+  function prepareWords(str, idx) {
+    let start = str.substr(0, idx)
+    let end = str.substr(idx+1)
+    let words = [start, end]
+
+    return words
+  }
+
+  function getSecondIdx(str, char) {
+    let lookFromIdx = str.indexOf(char)+1
+    let idx = str.indexOf(char, lookFromIdx)
+    return idx
+  }
+
+  text.each(function() {
+
+      var words,
+          text = d3.select(this),
+          string = text.text().trim(),
+          spaceChars = (string.match(/\s+/g) || []).length
+
+      if (!spaceChars) { words = [string] }
+
+      else {
+        let hasAmperS = string.includes('&') // we will split only at first '&'
+
+        if (hasAmperS) words = prepareWords(string, string.indexOf(' &'))
+
+        else if (spaceChars < 2) words = prepareWords(string, string.indexOf(' '))
+        else words = prepareWords(string, getSecondIdx(string, ' '))
+      }
+
+      let word,
+          line = [],
+          lineNumber = 0,
+          lineHeight = 1.1, // ems
+          y = text.attr("y"),
+          dy = parseFloat(text.attr("dy"))
+
+          text.text(null)
+
+      while (word = words.shift()) {
+        let tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+      }
+
+    });
+}
+
+function rotate90(text) {
+
+    text.each(function() {
+      let text = d3.select(this),
+          bBox = text.node().getBBox(),
+          textH = bBox.height,
+          textW = bBox.width
+
+      text.attr("transform", 'translate(0 -'+ (22 + textH/2) +') rotate(-90 0 ' + (22 + textH/2) +') translate(-'+ (textW/2 + 16) +' 0)')
+// 22px is distance between x axis path and center (in height) of label
+// first translate is to rise up center of label until x axis path strikes the middle of the label
+// then, we rotate it -90deg with origin also set to that point
+// and translate it back downwords by half of element width(as computed when displayed horizontally) + the distance we want it separated downwords from x axis path (initially was 22)
+    })
+}
+
+
+function yTick(g) {
+  g.selectAll(".tick line").remove()
+  g.selectAll(".tick text").attr('font-size', '12px')
+}
+
 
 
 function collabSummary(response, startYear, endYear) {
@@ -338,6 +347,16 @@ function collabSummary(response, startYear, endYear) {
         let xDomain = myData.map(x => x.name)
         let yDomain = myData.map(x => x.number)
 
+        function xTick(g, opt) { // this is general in this file, but should be imported as a custom module (or defined in barchart.options) for each chart
+          let bandwidth = opt.bandwidth
+          g.selectAll(".tick line").remove()
+
+          g.selectAll(".tick text")
+            .attr('font-size', '12px')
+            .call(wrap, bandwidth)
+            .call(rotate90) // find how to .call() only if condition true
+        }
+
         let chartOpt = {
           width: 1200,
           height: 500,
@@ -356,8 +375,15 @@ function collabSummary(response, startYear, endYear) {
           },
           title: {
             text: 'Number of Publications by Top Research Subjects'
+          },
+          ox: {
+            tick: xTick
+          },
+          oy: {
+            tick: yTick
           }
         }
+
         barchart(chartOpt)
 
         html += tempChartHolder.innerHTML
@@ -588,6 +614,62 @@ function doPubCountTable(totals, DTUtotals, copubs) {
         html += "</td></tr>";
     });
     html += "</table><sup>*</sup> <span class=\"footnote\">The number of publications for a year will not be complete until the middle of the following year due to latency of indexing publications in Web of Science.</span></div>";
+
+
+    // generate barchart for response.categories
+    // can't be created directly in a memory container if we want to render its elements positioned correctly
+    // so we need to load it in a hidden (temporary) element in DOM, and then remove it to targeted place
+    let tempChartHolder = document.createElement('div')
+    tempChartHolder.className += 'chartDrawnButHidden'
+    tempChartHolder.setAttribute("style", "position: absolute; top: -1000; left:-1000;")
+    document.body.append(tempChartHolder)
+
+    let myData = copubs.map(x => (
+      {
+        number: x.number,
+        name: x.year.toString()
+      }
+    ) )
+    let xDomain = myData.map(x => x.name)
+    let yDomain = myData.map(x => x.number)
+
+    let chartOpt = {
+      width: 1060,
+      height: 400,
+      margin: {
+        top: 50,
+        right: 0,
+        bottom: 50,
+        left: 20
+      },
+      bandPad: 0.2,
+      insertAt: tempChartHolder,
+      data: {
+        dataset: myData,
+        xDomain: xDomain,
+        yDomain: yDomain
+      },
+      title: {
+        text: 'Number of Co-Publications Per Year'
+      },
+      ox: {
+        tick: (g) => {
+          g.selectAll(".tick line").remove()
+
+          g.selectAll(".tick text")
+            .attr('font-size', '12px')
+        }
+      },
+      oy: {
+        tick: yTick
+      }
+    }
+
+    barchart(chartOpt)
+
+    html += tempChartHolder.innerHTML
+    tempChartHolder.remove()
+
     $("#collab-summary-container").append(html);
 }
 
