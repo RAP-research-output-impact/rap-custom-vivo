@@ -5,6 +5,7 @@
 <#-- Do not show the link for temporal visualization unless it's enabled -->
 
 <script src="${urls.theme}/js/jquery.corner.js"></script>
+<script src="${urls.theme}/js/d3-v5.min.js"></script>
 
 <#assign affiliatedResearchAreas>
     <#include "individual-affiliated-research-areas.ftl">
@@ -16,6 +17,7 @@
 
 <script>
 var individualUri = "${individual.uri}";
+
 //co-publication report
 $("span.display-title").html('');
 var uni = $("h1.fn").text();
@@ -37,7 +39,7 @@ if (individualLocalName != "org-technical-university-of-denmark") {
             <span id="collab-summary-total"></span> co-publications
             <span id="collab-summary-cat"></span>
 	    <a id="report-export" class="report-export" href="#">Export</a>
-            <#-- original Javascript export 
+            <#-- original Javascript export
 	    <a class="report-export" href="#">Export</a>
 	    -->
         </h2>
@@ -124,6 +126,158 @@ function info_message_reset() {
     $("section.property-group").hide();
 }
 
+function barchart(options) {
+
+  let width = options.width
+  let height = options.height
+
+  margin = options.margin
+
+  let bandPad = options.bandPad
+  let xDomain = options.data.xDomain
+  let yDomain = options.data.yDomain
+  let data = options.data.dataset
+
+  let x = d3.scaleBand()
+      .domain(xDomain)
+      .range([margin.left, width - margin.right])
+      .padding(bandPad)
+
+  let y = d3.scaleLinear()
+      .domain( [0, d3.max(yDomain)] ).nice()
+      .range([height - margin.bottom, margin.top])
+
+  let xAxis = (g) => g.attr("transform", 'translate(0, ' + (height - margin.bottom) + ')')
+    .call(
+      d3.axisBottom(x)
+      .tickSizeOuter(0)
+    )
+    .call(g => g.selectAll(".tick line")
+            .remove()
+         )
+    .call(g => g.selectAll(".tick text")
+            .attr('font-size', '12px')
+            .call(wrap, x.bandwidth())
+            .call(center)
+         )
+
+  let yAxis = (g) => g.attr("transform", 'translate(' + margin.left + ', 0)')
+    .call(d3.axisLeft(y))
+    .call(g => g.selectAll(".tick line").remove())
+    .call(g => g.select('.domain').remove())
+
+  function wrap(text, width) {
+      // fn to wrap text at first '&' character
+      // else, wrap it at second ' ' space character
+      // or at first, if only one found
+
+      function prepareWords(str, idx) {
+        let start = str.substr(0, idx)
+        let end = str.substr(idx+1)
+        let words = [start, end]
+
+        return words
+      }
+
+      function getSecondIdx(str, char) {
+        let lookFromIdx = str.indexOf(char)+1
+        let idx = str.indexOf(char, lookFromIdx)
+        return idx
+      }
+
+      text.each(function() {
+
+        var words,
+            text = d3.select(this),
+            string = text.text().trim(),
+            spaceChars = (string.match(/\s+/g) || []).length
+
+        if (!spaceChars) { words = [string] }
+
+        else {
+          let hasAmperS = string.includes('&') // we will split only at first '&'
+
+          if (hasAmperS) words = prepareWords(string, string.indexOf(' &'))
+
+          else if (spaceChars < 2) words = prepareWords(string, string.indexOf(' '))
+          else words = prepareWords(string, getSecondIdx(string, ' '))
+        }
+
+        let word,
+            line = [],
+            lineNumber = 0,
+            lineHeight = 1.1, // ems
+            y = text.attr("y"),
+            dy = parseFloat(text.attr("dy"))
+
+            text.text(null)
+
+        while (word = words.shift()) {
+          let tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+        }
+
+      });
+  }
+
+  function center(text) {
+
+    text.each(function() {
+      let text = d3.select(this),
+          bBox = text.node().getBBox(),
+          textH = bBox.height,
+          textW = bBox.width
+
+      text.attr("transform", 'rotate(-90) translate(-' + (textW/2 + 10) + '-' + (x.bandwidth()/2 + (bandPad * x.bandwidth()) + textH/2) + ')')
+
+    })
+  }
+
+  function draw(opt) {
+
+    let svg = d3.select(options.insertAt)
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height)
+
+    let title = opt.title ? opt.title.text : null
+    if (title) {
+      svg.append('text')
+        .attr("x", width/2)
+        .attr("y", margin.top-15)
+        .attr("text-anchor", "middle")
+        .attr('font-size', '18px')
+        .text(title)
+    }
+
+    svg.append('g')
+      .attr("fill", "steelblue")
+      .selectAll('rect')
+      .data(data)
+      .enter()
+      .append('rect')
+      .attr('x', d => x(d.name))
+      .attr('y', d => y(d.number))
+      .attr('height', d => (y(0) - y(d.number)))
+      .attr('width', d => (x.bandwidth()))
+
+    svg.append('g')
+      .call(xAxis)
+
+    svg.append('g')
+      .call(yAxis)
+
+
+    return svg.node()
+  }
+
+  let drawOpt = {
+    title: options.title ? options.title : null,
+    insertAt: options.insertAt
+  }
+  draw(drawOpt)
+}
+
+
 function collabSummary(response, startYear, endYear) {
     $("#collab-summary-container").remove();
     $("section#individual-info").append("<div id=\"collab-summary-container\"></div>");
@@ -158,7 +312,7 @@ function collabSummary(response, startYear, endYear) {
     }
     doSummaryTable(response);
     if (response.org_totals.length != 0) {
-        doPubCountTable(response.org_totals, response.dtu_totals);
+        doPubCountTable(response.org_totals, response.dtu_totals, response.copub_totals);
     }
     var html = `
     <hr/>
@@ -170,11 +324,52 @@ function collabSummary(response, startYear, endYear) {
     }
     if (response.categories.length > 0) {
         html += doPubCategoryTable(response.categories, startYear, endYear);
+
+
+        // generate barchart for response.categories
+        // can't be created directly in a memory container if we want to render its elements positioned correctly
+        // so we need to load it in a hidden (temporary) element in DOM, and then remove it to targeted place
+        let tempChartHolder = document.createElement('div')
+        tempChartHolder.className += 'chartDrawnButHidden'
+        tempChartHolder.setAttribute("style", "position: absolute; top: -1000; left:-1000;")
+        document.body.append(tempChartHolder)
+
+        let myData = response.categories
+        let xDomain = myData.map(x => x.name)
+        let yDomain = myData.map(x => x.number)
+
+        let chartOpt = {
+          width: 1200,
+          height: 500,
+          margin: {
+            top: 50,
+            right: 0,
+            bottom: 150,
+            left: 20
+          },
+          bandPad: 0.2,
+          insertAt: tempChartHolder,
+          data: {
+            dataset: myData,
+            xDomain: xDomain,
+            yDomain: yDomain
+          },
+          title: {
+            text: 'Number of Publications by Top Research Subjects'
+          }
+        }
+        barchart(chartOpt)
+
+        html += tempChartHolder.innerHTML
+        tempChartHolder.remove()
     }
+
+
     html += "</div>";
     $("#collab-summary-container").append(html);
     loadPubInfoByStartYear(byDeptUrl, startYear, endYear, byDeptReport)
 }
+
 
 
 function byDeptReport(response, startYear, endYear) {
@@ -326,7 +521,7 @@ function doDepartmentTable(totals, name, startYear, endYear) {
 
 }
 
-function doPubCountTable(totals, DTUtotals) {
+function doPubCountTable(totals, DTUtotals, copubs) {
     var years = {};
     $.each(totals, function(key, value) {
         var year = value.year.toString();
@@ -346,6 +541,15 @@ function doPubCountTable(totals, DTUtotals) {
             years[year]["dtu"] = value.number;
         }
     });
+    $.each(copubs, function(key, value) {
+        var year = value.year.toString();
+        if (year in years) {
+            years[year]["copubs"] = value.number;
+        } else {
+            years[year] = [];
+            years[year]["copubs"] = value.number;
+        }
+    });
     var html = `
     <div id="pubCountTable">
     <hr/>
@@ -356,7 +560,8 @@ function doPubCountTable(totals, DTUtotals) {
         <th class="col2">
     `;
     html += uni.trim() + "</th>";
-    html += "<th class=\"col3\">Technical University of Denmark</th></tr>";
+    html += "<th class=\"col3\">Technical University of Denmark</th>";
+    html += "<th class=\"col4\">Co-publications</th></tr>";
     $.each(years, function(key, value) {
         html += "<tr><td class=\"rep-label\">" + key;
         if (key > 2017) {
@@ -371,6 +576,12 @@ function doPubCountTable(totals, DTUtotals) {
         html += "</td><td class=\"rep-num\">";
         if ("dtu" in years[key]) {
             html += years[key]["dtu"];
+        } else {
+            html += "0";
+        }
+        html += "</td><td class=\"rep-num\">";
+        if ("copubs" in years[key]) {
+            html += years[key]["copubs"];
         } else {
             html += "0";
         }
