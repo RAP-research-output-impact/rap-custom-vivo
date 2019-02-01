@@ -7,6 +7,7 @@
 <script src="${urls.theme}/js/jquery.corner.js"></script>
 <script src="${urls.theme}/js/d3-v5.min.js"></script>
 
+
 <#assign affiliatedResearchAreas>
     <#include "individual-affiliated-research-areas.ftl">
 </#assign>
@@ -15,7 +16,23 @@
 <#include "individual.ftl">
 <div style="height: 60px;"></div>
 
+
 <script>
+
+let module = {
+  db: {
+    foo: '123'
+  },
+  controllers: [{
+      name: 'foo',
+      args: {
+        init: '/'
+      },
+      fn: () => {
+        console.log('foo')
+      }
+    }]
+}
 var individualUri = "${individual.uri}";
 
 //co-publication report
@@ -127,165 +144,6 @@ function info_message_reset() {
 }
 
 
-function barchart(options) {
-
-  let width = options.width
-  let height = options.height
-
-  margin = options.margin
-
-  let bandPad = options.bandPad
-  let xDomain = options.data.xDomain
-  let yDomain = options.data.yDomain
-  let data = options.data.dataset
-  let xTick = options.ox.tick
-  let yTick = options.oy.tick
-
-  let x = d3.scaleBand()
-      .domain(xDomain)
-      .range([margin.left, width - margin.right])
-      .padding(bandPad)
-
-  let y = d3.scaleLinear()
-      .domain( [0, d3.max(yDomain)] ).nice()
-      .range([height - margin.bottom, margin.top])
-
-  let xAxis = (g) => g.attr("transform", 'translate(0, ' + (height - margin.bottom) + ')')
-    .call(
-      d3.axisBottom(x)
-      .tickSizeOuter(0)
-    )
-
-
-  let yAxis = (g) => g.attr("transform", 'translate(' + margin.left + ', 0)')
-    .call(d3.axisLeft(y))
-    .call(g => g.select('.domain').remove())
-
-
-  function draw(opt) {
-
-    let svg = d3.select(options.insertAt)
-        .append('svg')
-        .attr('width', width)
-        .attr('height', height)
-
-    let title = opt.title ? opt.title.text : null
-    if (title) {
-      svg.append('text')
-        .attr("x", width/2)
-        .attr("y", margin.top - 30)
-        .attr("text-anchor", "middle")
-        .attr('font-size', '16px')
-        .text(title)
-    }
-
-    svg.append('g')
-      .attr("fill", "steelblue")
-      .selectAll('rect')
-      .data(data)
-      .enter()
-      .append('rect')
-      .attr('x', d => x(d.name))
-      .attr('y', d => y(d.number))
-      .attr('height', d => (y(0) - y(d.number)))
-      .attr('width', d => (x.bandwidth()))
-
-    let ox = svg.append('g')
-      .call(xAxis)
-    if (xTick) xTick(ox, {bandwidth: x.bandwidth()} )
-
-    let oy = svg.append('g')
-      .call(yAxis)
-    if (yTick) yTick(oy)
-
-    return svg.node()
-  }
-
-  let drawOpt = {
-    title: options.title ? options.title : null,
-    insertAt: options.insertAt
-  }
-  draw(drawOpt)
-
-}
-
-
-function wrap(text, width) {
-  // fn to wrap text at first '&' character
-  // else, wrap it at second ' ' space character
-  // or at first ' ', if only one found
-
-  function prepareWords(str, idx) {
-    let start = str.substr(0, idx)
-    let end = str.substr(idx+1)
-    let words = [start, end]
-
-    return words
-  }
-
-  function getSecondIdx(str, char) {
-    let lookFromIdx = str.indexOf(char)+1
-    let idx = str.indexOf(char, lookFromIdx)
-    return idx
-  }
-
-  text.each(function() {
-
-      var words,
-          text = d3.select(this),
-          string = text.text().trim(),
-          spaceChars = (string.match(/\s+/g) || []).length
-
-      if (!spaceChars) { words = [string] }
-
-      else {
-        let hasAmperS = string.includes('&') // we will split only at first '&'
-
-        if (hasAmperS) words = prepareWords(string, string.indexOf(' &'))
-
-        else if (spaceChars < 2) words = prepareWords(string, string.indexOf(' '))
-        else words = prepareWords(string, getSecondIdx(string, ' '))
-      }
-
-      let word,
-          line = [],
-          lineNumber = 0,
-          lineHeight = 1.1, // ems
-          y = text.attr("y"),
-          dy = parseFloat(text.attr("dy"))
-
-          text.text(null)
-
-      while (word = words.shift()) {
-        let tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-      }
-
-    });
-}
-
-function rotate90(text) {
-
-    text.each(function() {
-      let text = d3.select(this),
-          bBox = text.node().getBBox(),
-          textH = bBox.height,
-          textW = bBox.width
-
-      text.attr("transform", 'translate(0 -'+ (22 + textH/2) +') rotate(-90 0 ' + (22 + textH/2) +') translate(-'+ (textW/2 + 16) +' 0)')
-// 22px is distance between x axis path and center (in height) of label
-// first translate is to rise up center of label until x axis path strikes the middle of the label
-// then, we rotate it -90deg with origin also set to that point
-// and translate it back downwords by half of element width(as computed when displayed horizontally) + the distance we want it separated downwords from x axis path (initially was 22)
-    })
-}
-
-
-function yTick(g) {
-  g.selectAll(".tick line").remove()
-  g.selectAll(".tick text").attr('font-size', '12px')
-}
-
-
 
 function collabSummary(response, startYear, endYear) {
     $("#collab-summary-container").remove();
@@ -343,48 +201,36 @@ function collabSummary(response, startYear, endYear) {
         tempChartHolder.setAttribute("style", "position: absolute; top: -1000; left:-1000;")
         document.body.append(tempChartHolder)
 
-        let myData = response.categories
-        let xDomain = myData.map(x => x.name)
-        let yDomain = myData.map(x => x.number)
+        let myData = response.categories.map(x =>
+                    ({ label: x.name,
+                      value: x.number,
+                      category: x.category
+                     }))
 
-        function xTick(g, opt) { // this is general in this file, but should be imported as a custom module (or defined in barchart.options) for each chart
-          let bandwidth = opt.bandwidth
-          g.selectAll(".tick line").remove()
-
-          g.selectAll(".tick text")
-            .attr('font-size', '12px')
-            .call(wrap, bandwidth)
-            .call(rotate90) // find how to .call() only if condition true
-        }
-
-        let chartOpt = {
-          width: 1200,
-          height: 500,
+        let pubsByResearchSubjChartOpt = {
+          data: myData,
+          width: 600,
+          maxWidth: 700,
+          height: 750,
+          maxHeight: 800,
+          minHeight: 450,
           margin: {
-            top: 50,
-            right: 0,
-            bottom: 150,
-            left: 20
+            top: 40,
+            right: 20,
+            bottom: 30,
+            left: 300 // if labels must be in 1 line, should be depending on max label width (label of styled font-size)
           },
-          bandPad: 0.2,
           insertAt: tempChartHolder,
-          data: {
-            dataset: myData,
-            xDomain: xDomain,
-            yDomain: yDomain
-          },
-          title: {
-            text: 'Number of Publications by Top Research Subjects'
-          },
-          ox: {
-            tick: xTick
-          },
-          oy: {
-            tick: yTick
+          title: 'Number of Publications by Top Research Subjects',
+          createFn: createHBarchart,
+          styleFn: styleHBarchart,
+          styleFnOpt: {
+            barFillColor: '#030F4F',
+            oyF: '13px',
+            oxF: '13px'
           }
         }
-
-        barchart(chartOpt)
+        hBarchart(pubsByResearchSubjChartOpt)
 
         html += tempChartHolder.innerHTML
         tempChartHolder.remove()
@@ -406,7 +252,7 @@ function byDeptReport(response, startYear, endYear) {
 }
 
 function doCategories(response) {
-    console.log(response.categories);
+
     $("#collab-summary-container").append("<li>Co-publication categories: " + response.categories.length + "</li>");
 }
 
@@ -545,7 +391,366 @@ function doDepartmentTable(totals, name, startYear, endYear) {
     html += closeHtml;
     $("#collab-summary-container").append(html);
 
+    // CALL RESPONSIVE CHARTS FN after elements are in dom
+    let responsiveCharts = document.querySelectorAll('.chart-box[minH]')
+    responsiveCharts.forEach(x => resizeChart(x))
+
 }
+
+
+/*** FN TO RESIZE CHARTS ***/
+function resizeChart(target) {
+  let minH = target.getAttribute('minH');
+  let widthTrigger = 0
+
+  var ro = new ResizeObserver( entries => {
+    let entry = entries[0],
+        cr = entry.contentRect,
+        svg = entry.target.children[0],
+        svgStyle = svg.style
+
+    if (cr.height < minH) {
+
+      if (!widthTrigger) widthTrigger = cr.width
+      svgStyle.height = minH + 'px';
+    }
+
+    if (widthTrigger && svgStyle.height && cr.width > widthTrigger) {
+      svgStyle.height = ''
+    }
+  });
+
+  // Observe one or multiple elements
+  ro.observe(target);
+}
+
+
+/*** START LINE CHART GENERAL FUNCTIONS ***/
+// fn to create base input and elements and position them
+function createLineChart({data, insertAt, title, svgId, width, maxWidth, height, maxHeight, minHeight, margin, label}) {
+
+  // define xDomain and yDomain
+  let xDomain = data.map(x => x.date)
+  let yDomain = data.map(x => x.value)
+
+  // define xScale and yScale with their domain and range
+  let x = d3.scaleUtc()
+    .domain(d3.extent(xDomain))
+    .range([0, width - margin.left - margin.right])
+  let y = d3.scaleLinear()
+    .domain([0, d3.max(yDomain)])
+    .range([height - margin.top - margin.bottom, 0])
+
+
+  // create x and y axis function
+  let yAxis = (g) => g.call(d3.axisLeft(y))
+  let xAxis = (g) => g.call(d3.axisBottom(x))
+
+
+  // fn to generate line
+  let line = d3.line()
+  .x(d => x(d.date))
+  .y(d => y(d.value))
+
+
+  // create svg in dom
+  let svg = d3.select(insertAt)
+    .append('div')
+    .attr('class', 'chart-box')
+    .attr('minH', minHeight)
+    .style('max-width', maxWidth + 'px')
+    .style('overflow', 'auto')
+    .style('margin', 'auto')
+      .append('svg')
+      .attr('id', svgId)
+      .attr("preserveAspectRatio", "xMinYMin meet")
+      .attr("viewBox", "0 0 " + width +' ' + height)
+      .classed('svg-content', true)
+      .style('max-height', maxHeight+'px')
+
+
+  // positioning
+  let position = (x, y) => 'translate(' + x + ',' + y + ')'
+
+  let translate = {
+    yAxis: position(margin.left, margin.top),
+    xAxis: position(margin.left, (height-margin.bottom)),
+    line: position(margin.left, margin.top),
+  }
+
+
+  // 1.create 2.position axes
+  svg.append('g')
+    .call(yAxis)
+    .attr('transform', translate.yAxis)
+
+  svg.append('g')
+    .call(xAxis)
+    .attr("transform", translate.xAxis)
+
+  // svg append serie
+  let serie = svg.append('g')
+      .attr('class', 'serie')
+
+  // serie append path
+  serie.append("path")
+    .datum(data)
+    .attr('d', line)
+    .attr('transform', translate.line)
+    .attr('class', 'chart-line')
+
+  // base styles - can be overwritten by styleFn
+    .attr('stroke', 'black')
+    .attr('stroke-width', 1)
+    .attr('fill', 'none')
+
+
+  // title
+  svg.append('text')
+    .attr('class', 'svg-title')
+    .attr("x", width/2)
+    .attr("y", 16)
+    .attr("text-anchor", "middle")
+    .attr('font-size', 16) // base style, to be overridden in styleFn
+    .text(title)
+
+  // LABELS if needed
+  let hasLabels = label.type
+  if (hasLabels) {
+
+
+    // for now we deal only with case of rectanglar label
+    let isRectLabel = label.type == 'rect'
+    if (isRectLabel) {
+      var labelPaddingH = label.paddingH,
+          labelPaddingV = label.paddingV
+
+      translate.labelsGr = position(margin.left-labelPaddingH/2, margin.top-labelPaddingV/2)
+    }
+
+
+    let labelGroup = svg.select('.serie')
+      .append('g').attr('class', 'labels')
+      .attr('font-size', 14)
+      .attr("transform", translate.labelsGr)
+
+    let labels = labelGroup.selectAll(".label")
+      .data(data)
+      .enter()
+      .append("g")
+      .attr("class", "label")
+      .attr("transform", (d, i) =>  ("translate(" + x(d.date) + "," + y(d.value) + ")"))
+
+
+    labels.append("text")
+      .text( d => d.value)
+      .attr("dx", function() { return -this.getBBox().width/2 + labelPaddingH/2+ 'px'})
+      .attr("dy", function() { return this.getBBox().height/2 + 'px'})
+
+    if (isRectLabel) {
+      labels.insert("rect", 'text')
+      .datum( function() { return this.nextSibling.getBBox() })
+      .attr("x", (d) => (d.x - labelPaddingH))
+      .attr("y", (d) => d.y - labelPaddingV-1)
+      .attr("width", (d) => d.width + 2 * labelPaddingH)
+      .attr("height", (d) => d.height + 2 * labelPaddingV)
+      .attr('fill', '#fff')
+
+      // if want to set border and radius
+      // .attr('rx', '3')
+    }
+
+  } // close [if hasLabels]
+
+}
+// end createLineChart fn
+
+/*** START HORIZONTAL BARCHART FN ***/
+function styleHBarchart(opt) {
+  let oxF = opt.oxF,
+      oyF = opt.oyF,
+      barColor = opt.barFillColor
+
+  let svg = d3.select('#' + opt.svgId),
+      // oyBox = svg.select('.oy-box'),
+      oy = svg.select('.oy'),
+      ox = svg.select('.ox')
+
+  oy.attr('transform', 'translate(-7, 0)')
+
+  svg.selectAll('.bar')
+    .attr('fill', barColor)
+  oy.select('.domain').remove()
+  oy.selectAll('text')
+    .style('font-size', oyF )
+
+  ox.selectAll('text').style('font-size', oxF)
+
+}
+
+function createHBarchart({data, insertAt, svgId, width, maxWidth, height, maxHeight, minHeight, margin, title}) {
+  // define xDomain and yDomain
+  let xDomain = data.map(x => x.value)
+  let yDomain = data.map(x => x.label)
+
+  // define xScale and yScale with their domain and range
+  let y = d3.scaleBand()
+      .domain(yDomain)
+      .range([margin.top, height - margin.bottom])
+      .padding(0.2) // should be customizable
+
+  let x = d3.scaleLinear()
+      .domain( [d3.max(xDomain), 0] ).nice()
+      .range([width-margin.right-margin.left, 0])
+
+
+  let xAxis = (g) => g.call(d3.axisBottom(x))
+  let yAxis = (g) => g.call(d3.axisLeft(y))
+
+
+  // create svg in dom
+  let svg = d3.select(insertAt)
+    .append('div')
+    .attr('class', 'chart-box')
+    .attr('minH', minHeight)
+    .style('max-width', maxWidth + 'px')
+    .style('overflow', 'hidden')
+    .style('margin', 'auto')
+      .append('svg')
+      .attr('id', svgId)
+      .attr("preserveAspectRatio", "xMinYMin meet")
+      .attr("viewBox", "0 0 " + width + ' ' + height)
+      .classed('svg-content', true)
+      .style('max-height', maxHeight+'px')
+      .append('g')
+        .attr('class', 'svg-inner')
+
+  let position = (x, y) => 'translate(' + x + ',' + y + ')'
+
+  let translate = {
+    yAxis: position(margin.left, 0),
+    xAxis: position(margin.left, (height-margin.bottom))
+  }
+
+  // 1.create 2.position axes
+  let q = svg.append('g')
+    .attr('class', 'oy-box')
+    .attr('transform', translate.yAxis)
+    .append('g')
+      .attr('class', 'oy')
+      .call(yAxis)
+
+  svg.append('g') //extra 'g' wrapper so we can position inner 'g' relative
+    .attr('class', 'oy-box')
+    .attr("transform", translate.xAxis)
+    .append('g')
+      .attr('class', 'ox')
+      .call(xAxis)
+
+  // horizontal bars
+  svg.append('g')
+    .attr('transform', translate.yAxis)
+    .attr('class', 'bar-group-box')
+    .append('g')
+      .attr('class', 'bar-group')
+      .selectAll('rect')
+      .data(data)
+      .enter()
+      .append('rect')
+      .attr('class', 'bar')
+      .attr('y', d => y(d.label))
+      .attr('width', d => x(d.value))
+      .attr('height', d => (y.bandwidth()))
+
+
+  // title
+  svg.append('text')
+    .attr('class', 'svg-title')
+    .attr("x", width/2)
+    .attr("y", 18)  // 12 being half of font-size
+    .attr("text-anchor", "middle")
+    .attr('font-size', 18) // base style, to be overridden in styleFn
+    .text(title)
+
+}
+
+function hBarchart(options) {
+  let width = options.width,
+    maxWidth = options.maxWidth,
+    height = options.height,
+    maxHeight = options.maxHeight,
+    minHeight = options.minHeight,
+    margin = options.margin,
+    data = options.data,
+    insertAt = options.insertAt,
+    svgTitle = options.title,
+    create = options.createFn,
+    style = options.styleFn,
+    styleFnOpt = options.styleFnOpt
+
+  let svgId = svgTitle.toLowerCase().split(' ').join('-')
+
+
+  create({data, insertAt, svgId, width, maxWidth, height, maxHeight, minHeight, margin, title:svgTitle})
+
+  styleFnOpt.svgId = svgId
+  style(styleFnOpt)
+}
+// END HORIZONTAL BARCHART FN //
+
+
+// fn for customizing look - can be custom made each time/ for each chart
+function styleLineChart(opt){
+   let svg = d3.select('#' + opt.svgId)
+   let serie = svg.select('.serie')
+
+   serie.select('path')
+      .attr('stroke', '#030F4F') // maybe color should be passed as option
+      .attr('stroke-width', 2)
+
+   let labels = svg.selectAll('.label')
+    labels.select('rect').attr('fill', '#f3f3f0')
+
+} // end styleLineChart
+
+function lineChart(opt) {
+  let create = opt.createFn
+  let style = opt.styleFn
+
+  let data = opt.data,
+      maxHeight = opt.maxHeight,
+      minHeight = opt.minHeight,
+      startHeight = opt.startHeight,
+      maxWidth = opt.maxWidth,
+      startWidth = opt.startWidth,
+
+      insertAt = opt.insertAt,
+      margin = opt.margin,
+      title = opt.svgTitle,
+      label = opt.label
+
+  let height = startHeight
+  let width = insertAt.clientWidth || startWidth
+  let svgId = title.toLowerCase().split(' ').join('-')
+
+  let styleOpt = opt.styleFnOpt || {}
+  styleOpt.svgId = svgId
+
+  create({
+    data,
+    title,
+    svgId,
+    insertAt,
+    width, maxWidth,
+    height, maxHeight, minHeight,
+    margin,
+    label
+  })
+
+  style(styleOpt)
+}
+/*** END LINE CHART GENERAL FUNCTIONS ***/
+
 
 function doPubCountTable(totals, DTUtotals, copubs) {
     var years = {};
@@ -616,61 +821,56 @@ function doPubCountTable(totals, DTUtotals, copubs) {
     html += "</table><sup>*</sup> <span class=\"footnote\">The number of publications for a year will not be complete until the middle of the following year due to latency of indexing publications in Web of Science.</span></div>";
 
 
-    // generate barchart for response.categories
+    // generate linechart for response.categories
     // can't be created directly in a memory container if we want to render its elements positioned correctly
-    // so we need to load it in a hidden (temporary) element in DOM, and then remove it to targeted place
+    // so we need to load it in a hidden (temporary) element in DOM, and then replace it to targeted place
     let tempChartHolder = document.createElement('div')
     tempChartHolder.className += 'chartDrawnButHidden'
     tempChartHolder.setAttribute("style", "position: absolute; top: -1000; left:-1000;")
     document.body.append(tempChartHolder)
 
     let myData = copubs.map(x => (
-      {
-        number: x.number,
-        name: x.year.toString()
-      }
-    ) )
-    let xDomain = myData.map(x => x.name)
-    let yDomain = myData.map(x => x.number)
+                              {
+                                value: x.number,
+                                date: new Date(x.year.toString())
+                              }
+                            ))
+                      .sort( (a,b) => (a.date - b.date) )
 
-    let chartOpt = {
-      width: 1060,
-      height: 400,
-      margin: {
-        top: 50,
-        right: 0,
-        bottom: 50,
-        left: 20
-      },
-      bandPad: 0.2,
+    let copubsChartOpt = {
+      data: myData,
+      maxHeight: 500,
+      minHeight: 270,
+      startHeight: 300,
+      startWidth: 800,
+      maxWidth: 900,  // should be width of #collab-summary-container
+
+      svgTitle: 'Number of Co-Publications Per Year',
       insertAt: tempChartHolder,
-      data: {
-        dataset: myData,
-        xDomain: xDomain,
-        yDomain: yDomain
+      margin: {
+        top: 70,
+        left: 40,
+        bottom: 30,
+        right: 40
       },
-      title: {
-        text: 'Number of Co-Publications Per Year'
+      createFn: createLineChart,
+      // draw options
+      styleFnOpt: {},
+      label: {
+        type: 'rect',
+        paddingV: 2,
+        paddingH: 8
       },
-      ox: {
-        tick: (g) => {
-          g.selectAll(".tick line").remove()
-
-          g.selectAll(".tick text")
-            .attr('font-size', '12px')
-        }
-      },
-      oy: {
-        tick: yTick
-      }
+      styleFn: styleLineChart
     }
 
-    barchart(chartOpt)
+    lineChart(copubsChartOpt)
 
     html += tempChartHolder.innerHTML
     tempChartHolder.remove()
 
     $("#collab-summary-container").append(html);
+
 }
 
 function loadPubInfo(url, callback) {
@@ -763,4 +963,7 @@ function exportTable(html, filename) {
     // Download CSV
     downloadCsv(csv.join("\n"), filename);
 }
+
+
+
 </script>
