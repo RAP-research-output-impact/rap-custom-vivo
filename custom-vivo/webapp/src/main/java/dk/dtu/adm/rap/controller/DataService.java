@@ -31,6 +31,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 @Path("/report/")
 public class DataService {
@@ -42,27 +48,27 @@ public class DataService {
     private static String namespace;
     private StoreUtils storeUtils;
     private static final DataCache cache = new DataCache();
-    
+
     @Path("/org/{vid}")
     @GET
     @Produces("application/json")
     public Response getOrg(@PathParam("vid") String vid, @Context Request request) {
         return getOrg(vid, null, null, request);
     }
-    
+
     @Path("/org/{vid}/{startYear}")
     @GET
     @Produces("application/json")
-    public Response getOrg(@PathParam("vid") String vid, 
+    public Response getOrg(@PathParam("vid") String vid,
             @PathParam("startYear") String startYear,
             @Context Request request) {
         return getOrg(vid, startYear, null, request);
     }
-    
+
     @Path("/org/{vid}/{startYear}/{endYear}")
     @GET
     @Produces("application/json")
-    public Response getOrg(@PathParam("vid") String vid, 
+    public Response getOrg(@PathParam("vid") String vid,
             @PathParam("startYear") String startYear,
             @PathParam("endYear") String endYear,
             @Context Request request) {
@@ -86,6 +92,8 @@ public class DataService {
         String cachekey = "org-" + vid + "-" + Integer.toString(startYearInt) + "-" + Integer.toString(endYearInt);
         String data = cache.read(cacheRoot, cachekey);
         if (data == null) {
+            Connection mysql = sql_setup(props);
+            HashMap<String, Integer> orgmap = organisations(mysql);
             long start = System.currentTimeMillis();
             JSONObject jo = new JSONObject();
             try {
@@ -93,11 +101,11 @@ public class DataService {
                 String uri = namespace + vid;
                 this.storeUtils = new StoreUtils();
                 this.storeUtils.setRdfService(namespace, vreq.getRDFService());
-                jo.put("summary", getSummary(uri, startYearInt, endYearInt));
-                jo.put("categories", getRelatedPubCategories(uri, startYearInt, endYearInt));
-                jo.put("org_totals", getSummaryPubCount(uri, startYearInt, endYearInt));
-                jo.put("dtu_totals", getSummaryPubCount(namespace + "org-technical-university-of-denmark", startYearInt, endYearInt));
-                jo.put("top_categories", getTopCategories(uri, startYearInt, endYearInt));
+                jo.put("summary",    getSummary(mysql, orgmap, uri, startYearInt, endYearInt));
+                jo.put("categories", getRelatedPubCategories(mysql, orgmap, namespace, uri, startYearInt, endYearInt));
+                jo.put("org_totals", getSummaryPubCount(mysql, orgmap, vid, startYearInt, endYearInt));
+                jo.put("dtu_totals", getSummaryPubCount(mysql, orgmap, "org-technical-university-of-denmark", startYearInt, endYearInt));
+                jo.put("top_categories", getTopCategories(mysql, orgmap, namespace, vid, startYearInt, endYearInt));
                 jo.put("by_department", getCoPubsByDepartment(uri, startYearInt, endYearInt));
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -108,7 +116,7 @@ public class DataService {
         ResponseBuilder builder = Response.ok(data);
         return builder.build();
     }
-    
+
     private Integer parseInt(String value) {
         if(value != null) {
             try {
@@ -125,11 +133,11 @@ public class DataService {
     @Path("/org/{vid}/by-dept/")
     @GET
     @Produces("application/json")
-    public Response getCoPubByDept(@PathParam("vid") String vid, 
+    public Response getCoPubByDept(@PathParam("vid") String vid,
             @Context Request request) {
         return getCoPubByDept(vid, null, null, request);
     }
-    
+
     @Path("/org/{vid}/by-dept/{startYear}")
     @GET
     @Produces("application/json")
@@ -138,7 +146,7 @@ public class DataService {
             @Context Request request) {
         return getCoPubByDept(vid, startYear, null, request);
     }
-    
+
     @Path("/org/{vid}/by-dept/{startYear}/{endYear}")
     @GET
     @Produces("application/json")
@@ -150,7 +158,7 @@ public class DataService {
 
         Integer startYearInt = parseInt(startYear);
         Integer endYearInt = parseInt(endYear);
-        
+
         if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
             return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
         }
@@ -285,31 +293,31 @@ public class DataService {
         ResponseBuilder builder = Response.ok(data);
         return builder.build();
     }
-    
+
     private String getYearFilter(Integer startYear, Integer endYear) {
         String yearFilter = "";
         if(startYear != null) {
-            yearFilter += "   FILTER(" + startYear + " <= ?year) \n";                    
+            yearFilter += "   FILTER(" + startYear + " <= ?year) \n";
         }
         if(endYear != null) {
-            yearFilter += "   FILTER(" + endYear + " >= ?year) \n";                    
+            yearFilter += "   FILTER(" + endYear + " >= ?year) \n";
         }
         return yearFilter;
     }
-    
+
     private String getDtvFilter(Integer startYear, Integer endYear) {
         String yearFilter = "";
         if(startYear != null) {
-            yearFilter += "   FILTER(\"" + startYear 
-                    + "-01-01T00:00:00\"^^xsd:dateTime <= ?dateTime) \n";                    
+            yearFilter += "   FILTER(\"" + startYear
+                    + "-01-01T00:00:00\"^^xsd:dateTime <= ?dateTime) \n";
         }
         if(endYear != null) {
-            yearFilter += "   FILTER(\"" + endYear 
-                    + "-12-31T23:59:59\"^^xsd:dateTime >= ?dateTime) \n";                    
+            yearFilter += "   FILTER(\"" + endYear
+                    + "-12-31T23:59:59\"^^xsd:dateTime >= ?dateTime) \n";
         }
         return yearFilter;
     }
-    
+
     private String getYearDtv(Integer startYear, Integer endYear) {
         String yearDtv = "";
         if(startYear != null || endYear != null) {
@@ -319,151 +327,417 @@ public class DataService {
         return yearDtv;
     }
 
-    private Object getSummary(String orgUri, Integer startYear, Integer endYear) {
+    private Object getSummary(Connection mysql, HashMap<String, Integer> orgmap, String orgUri, Integer startYear, Integer endYear) {
+        log.debug("getSummary: " + orgUri);
         String yearFilter = getYearFilter(startYear, endYear);
         String yearDtv = getYearDtv(startYear, endYear);
         String dtvFilter = getDtvFilter(startYear, endYear);
         String rq = "SELECT \n" +
-                "      ?name\n" +
-                "      ?overview\n" +
-                "      ?country\n" +
-                "      ?coPubTotal\n" +
-                "      ?categories\n" +
-                "      ?orgTotal\n" +
-                "      ?orgCitesTotal\n" +
-                "      ((?orgCitesTotal / ?orgTotal) as ?orgImpact)\n" +
-                "      ?dtuTotal\n" +
-                "      ?dtuCitesTotal\n" +
-                "      ((?dtuCitesTotal / ?dtuTotal) as ?dtuImpact)\n" +
-                "WHERE {\n" +
-                "  ?org rdfs:label ?name .\n" +
-                "  OPTIONAL {  ?org vivo:overview ?overview }\n" +
-                "  OPTIONAL { ?org obo:RO_0001025 ?countryUri .\n" +
-                "            ?countryUri rdfs:label ?country " +
-                "  }\n" +
-                "{\n" +
-                "    SELECT (COUNT(DISTINCT ?pub) as ?coPubTotal) " +
-                "   WHERE {\n" +
-                "    ?org a foaf:Organization ; \n" +
-                "       vivo:relatedBy ?address .\n" +
-                "   ?address a wos:Address ;\n" +
-                "       vivo:relates ?pub .\n" +
-                "   ?pub a wos:Publication .\n" +
-                yearDtv +
-                dtvFilter +
-                "   }\n" +
-                "  }\n" +
-                "  {\n" +
-                "      SELECT (COUNT( DISTINCT ?cat) as ?categories) " +
-                "     WHERE {\n" +
-                "      ?org a foaf:Organization ;\n" +
-                "          vivo:relatedBy ?address .\n" +
-                "      ?address a wos:Address ;\n" +
-                "         vivo:relates ?pub .\n" +
-                "      ?pub a wos:Publication ;\n" +
-                "           wos:hasCategory ?cat .\n" +
-                yearDtv +
-                dtvFilter +
-                "      }\n" +
-                "  }\n" +
-                "  {\n" +
-                "      select (sum(?number) as ?orgTotal)\n" +
-                "      where {\n" +
-                "         ?tc a wos:InCitesPubPerYear ;\n" +
-                "             wos:number ?number ;\n" +
-                "             wos:year ?year ;\n" +
-                "             vivo:relatedBy ?org .\n" +
-                yearFilter +
-                "   \t  }\n" +
-                "  }\n" +
-                "  {\n" +
-                "    select (sum(?number) as ?orgCitesTotal)\n" +
-                "    where {\n" +
-                "       ?tc a wos:InCitesCitesPerYear ;\n" +
-                "           wos:number ?number ;\n" +
-                "           wos:year ?year ;\n" +
-                "           vivo:relatedBy ?org .\n" +
-                yearFilter +
-                "   }\n" +
-                "  }\n" +
-                "  {\n" +
-                "      select (sum(?number) as ?dtuTotal)\n" +
-                "      where {\n" +
-                "         ?tc a wos:InCitesPubPerYear ;\n" +
-                "             wos:number ?number ;\n" +
-                "             wos:year ?year ;\n" +
-                 "             vivo:relatedBy d:org-technical-university-of-denmark .\n" +
-                 yearFilter +
-                "   \t  }\n" +
-                "  }\n" +
-                "  {\n" +
-                "    select (sum(?number) as ?dtuCitesTotal)\n" +
-                "    where {\n" +
-                "       ?tc a wos:InCitesCitesPerYear ;\n" +
-                "           wos:number ?number ;\n" +
-                "           wos:year ?year ;\n" + 
-                "           vivo:relatedBy d:org-technical-university-of-denmark .\n" + 
-                yearFilter +
-                "    }\n" +
-                "  }\n" +
-                "}";
+                    "    ?name\n" +
+                    "    ?country\n" +
+                    "    ?coPubTotal\n" +
+                    "    ?categories\n" +
+                    "WHERE {\n" +
+                    "    ?org rdfs:label ?name .\n" +
+                    "    OPTIONAL { ?org obo:RO_0001025 ?countryUri .\n" +
+                    "               ?countryUri rdfs:label ?country " +
+                    "    }\n" +
+                    "    {\n" +
+                    "        SELECT (COUNT(DISTINCT ?pub) as ?coPubTotal) " +
+                    "        WHERE {\n" +
+                    "            ?org a foaf:Organization ; \n" +
+                    "            vivo:relatedBy ?address .\n" +
+                    "            ?address a wos:Address ;\n" +
+                    "            vivo:relates ?pub .\n" +
+                    "            ?pub a wos:Publication .\n" +
+                                 yearDtv +
+                                 dtvFilter +
+                    "        }\n" +
+                    "    }\n" +
+                    "    {\n" +
+                    "        SELECT (COUNT( DISTINCT ?cat) as ?categories) " +
+                    "        WHERE {\n" +
+                    "            ?org a foaf:Organization ;\n" +
+                    "            vivo:relatedBy ?address .\n" +
+                    "            ?address a wos:Address ;\n" +
+                    "            vivo:relates ?pub .\n" +
+                    "            ?pub a wos:Publication ;\n" +
+                    "            wos:hasCategory ?cat .\n" +
+                                 yearDtv +
+                                 dtvFilter +
+                    "        }\n" +
+                    "    }\n" +
+                    "}";
         ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
         q2.setCommandText(rq);
         q2.setIri("org", orgUri);
         String query = q2.toString();
         log.debug("Summary pub count query:\n" + query);
-        ArrayList summary = this.storeUtils.getFromStoreJSON(query);
-        return (summary.isEmpty() ? null : summary.get(0));
+        ArrayList summaryArray = this.storeUtils.getFromStoreJSON(query);
+        log.debug("done - getSummary sparql");
+        if (summaryArray.isEmpty()) {
+            log.debug("done - getSummary empty");
+            return null;
+        }
+        JSONObject summary = (JSONObject)summaryArray.get(0);
+
+        orgUri.replaceAll(".*/", "");
+
+        Integer id = orgmap.get(orgUri.replaceAll(".*/", ""));
+        if (id == null) {
+            log.error("Could not get mapping for org: '" + orgUri + "'");
+            id = 0;
+        }
+        if (startYear == null) {
+            startYear = 2000;
+        }
+        if (endYear == null) {
+            endYear = 2030;
+        }
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = mysql.createStatement();
+            resultSet = statement.executeQuery("select sum(total) as tot,sum(cites) as cit,sum(collind) as cind,sum(collint) as cint," +
+                                               "sum(impact) as imp,sum(top1) as t1,sum(top10) as t10,count(*) as n from inds " +
+                                               "where org=" + Integer.toString (id) + " and year >= " + Integer.toString(startYear) +
+                                               " and year <= " + Integer.toString(endYear));
+            while (resultSet.next()) {
+                int total = Integer.parseInt(resultSet.getString("tot"));
+                int cites = Integer.parseInt(resultSet.getString("cit"));
+                int n     = Integer.parseInt(resultSet.getString("n"));
+                summary.put("orgTotal", total);
+                summary.put("orgCitesTotal", cites);
+                summary.put("orgImpact", (Float)((float)cites / total));
+                summary.put("orgimp",  Float.parseFloat(resultSet.getString("imp")) / n);
+                summary.put("orgt1",   Float.parseFloat(resultSet.getString("t1")) / n);
+                summary.put("orgt10",  Float.parseFloat(resultSet.getString("t10")) / n);
+                summary.put("orgcind", Float.parseFloat(resultSet.getString("cind")) / n);
+                summary.put("orgcint", Float.parseFloat(resultSet.getString("cint")) / n);
+            }
+        } catch (SQLException e) {
+            log.error("SQL error");
+            log.error("SQLException: " + e.getMessage());
+            log.error("SQLState:     " + e.getSQLState());
+            log.error("VendorError:  " + e.getErrorCode());
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        sql_close(statement, resultSet);
+        id = orgmap.get("org-technical-university-of-denmark");
+        if (id == null) {
+            log.error("Could not get mapping for org: 'org-technical-university-of-denmark'");
+            id = 0;
+        }
+        try {
+            statement = mysql.createStatement();
+            resultSet = statement.executeQuery("select sum(total) as tot,sum(cites) as cit,sum(collind) as cind,sum(collint) as cint," +
+                                               "sum(impact) as imp,sum(top1) as t1,sum(top10) as t10,count(*) as n from inds " +
+                                               "where org=" + Integer.toString (id) + " and year >= " + Integer.toString(startYear) +
+                                               " and year <= " + Integer.toString(endYear));
+            while (resultSet.next()) {
+                int total = Integer.parseInt(resultSet.getString("tot"));
+                int cites = Integer.parseInt(resultSet.getString("cit"));
+                int n     = Integer.parseInt(resultSet.getString("n"));
+                summary.put("dtuTotal", total);
+                summary.put("dtuCitesTotal", cites);
+                summary.put("dtuImpact", (Float)((float)cites / total));
+                summary.put("dtuimp",  Float.parseFloat(resultSet.getString("imp")) / n);
+                summary.put("dtut1",   Float.parseFloat(resultSet.getString("t1")) / n);
+                summary.put("dtut10",  Float.parseFloat(resultSet.getString("t10")) / n);
+                summary.put("dtucind", Float.parseFloat(resultSet.getString("cind")) / n);
+                summary.put("dtucint", Float.parseFloat(resultSet.getString("cint")) / n);
+            }
+        } catch (SQLException e) {
+            log.error("SQL error");
+            log.error("SQLException: " + e.getMessage());
+            log.error("SQLState:     " + e.getSQLState());
+            log.error("VendorError:  " + e.getErrorCode());
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        sql_close(statement, resultSet);
+        log.debug("done - getSummary");
+        return summary;
     }
 
-    private ArrayList getSummaryPubCount(final String orgUri, 
-            Integer startYear, Integer endYear) {
-        log.debug("Running summary pub count query");
-        final ArrayList<String> outArray = new ArrayList<String>();
-        String rq = "" +
-                "select ?number ?year\n" +
-                "where {\n" +
-                "   ?pc a wos:InCitesPubPerYear ;\n" +
-                "       wos:number ?number ;\n" +
-                "       wos:year ?year ;\n" +
-                "       vivo:relatedBy ?org .\n" +
-                getYearFilter(startYear, endYear) +
-                "}\n" +
-                "ORDER BY DESC(?year)";
-        ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
-        q2.setCommandText(rq);
-        q2.setIri("org", orgUri);
-        String query = q2.toString();
-        log.debug("Summary pub count query:\n" + query);
-        return this.storeUtils.getFromStoreJSON(query);
+    private ArrayList getSummaryPubCount(Connection mysql, HashMap<String, Integer> orgmap, final String orgID, Integer startYear, Integer endYear) {
+        log.debug("getSummaryPubCount: " + orgID);
+        ArrayList<JSONObject> outRows = new ArrayList<JSONObject>();
+
+        Integer id = orgmap.get(orgID);
+        if (id == null) {
+            log.error("Could not get mapping for org: '" + orgID + "'");
+            id = 0;
+        }
+        if (startYear == null) {
+            startYear = 2000;
+        }
+        if (endYear == null) {
+            endYear = 2030;
+        }
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = mysql.createStatement();
+            resultSet = statement.executeQuery("select year,total from inds where org=" + Integer.toString (id) + " and year >= " + Integer.toString(startYear) +
+                                               " and year <= " + Integer.toString(endYear));
+            while (resultSet.next()) {
+                JSONObject thisItem = new JSONObject();
+                thisItem.put("year", resultSet.getString("year"));
+                thisItem.put("number", resultSet.getString("total"));
+                outRows.add(thisItem);
+            }
+        } catch (SQLException e) {
+            log.error("SQL error");
+            log.error("SQLException: " + e.getMessage());
+            log.error("SQLState:     " + e.getSQLState());
+            log.error("VendorError:  " + e.getErrorCode());
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        sql_close(statement, resultSet);
+        log.debug("done - getSummaryPubCount");
+        return outRows;
     }
 
-    private ArrayList getTopCategories(final String orgUri, Integer startYear, 
-            Integer endYear) {
-        log.debug("Running top category query");
-        String rq = "select ?name (sum(?yrNumber) as ?number)\n" +
-                "where {\n" +
-                "  ?count a wos:InCitesTopCategory ;\n" +
-                "         wos:number ?yrNumber ;\n" +
-                "         wos:year ?year ;\n" +
-                "         vivo:relates ?org ;\n" +
-                "         vivo:relates ?cat .\n" +
-                "  ?cat a wos:Category ;\n" +
-                "       rdfs:label ?name .\n" +
-                getYearFilter(startYear, endYear) +
-                "}\n" +
-                "GROUP BY ?name \n" +
-                "ORDER BY DESC(?number)";
-        ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
-        q2.setCommandText(rq);
-        q2.setIri("org", orgUri);
-        String query = q2.toString();
-        log.debug("Top category query:\n" + query);
-        return this.storeUtils.getFromStoreJSON(query);
+    private ArrayList getTopCategories(Connection mysql, HashMap<String, Integer> orgmap, String namespace, final String orgID, Integer startYear, Integer endYear) {
+        log.debug("getTopCategories: " + orgID);
+        ArrayList<JSONObject> outRows = new ArrayList<JSONObject>();
+        HashMap<Integer, HashMap> subs = subjects(mysql);
+        Integer id;
+
+        id = orgmap.get(orgID);
+        if (id == null) {
+            log.error("Could not get mapping for org: '" + orgID + "'");
+            id = 0;
+        }
+        if (startYear == null) {
+            startYear = 2000;
+        }
+        if (endYear == null) {
+            endYear = 2030;
+        }
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = mysql.createStatement();
+            resultSet = statement.executeQuery("select sub,sum(count) as c from subcount where org=" + Integer.toString (id) + " and year >= " +
+                                               Integer.toString(startYear) + " and year <= " + Integer.toString(endYear) + " group by sub order by c desc limit 20");
+            int rank = 1;
+            while (resultSet.next()) {
+                JSONObject thisItem = new JSONObject();
+                String sub = resultSet.getString("sub");
+                HashMap<String, String> s = subs.get(Integer.parseInt(sub));
+                thisItem.put("name", s.get("label"));
+                thisItem.put("category", namespace + s.get("name"));
+                thisItem.put("number", resultSet.getString("c"));
+                thisItem.put("rank", rank++);
+                outRows.add(thisItem);
+            }
+        } catch (SQLException e) {
+            log.error("SQL error");
+            log.error("SQLException: " + e.getMessage());
+            log.error("SQLState:     " + e.getSQLState());
+            log.error("VendorError:  " + e.getErrorCode());
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        sql_close(statement, resultSet);
+        log.debug("done - getTopCategories");
+        AddCategoriesRanks(mysql, orgmap, namespace, null, startYear, endYear, outRows);
+        return outRows;
     }
 
-    private ArrayList getRelatedPubCategories(String orgUri, 
-            Integer startYear, Integer endYear) {
+    private ArrayList AddCategoriesRanks(Connection mysql, HashMap<String, Integer> orgmap, String namespace, final String orgID, Integer startYear, Integer endYear, ArrayList<JSONObject> subjects) {
+        log.debug("AddCategoriesRanks: " + orgID);
+        ArrayList<JSONObject> outRows = new ArrayList<JSONObject>();
+        HashMap<Integer, HashMap> subs = subjects(mysql);
+        HashMap<String, Integer> DTUranks = new HashMap<String, Integer>();
+        HashMap<String, Integer> ORGranks = new HashMap<String, Integer>();
+        HashMap<String, Integer> DTUnums = new HashMap<String, Integer>();
+        Integer id;
+
+        id = orgmap.get("org-technical-university-of-denmark");
+        if (id == null) {
+            log.error("Could not get mapping for org: '" + orgID + "'");
+            id = 0;
+        }
+        if (startYear == null) {
+            startYear = 2000;
+        }
+        if (endYear == null) {
+            endYear = 2030;
+        }
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = mysql.createStatement();
+            resultSet = statement.executeQuery("select sub,sum(count) as c from subcount where org=" + Integer.toString (id) + " and year >= " +
+                                               Integer.toString(startYear) + " and year <= " + Integer.toString(endYear) + " group by sub order by c desc");
+            int rank = 1;
+            while (resultSet.next()) {
+                String sub = resultSet.getString("sub");
+                HashMap<String, String> s = subs.get(Integer.parseInt(sub));
+                String key = namespace + s.get("name");
+                DTUranks.put(key, rank++);
+                DTUnums.put(key, Integer.parseInt(resultSet.getString("c")));
+            }
+        } catch (SQLException e) {
+            log.error("SQL error");
+            log.error("SQLException: " + e.getMessage());
+            log.error("SQLState:     " + e.getSQLState());
+            log.error("VendorError:  " + e.getErrorCode());
+            e.printStackTrace();
+        }
+        sql_close(statement, resultSet);
+        if (orgID != null) {
+            id = orgmap.get(orgID);
+            if (id == null) {
+                log.error("Could not get mapping for org: '" + orgID + "'");
+                id = 0;
+            }
+            statement = null;
+            resultSet = null;
+            try {
+                statement = mysql.createStatement();
+                resultSet = statement.executeQuery("select sub,sum(count) as c from subcount where org=" + Integer.toString (id) + " and year >= " +
+                                                   Integer.toString(startYear) + " and year <= " + Integer.toString(endYear) + " group by sub order by c desc");
+                int rank = 1;
+                while (resultSet.next()) {
+                    String sub = resultSet.getString("sub");
+                    HashMap<String, String> s = subs.get(Integer.parseInt(sub));
+                    String key = namespace + s.get("name");
+                    ORGranks.put(key, rank++);
+                }
+            } catch (SQLException e) {
+                log.error("SQL error");
+                log.error("SQLException: " + e.getMessage());
+                log.error("SQLState:     " + e.getSQLState());
+                log.error("VendorError:  " + e.getErrorCode());
+                e.printStackTrace();
+            }
+            sql_close(statement, resultSet);
+        }
+        for(JSONObject s:subjects) {
+            try {
+                String uri = (String)s.get("category");
+                Integer rank = DTUranks.get(uri);
+                if (rank != null) {
+                    s.put("DTUrank", rank);
+                }
+                if (orgID != null) {
+                    rank = ORGranks.get(uri);
+                    if (rank != null) {
+                        s.put("rank", rank);
+                    }
+                } else {
+                    Integer num = DTUnums.get(uri);
+                    if (num != null) {
+                        s.put("DTUnumber", num);
+                    }
+                }
+            } catch (Throwable var10) {
+                log.error(var10, var10);
+            }
+        }
+        log.debug("done - AddCategoriesRanks");
+        return outRows;
+    }
+
+    private HashMap organisations(Connection mysql) {
+        HashMap<String, Integer> orgmap = new HashMap<String, Integer>();
+
+        log.debug("loading orgs");
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = mysql.createStatement();
+            resultSet = statement.executeQuery("select id,name from orgs");
+            while (resultSet.next()) {
+                String name = resultSet.getString("name");
+                orgmap.put(name, Integer.parseInt(resultSet.getString("id")));
+            }
+        } catch (SQLException e) {
+            log.error("SQL error");
+            log.error("SQLException: " + e.getMessage());
+            log.error("SQLState:     " + e.getSQLState());
+            log.error("VendorError:  " + e.getErrorCode());
+            e.printStackTrace();
+        }
+        sql_close(statement, resultSet);
+        log.debug("done");
+        return orgmap;
+    }
+
+    private HashMap subjects(Connection mysql) {
+        HashMap<Integer, HashMap> subjects = new HashMap<Integer, HashMap>();
+
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = mysql.createStatement();
+            resultSet = statement.executeQuery("select id,name,label from subs");
+            while (resultSet.next()) {
+                HashMap<String, String> sub = new HashMap<String, String>();
+                int id = Integer.parseInt(resultSet.getString("id"));
+                sub.put("name", resultSet.getString("name"));
+                sub.put("label", resultSet.getString("label"));
+                subjects.put(id, sub);
+            }
+        } catch (SQLException e) {
+            log.error("SQL error");
+            log.error("SQLException: " + e.getMessage());
+            log.error("SQLState:     " + e.getSQLState());
+            log.error("VendorError:  " + e.getErrorCode());
+            e.printStackTrace();
+        }
+        sql_close(statement, resultSet);
+        return subjects;
+    }
+
+    private Connection sql_setup(ConfigurationProperties props) {
+        String url  = props.getProperty("VitroConnection.DataSource.url");
+        String user = props.getProperty("VitroConnection.DataSource.username");
+        String pass = props.getProperty("VitroConnection.DataSource.password");
+        Connection connect = null;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(url + "?user=" + user + "&password=" + pass);
+        } catch (SQLException e) {
+            log.error("SQL error");
+            log.error("SQLException: " + e.getMessage());
+            log.error("SQLState:     " + e.getSQLState());
+            log.error("VendorError:  " + e.getErrorCode());
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return connect;
+    }
+
+    private void sql_close(Statement statement, ResultSet resultSet) {
+        try {
+            if (statement != null) {
+                statement.close();
+            }
+            if (resultSet != null) {
+                resultSet.close();
+            }
+        } catch (SQLException e) {
+            log.error("SQL error");
+            log.error("SQLException: " + e.getMessage());
+            log.error("SQLState:     " + e.getSQLState());
+            log.error("VendorError:  " + e.getErrorCode());
+            e.printStackTrace();
+        }
+    }
+
+    private ArrayList getRelatedPubCategories(Connection mysql, HashMap<String, Integer> orgmap, String namespace, final String orgUri, Integer startYear, Integer endYear) {
         log.debug("Running org category query");
         String rq = "" +
                 "SELECT ?category (SAMPLE(?label) as ?name) (COUNT(distinct ?pub) as ?number)\n" +
@@ -485,7 +759,9 @@ public class DataService {
         q2.setIri("org", orgUri);
         String query = q2.toString();
         log.debug("Related categories query:\n" + query);
-        return this.storeUtils.getFromStoreJSON(query);
+        ArrayList<JSONObject> outRows = this.storeUtils.getFromStoreJSON(query);
+        AddCategoriesRanks(mysql, orgmap, namespace, orgUri.replaceAll(".*/", ""), startYear, endYear, outRows);
+        return outRows;
     }
 
     private ArrayList getCoPubsByDepartment(String orgUri, Integer startYear, Integer endYear) {
@@ -493,6 +769,9 @@ public class DataService {
         String rq = "" +
                 "SELECT DISTINCT ?dtuSubOrg ?dtuSubOrgName ?otherOrgs (COUNT(DISTINCT ?pub) as ?number)\n" +
                 "WHERE {\n" +
+                "?org vivo:relatedBy ?address .\n" +
+                "?address a wos:Address .\n" +
+                "?pub vivo:relatedBy ?address .\n" +
                 "?pub a wos:Publication ;\n" +
                 "\t\tvivo:relatedBy ?dtuAddress .\n" +
                 "\t?dtuAddress a wos:Address ;\n" +
@@ -581,9 +860,9 @@ public class DataService {
         if(endYear == null) {
             endYear = 9999;
         }
-        ps.setLiteral("startYear", String.format("%04d", startYear) + "-01-01T00:00:00", 
+        ps.setLiteral("startYear", String.format("%04d", startYear) + "-01-01T00:00:00",
                 XSDDatatype.XSDdateTime);
-        ps.setLiteral("endYear", String.format("%04d", endYear) + "-12-31T23:59:59", 
+        ps.setLiteral("endYear", String.format("%04d", endYear) + "-12-31T23:59:59",
                 XSDDatatype.XSDdateTime);
         ps.setIri("externalOrg", externalOrgUri);
         String processedRq =  ps.toString();
