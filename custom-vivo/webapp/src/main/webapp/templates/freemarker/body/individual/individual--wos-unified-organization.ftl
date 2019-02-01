@@ -200,43 +200,65 @@ function doSummaryTable(response) {
     if (response.summary.country) {
         $("#collab-summary-country").html(",&nbsp" + response.summary.country).removeClass("hidden");
     }
-    var orgTotal = response.summary.orgTotal;
-    //for(var i in response.org_totals) { orgTotal += response.org_totals[i].count; };
-    var orgTotalCites = response.summary.orgCitesTotal;
-    var dtuTotal = response.summary.dtuTotal;
-    var dtuTotalCites = response.summary.dtuCitesTotal;
-    if (response.summary.orgImpact) {
-        var orgImpact = response.summary.orgImpact.toFixed(1);
-    } else {
-        var orgImpact = null;
-    }
-    if (response.summary.dtuImpact) {
-        var dtuImpact = response.summary.dtuImpact.toFixed(1);
-    } else {
-        var dtuImpact = null ;
-    }
     html += "<tr><th class=\"col1\"></th><th class=\"col2\">" + response.summary.name + "</th><th class=\"col3\">Technical University of Denmark</th></tr>";
-    html += "<tr><td class=\"rep-label\">Publications</td><td class=\"rep-num\">" + orgTotal + "</td><td class=\"rep-num\">" + dtuTotal + "</td>";
-    html += "<tr><td class=\"rep-label\">Citations</td><td class=\"rep-num\">" + orgTotalCites + "</td><td class=\"rep-num\">" + dtuTotalCites + "</td>";
-    //Impact
-    html += "<tr><td class=\"rep-label\">Impact<sup>*</sup></td><td class=\"rep-num\">" + orgImpact + "</td><td class=\"rep-num\">" + dtuImpact + "</td>";
-
-    html += "</table><sup>*</sup> <span class=\"footnote\">Citations per publication for the timespan selected.</span></div>";
+    html += doSummaryTableRow (0, 0, "Number of publications",                                     response.summary.orgTotal,      response.summary.dtuTotal);
+    html += doSummaryTableRow (0, 0, "Number of citations",                                        response.summary.orgCitesTotal, response.summary.dtuCitesTotal);
+    html += doSummaryTableRow (1, 0, "Simple citation impact (average citations per publication)", response.summary.orgImpact,     response.summary.dtuImpact);
+    html += doSummaryTableRow (1, 0, "Normalised citation impact (global average 1.0)",            response.summary.orgimp,        response.summary.dtuimp);
+    html += doSummaryTableRow (0, 1, "% of publications in global top 10% most cited",             response.summary.orgt10,        response.summary.dtut10);
+    html += doSummaryTableRow (0, 1, "% of publications in global top 1% most cited",              response.summary.orgt1,         response.summary.dtut1);
+    html += doSummaryTableRow (0, 1, "% of publications with industry collaboration",              response.summary.orgcind,       response.summary.dtucind);
+    html += doSummaryTableRow (0, 1, "% of publications with international collaboration",         response.summary.orgcint,       response.summary.dtucint);
     $("#collab-summary-container").append(html);
+}
+
+function doSummaryTableRow(real, percent, label, org, dtu) {
+    var vo = org;
+    var vd = dtu;
+    console.log(typeof(vo));
+    if (real) {
+        if (vo) {
+            vo = vo.toFixed(1);
+        }
+        if (vd) {
+            vd = vd.toFixed(1);
+        }
+    } else if (percent) {
+        if (vo) {
+            vo = vo.toFixed(2) + "%";
+        }
+        if (vd) {
+            vd = vd.toFixed(2) + "%";
+        }
+    }
+    return "<tr><td class=\"rep-label\">" + label + "</td><td class=\"rep-num\">" + vo + "</td><td class=\"rep-num\">" + vd + "</td></tr>";
 }
 
 function doTopCategoryTable(response) {
     var html = `
-    <table id="rep3" class="pub-counts" style="display: inline-block; vertical-align: top;">
+    <table id="rep3" class="pub-counts">
         <tr>
-            <th class="col1">Partner&apos;s top research subjects</th>
-            <th class="col2">Publications</th>
+            <th class="col1">Research publication subjects</th>
+            <th class="col2" colspan="2">Partner</th>
+            <th class="col3" colspan="2">DTU</th>
+        </tr>
+        <tr>
+            <th class="col1">Compare partner and DTU</th>
+            <th class="col21">Publ.</th>
+            <th class="col22">Rank</th>
+            <th class="col31">Publ.</th>
+            <th class="col32">Rank</th>
         </tr>
     `;
     var n = 0;
     $.each( response.top_categories, function( key, value ) {
         if (n < 20) {
-            var row = "<tr class=\"rep-row\" id=\"tc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + value.number + "</td></tr>";
+            var row = "<tr class=\"rep-row\" id=\"tc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td>" +
+                      "<td class=\"rep-num\">" + value.number + "</td>" +
+                      "<td class=\"rep-num\">" + value.rank + "</td>" +
+                      "<td class=\"rep-num\">" + value.DTUnumber + "</td>" +
+                      "<td class=\"rep-num\">" + value.DTUrank + "</td>" +
+                      "</tr>";
             html += row;
             n++;
         }
@@ -252,23 +274,26 @@ function idkey(name) {
 
 function doPubCategoryTable(totals, startYear, endYear) {
     var html = `
-    <table id="rep4" class="pub-counts" style="display: inline-block; vertical-align: top;">
+    <table id="rep4" class="pub-counts">
       <tr>
-        <th class="col1">Collaboration top research subjects</th>
-        <th class="col2">Publications</th>
+        <th class="col1">Research publication subjects</th>
+        <th class="col2">Co-publications</th>
+        <th class="col3">Partner rank</th>
+        <th class="col4">DTU rank</th>
       </tr>
     `;
     $.each( totals.slice(0, 20), function( key, value ) {
         if (value.category != null) {
-        	var href = base + "/copubs-by-category/" + value.category.split("/")[4] + "?collab=" + individualLocalName;
-        	if(startYear > 0) {
-                    href += "&startYear=" + startYear;
-        	}
-        	if(endYear > 0) {
-                    href += "&endYear=" + endYear;
-        	}
+            var href = base + "/copubs-by-category/" + value.category.split("/")[4] + "?collab=" + individualLocalName;
+            if(startYear > 0) {
+                href += "&startYear=" + startYear;
+            }
+            if(endYear > 0) {
+                href += "&endYear=" + endYear;
+            }
             var coPubLink = "<a href=\"" + href + "\" target=\"_blank\">" +  value.number + "</a>";
-            var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
+            var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td>" +
+                      "<td class=\"rep-num\">" + value.rank + "</td><td class=\"rep-num\">" + value.DTUrank + "</td></tr>";
             html += row;
         }
     });

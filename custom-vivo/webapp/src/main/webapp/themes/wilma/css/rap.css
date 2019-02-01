@@ -293,7 +293,7 @@ ul.copubdept {
 }
 /* Report tables */
 table#rep1 th.col1 {
-    width: 300px;
+    width: 420px;
 }
 table#rep1 th.col2 {
     width: 300px;
@@ -315,19 +315,44 @@ table#rep2 th.col3 {
     text-align: right;
 }
 table#rep3 th.col1 {
-    width: 400px;
+    width: 500px;
 }
 table#rep3 th.col2 {
+    width: 200px;
+    text-align: center;
+}
+table#rep3 th.col3 {
+    width: 200px;
+    text-align: center;
+}
+table#rep3 th.col21 {
+    width: 97px;
+    text-align: right;
+}
+table#rep3 th.col22 {
+    width: 97px;
+    text-align: right;
+}
+table#rep3 th.col31 {
+    width: 97px;
+    text-align: right;
+}
+table#rep3 th.col32 {
+    width: 97px;
+    text-align: right;
+}
+table#rep4 th.col1 {
+    width: 500px;
+}
+table#rep4 th.col2 {
+    width: 200px;
+    text-align: right;
+}
+table#rep4 th.col3 {
     width: 100px;
     text-align: right;
 }
-table#rep4 {
-    margin-left: 20px;
-}
-table#rep4 th.col1 {
-    width: 400px;
-}
-table#rep4 th.col2 {
+table#rep4 th.col4 {
     width: 100px;
     text-align: right;
 }
