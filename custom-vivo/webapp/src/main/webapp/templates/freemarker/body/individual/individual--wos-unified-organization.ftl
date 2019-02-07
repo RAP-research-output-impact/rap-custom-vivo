@@ -201,10 +201,11 @@ function collabSummary(response, startYear, endYear) {
         tempChartHolder.setAttribute("style", "position: absolute; top: -1000; left:-1000;")
         document.body.append(tempChartHolder)
 
-        let myData = response.categories.map(x =>
-                    ({ label: x.name,
-                      value: x.number,
-                      category: x.category
+        let myData = response.categories.slice(0, 20)
+                    .map(x =>
+                      ({ label: x.name,
+                        value: x.number,
+                        category: x.category
                      }))
 
         let pubsByResearchSubjChartOpt = {
