@@ -460,3 +460,6 @@ table#copub-authors td {
 #collab-summary-container .chart-box {
   margin: 30px 0;
 }
+svg, svg g, svg text {
+  font-family: "Lucida Sans Unicode", "Lucida Grande", 'Geneva', helvetica, sans-serif
+}
