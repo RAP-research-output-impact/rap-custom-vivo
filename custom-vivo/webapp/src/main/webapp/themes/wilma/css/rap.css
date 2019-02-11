@@ -457,3 +457,6 @@ table#copub-authors td {
     font-size: 12px;
     font-style: italic;
 }
+#collab-summary-container .chart-box {
+  margin: 30px 0;
+}

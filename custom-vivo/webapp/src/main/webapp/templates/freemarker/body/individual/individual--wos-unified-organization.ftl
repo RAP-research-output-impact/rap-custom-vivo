@@ -212,8 +212,8 @@ function collabSummary(response, startYear, endYear) {
           data: myData,
           width: 600,
           maxWidth: 700,
-          height: 750,
-          maxHeight: 800,
+          height: 570,
+          maxHeight: 600,
           minHeight: 450,
           margin: {
             top: 40,
@@ -222,13 +222,13 @@ function collabSummary(response, startYear, endYear) {
             left: 300 // if labels must be in 1 line, should be depending on max label width (label of styled font-size)
           },
           insertAt: tempChartHolder,
-          title: 'Number of Publications by Top Research Subjects',
+          title: 'Number of publications by top research subjects',
           createFn: createHBarchart,
           styleFn: styleHBarchart,
           styleFnOpt: {
             barFillColor: '#030F4F',
-            oyF: '13px',
-            oxF: '13px'
+            oyF: '16px',
+            oxF: '16px'
           }
         }
         hBarchart(pubsByResearchSubjChartOpt)
@@ -461,7 +461,6 @@ function createLineChart({data, insertAt, title, svgId, width, maxWidth, height,
     .attr('minH', minHeight)
     .style('max-width', maxWidth + 'px')
     .style('overflow', 'auto')
-    .style('margin', 'auto')
       .append('svg')
       .attr('id', svgId)
       .attr("preserveAspectRatio", "xMinYMin meet")
@@ -483,10 +482,12 @@ function createLineChart({data, insertAt, title, svgId, width, maxWidth, height,
   // 1.create 2.position axes
   svg.append('g')
     .call(yAxis)
+    .attr('class', 'oy')
     .attr('transform', translate.yAxis)
 
   svg.append('g')
     .call(xAxis)
+    .attr('class', 'ox')
     .attr("transform", translate.xAxis)
 
   // svg append serie
@@ -529,6 +530,12 @@ function createLineChart({data, insertAt, title, svgId, width, maxWidth, height,
       translate.labelsGr = position(margin.left-labelPaddingH/2, margin.top-labelPaddingV/2)
     }
 
+    let isRoundLabel = label.type == 'round'
+    if (isRoundLabel) {
+       var r = label.r
+      translate.labelsGr = position(margin.left, margin.top)
+    }
+
 
     let labelGroup = svg.select('.serie')
       .append('g').attr('class', 'labels')
@@ -542,11 +549,15 @@ function createLineChart({data, insertAt, title, svgId, width, maxWidth, height,
       .attr("class", "label")
       .attr("transform", (d, i) =>  ("translate(" + x(d.date) + "," + y(d.value) + ")"))
 
-
-    labels.append("text")
+    if (!isRoundLabel) {
+      labels.append("text")
       .text( d => d.value)
       .attr("dx", function() { return -this.getBBox().width/2 + labelPaddingH/2+ 'px'})
+      // .attr('text-anchor', "middle") this would center text in middle of container g - which is equal in width with rect
+
       .attr("dy", function() { return this.getBBox().height/2 + 'px'})
+    }
+
 
     if (isRectLabel) {
       labels.insert("rect", 'text')
@@ -556,9 +567,11 @@ function createLineChart({data, insertAt, title, svgId, width, maxWidth, height,
       .attr("width", (d) => d.width + 2 * labelPaddingH)
       .attr("height", (d) => d.height + 2 * labelPaddingV)
       .attr('fill', '#fff')
+    }
 
-      // if want to set border and radius
-      // .attr('rx', '3')
+    if (isRoundLabel) {
+      labels.append('circle')
+        .attr('r', r)
     }
 
   } // close [if hasLabels]
@@ -575,7 +588,11 @@ function styleHBarchart(opt) {
   let svg = d3.select('#' + opt.svgId),
       // oyBox = svg.select('.oy-box'),
       oy = svg.select('.oy'),
-      ox = svg.select('.ox')
+      ox = svg.select('.ox'),
+      title = svg.select('.svg-title')
+
+  svg.style('color', '#5E6363')
+     .style('fill', '#5E6363')
 
   oy.attr('transform', 'translate(-7, 0)')
 
@@ -585,8 +602,12 @@ function styleHBarchart(opt) {
   oy.selectAll('text')
     .style('font-size', oyF )
 
-  ox.selectAll('text').style('font-size', oxF)
+  ox.style('font-size', oxF)
+  oy.style('font-size', oxF)
+  title.style('font-weight', 'bold')
+      .style('font-size', '16px')
 
+  let textElems = svg.selectAll('text')
 }
 
 function createHBarchart({data, insertAt, svgId, width, maxWidth, height, maxHeight, minHeight, margin, title}) {
@@ -616,7 +637,6 @@ function createHBarchart({data, insertAt, svgId, width, maxWidth, height, maxHei
     .attr('minH', minHeight)
     .style('max-width', maxWidth + 'px')
     .style('overflow', 'hidden')
-    .style('margin', 'auto')
       .append('svg')
       .attr('id', svgId)
       .attr("preserveAspectRatio", "xMinYMin meet")
@@ -703,14 +723,28 @@ function hBarchart(options) {
 // fn for customizing look - can be custom made each time/ for each chart
 function styleLineChart(opt){
    let svg = d3.select('#' + opt.svgId)
-   let serie = svg.select('.serie')
+   svg.style('color', '#5E6363')
+      .style('fill', '#5E6363')
 
+   let textElems = svg.selectAll('text')
+   textElems.style('color', "#5E6363")
+
+   let serie = svg.select('.serie')
    serie.select('path')
       .attr('stroke', '#030F4F') // maybe color should be passed as option
       .attr('stroke-width', 2)
 
-   let labels = svg.selectAll('.label')
-    labels.select('rect').attr('fill', '#f3f3f0')
+  let labels = svg.selectAll('.label')
+  labels.select('circle').attr('fill', '#030F4F')
+
+  let ox = svg.select('.ox')
+  let oy = svg.select('.oy')
+  ox.style('font-size', '14px')
+  oy.style('font-size', '14px')
+
+  let title = svg.select('.svg-title')
+      .style('font-weight', 'bold')
+      .style('font-size', '16px')
 
 } // end styleLineChart
 
@@ -846,7 +880,7 @@ function doPubCountTable(totals, DTUtotals, copubs) {
       startWidth: 800,
       maxWidth: 900,  // should be width of #collab-summary-container
 
-      svgTitle: 'Number of Co-Publications Per Year',
+      svgTitle: 'Number of co-publications per year',
       insertAt: tempChartHolder,
       margin: {
         top: 70,
@@ -858,9 +892,8 @@ function doPubCountTable(totals, DTUtotals, copubs) {
       // draw options
       styleFnOpt: {},
       label: {
-        type: 'rect',
-        paddingV: 2,
-        paddingH: 8
+        type: 'round',
+        r: 4,
       },
       styleFn: styleLineChart
     }
