@@ -219,7 +219,7 @@ function collabSummary(response, startYear, endYear) {
             top: 40,
             right: 20,
             bottom: 30,
-            left: 300 // if labels must be in 1 line, should be depending on max label width (label of styled font-size)
+            left: 370 // if labels must be in 1 line, should be depending on max label width (label of styled font-size)
           },
           insertAt: tempChartHolder,
           title: 'Number of publications by top research subjects',
