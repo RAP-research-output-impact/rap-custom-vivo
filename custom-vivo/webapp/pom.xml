@@ -159,5 +159,17 @@
           <artifactId>poi-ooxml</artifactId>
 	  <version>3.17</version>
 	</dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-transcoder -->
+	<dependency>
+	    <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-transcoder</artifactId>
+            <version>1.10</version>
+        </dependency>
+	<!-- https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-codec -->
+	<dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-codec</artifactId>
+            <version>1.10</version>
+        </dependency>
     </dependencies>
 </project>

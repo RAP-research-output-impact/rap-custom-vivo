@@ -1,8 +1,12 @@
 package dk.dtu.adm.rap.controller;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.DecimalFormat;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -14,6 +18,10 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.batik.transcoder.TranscoderException;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
@@ -28,10 +36,15 @@ import org.apache.poi.ss.usermodel.BorderExtent;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Picture;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.PropertyTemplate;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -172,7 +185,53 @@ public class ExcelExport extends VitroHttpServlet {
         sheet.setColumnWidth(1, 6000);
         sheet.setColumnWidth(2, 6000);
         sheet.setColumnWidth(3, 6000);
+        addPicture(sheet, wb);
         return wb;
+    }
+    
+    private void addPicture(XSSFSheet sheet, XSSFWorkbook workbook) {
+        try {
+            FileInputStream fis = new FileInputStream(new File("C:/Users/Brian Lowe/Desktop/marble24.png"));
+            
+            CreationHelper helper = workbook.getCreationHelper();
+            final Drawing drawing = sheet.createDrawingPatriarch();
+
+            final ClientAnchor anchor = helper.createClientAnchor();
+            anchor.setAnchorType( ClientAnchor.AnchorType.MOVE_AND_RESIZE );
+
+
+            String svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" id=\"number-of-co-publications-per-year\" preserveAspectRatio=\"xMinYMin meet\" viewBox=\"0 0 800 300\" class=\"svg-content\" style=\"max-height: 500px; color: rgb(94, 99, 99); fill: rgb(94, 99, 99);\"><g fill=\"none\" font-size=\"10\" font-family=\"sans-serif\" text-anchor=\"end\" class=\"oy\" transform=\"translate(40,70)\" style=\"font-size: 14px;\"><path class=\"domain\" stroke=\"currentColor\" d=\"M-6,200.5H0.5V0.5H-6\"></path><g class=\"tick\" opacity=\"1\" transform=\"translate(0,200.5)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">0</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(0,186.21428571428572)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">1</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(0,171.92857142857144)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">2</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(0,157.64285714285714)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">3</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(0,143.35714285714286)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">4</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(0,129.07142857142856)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">5</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(0,114.78571428571429)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">6</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(0,100.5)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">7</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(0,86.21428571428572)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">8</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(0,71.92857142857142)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">9</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(0,57.64285714285714)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">10</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(0,43.35714285714286)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">11</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(0,29.071428571428584)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">12</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(0,14.785714285714278)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">13</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(0,0.5)\"><line stroke=\"currentColor\" x2=\"-6\"></line><text fill=\"currentColor\" x=\"-9\" dy=\"0.32em\" style=\"color: rgb(94, 99, 99);\">14</text></g></g><g fill=\"none\" font-size=\"10\" font-family=\"sans-serif\" text-anchor=\"middle\" class=\"ox\" transform=\"translate(40,270)\" style=\"font-size: 14px;\"><path class=\"domain\" stroke=\"currentColor\" d=\"M0.5,6V0.5H720.5V6\"></path><g class=\"tick\" opacity=\"1\" transform=\"translate(0.5,0)\"><line stroke=\"currentColor\" y2=\"6\"></line><text fill=\"currentColor\" y=\"9\" dy=\"0.71em\" style=\"color: rgb(94, 99, 99);\">2008</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(72.63796879277307,0)\"><line stroke=\"currentColor\" y2=\"6\"></line><text fill=\"currentColor\" y=\"9\" dy=\"0.71em\" style=\"color: rgb(94, 99, 99);\">2009</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(144.57883931015604,0)\"><line stroke=\"currentColor\" y2=\"6\"></line><text fill=\"currentColor\" y=\"9\" dy=\"0.71em\" style=\"color: rgb(94, 99, 99);\">2010</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(216.51970982753903,0)\"><line stroke=\"currentColor\" y2=\"6\"></line><text fill=\"currentColor\" y=\"9\" dy=\"0.71em\" style=\"color: rgb(94, 99, 99);\">2011</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(288.460580344922,0)\"><line stroke=\"currentColor\" y2=\"6\"></line><text fill=\"currentColor\" y=\"9\" dy=\"0.71em\" style=\"color: rgb(94, 99, 99);\">2012</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(360.5985491376951,0)\"><line stroke=\"currentColor\" y2=\"6\"></line><text fill=\"currentColor\" y=\"9\" dy=\"0.71em\" style=\"color: rgb(94, 99, 99);\">2013</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(432.53941965507806,0)\"><line stroke=\"currentColor\" y2=\"6\"></line><text fill=\"currentColor\" y=\"9\" dy=\"0.71em\" style=\"color: rgb(94, 99, 99);\">2014</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(504.480290172461,0)\"><line stroke=\"currentColor\" y2=\"6\"></line><text fill=\"currentColor\" y=\"9\" dy=\"0.71em\" style=\"color: rgb(94, 99, 99);\">2015</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(576.421160689844,0)\"><line stroke=\"currentColor\" y2=\"6\"></line><text fill=\"currentColor\" y=\"9\" dy=\"0.71em\" style=\"color: rgb(94, 99, 99);\">2016</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(648.559129482617,0)\"><line stroke=\"currentColor\" y2=\"6\"></line><text fill=\"currentColor\" y=\"9\" dy=\"0.71em\" style=\"color: rgb(94, 99, 99);\">2017</text></g><g class=\"tick\" opacity=\"1\" transform=\"translate(720.5,0)\"><line stroke=\"currentColor\" y2=\"6\"></line><text fill=\"currentColor\" y=\"9\" dy=\"0.71em\" style=\"color: rgb(94, 99, 99);\">2018</text></g></g><g class=\"serie\"><path d=\"M0,171.42857142857144L72.13796879277307,171.42857142857144L144.07883931015604,157.14285714285714L216.01970982753903,142.85714285714286L287.960580344922,0L360.0985491376951,42.85714285714286L432.03941965507806,57.14285714285714L503.980290172461,114.28571428571429L575.921160689844,100L648.059129482617,71.42857142857142L720,185.71428571428572\" transform=\"translate(40,70)\" class=\"chart-line\" stroke=\"#030F4F\" stroke-width=\"2\" fill=\"none\"></path><g class=\"labels\" font-size=\"14\" transform=\"translate(40,70)\"><g class=\"label\" transform=\"translate(0,171.42857142857144)\"><circle r=\"4\" fill=\"#030F4F\"></circle></g><g class=\"label\" transform=\"translate(72.13796879277307,171.42857142857144)\"><circle r=\"4\" fill=\"#030F4F\"></circle></g><g class=\"label\" transform=\"translate(144.07883931015604,157.14285714285714)\"><circle r=\"4\" fill=\"#030F4F\"></circle></g><g class=\"label\" transform=\"translate(216.01970982753903,142.85714285714286)\"><circle r=\"4\" fill=\"#030F4F\"></circle></g><g class=\"label\" transform=\"translate(287.960580344922,0)\"><circle r=\"4\" fill=\"#030F4F\"></circle></g><g class=\"label\" transform=\"translate(360.0985491376951,42.85714285714286)\"><circle r=\"4\" fill=\"#030F4F\"></circle></g><g class=\"label\" transform=\"translate(432.03941965507806,57.14285714285714)\"><circle r=\"4\" fill=\"#030F4F\"></circle></g><g class=\"label\" transform=\"translate(503.980290172461,114.28571428571429)\"><circle r=\"4\" fill=\"#030F4F\"></circle></g><g class=\"label\" transform=\"translate(575.921160689844,100)\"><circle r=\"4\" fill=\"#030F4F\"></circle></g><g class=\"label\" transform=\"translate(648.059129482617,71.42857142857142)\"><circle r=\"4\" fill=\"#030F4F\"></circle></g><g class=\"label\" transform=\"translate(720,185.71428571428572)\"><circle r=\"4\" fill=\"#030F4F\"></circle></g></g></g><text class=\"svg-title\" x=\"400\" y=\"16\" text-anchor=\"middle\" font-size=\"16\" style=\"color: rgb(94, 99, 99); font-weight: bold; font-size: 16px;\">Number of co-publications per year</text></svg>";
+            
+            //final int pictureIndex =
+            //        workbook.addPicture(IOUtils.toByteArray(fis), Workbook.PICTURE_TYPE_PNG);
+
+            ByteArrayOutputStream png = new ByteArrayOutputStream();
+            
+            PNGTranscoder transcoder = new PNGTranscoder();
+            TranscoderInput input = new TranscoderInput(new StringReader(svg));
+            TranscoderOutput output = new TranscoderOutput(png);
+            
+            try {
+                transcoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, new Float(800));
+                transcoder.transcode(input, output);
+            } catch (TranscoderException e) {
+                throw new RuntimeException(e);
+            }
+            
+            final int pictureIndex =
+                    workbook.addPicture(png.toByteArray(), Workbook.PICTURE_TYPE_PNG);
+            
+            anchor.setCol1( 0 );
+            anchor.setRow1( 89 ); // same row is okay
+            anchor.setRow2( 105 );
+            anchor.setCol2( 3 );
+            final Picture pict = drawing.createPicture( anchor, pictureIndex );
+            //pict.resize();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
     
     private static final boolean DETAILS = true;
