@@ -35,6 +35,9 @@ let module = {
 }
 var individualUri = "${individual.uri}";
 
+var svgStr1;
+var svgStr2;
+
 //co-publication report
 $("span.display-title").html('');
 var uni = $("h1.fn").text();
@@ -234,7 +237,12 @@ function collabSummary(response, startYear, endYear) {
         hBarchart(pubsByResearchSubjChartOpt)
 
         html += tempChartHolder.innerHTML
-        tempChartHolder.remove()
+
+        // BJL: send client-side-generated SVG markup to the Excel download
+	svgStr1 = tempChartHolder.getElementsByTagName('div')[0].innerHTML;
+        setExportLink(individualLocalName, $("#startYear").val(), $("#endYear").val(), svgStr1, svgStr2);
+        
+	tempChartHolder.remove()
     }
 
 
@@ -901,6 +909,11 @@ function doPubCountTable(totals, DTUtotals, copubs) {
     lineChart(copubsChartOpt)
 
     html += tempChartHolder.innerHTML
+    
+    // BJL: send client-side-generated SVG markup to the Excel download
+    svgStr2 = tempChartHolder.getElementsByTagName('div')[0].innerHTML;
+    setExportLink(individualLocalName, $("#startYear").val(), $("#endYear").val(), svgStr1, svgStr2);
+        
     tempChartHolder.remove()
 
     $("#collab-summary-container").append(html);
@@ -969,12 +982,22 @@ function downloadCsv(csv, filename) {
 }
 
 function setExportLink(individualLocalName, startYear, endYear) {
+    setExportLink(individualLocalName, startYear, endYear, null, null);
+}
+
+function setExportLink(individualLocalName, startYear, endYear, svgStr1, svgStr2) {
     var href = "${urls.base}/excelExport/" + individualLocalName + ".xlsx?orgLocalName=" + individualLocalName;
     if(startYear != null) {
         href += "&startYear=" + startYear;
     }
     if(endYear != null) {
         href += "&endYear=" + endYear;
+    }
+    if(svgStr1 != null) {
+        href += "&svgStr1=" + encodeURIComponent(svgStr1);
+    }
+    if(svgStr2 != null) {
+        href += "&svgStr2=" + encodeURIComponent(svgStr2);
     }
     $("#report-export").attr("href", href);
 }
