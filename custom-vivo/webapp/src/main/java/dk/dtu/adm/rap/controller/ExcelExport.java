@@ -160,6 +160,14 @@ public class ExcelExport extends VitroHttpServlet {
         } catch (JSONException e) {
             log.error(e, e);
         }
+        try {
+            addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 26, 0, 4);
+            for(int i = 0; i < 24; i++) {
+                rowCreator.createRow();
+            }
+        } catch (Exception e) {
+            log.error(e, e);
+        }
         rowCreator.createRow();
         rowCreator.createRow();
         try {
@@ -174,8 +182,19 @@ public class ExcelExport extends VitroHttpServlet {
         } catch (JSONException e) {
             log.error(e, e);
         }
+        try {
+            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 26, 0, 9);
+            for(int i = 0; i < 24; i++) {
+                rowCreator.createRow();
+            }
+        } catch (Exception e) {
+            log.error(e, e);
+        }        
         rowCreator.createRow();
         rowCreator.createRow();
+        for(int i = 0; i < 26; i++) {
+            rowCreator.createRow();
+        }
         try {
             addByDepartment(byDeptJson, wb, sheet, rowCreator, pt, details);
         } catch (JSONException e) {
@@ -186,8 +205,6 @@ public class ExcelExport extends VitroHttpServlet {
         sheet.setColumnWidth(1, 6000);
         sheet.setColumnWidth(2, 6000);
         sheet.setColumnWidth(3, 6000);
-        addSvg(svgStr1, sheet, wb, 88, 112, 0, 4);
-        addSvg(svgStr2, sheet, wb, 114, 138, 0, 4);
         return wb;
     }
     
@@ -221,7 +238,7 @@ public class ExcelExport extends VitroHttpServlet {
         anchor.setCol1( col1 );
         anchor.setCol2( col2 );
         Picture pict = drawing.createPicture( anchor, pictureIndex );
-        pict.resize();
+        //pict.resize();
         
     }
     
