@@ -5,6 +5,7 @@
 <#-- Do not show the link for temporal visualization unless it's enabled -->
 
 <script src="${urls.theme}/js/jquery.corner.js"></script>
+<script src="${urls.theme}/js/jquery.sortElements.js"></script>
 
 <#assign affiliatedResearchAreas>
     <#include "individual-affiliated-research-areas.ftl">
@@ -162,20 +163,83 @@ function collabSummary(response, startYear, endYear) {
     }
     var html = `
     <hr/>
-    <h2>Top research subjects</h2>
+    <h2 class="rep">Compare institutional top research subjects</h2>
     <div id="top-research">
     `;
     if (response.top_categories.length != 0) {
         html += doTopCategoryTable(response);
+        html += '<hr/>';
     }
     if (response.categories.length > 0) {
         html += doPubCategoryTable(response.categories, startYear, endYear);
     }
     html += "</div>";
     $("#collab-summary-container").append(html);
+
+    $("#sort-org .sort-dir").html (sortArrow (0, 1));
+    $("#sort-dtu .sort-dir").html (sortArrow (0, 0));
+    var inverseORG = true;
+    var inverseDTU = false;
+    $('#sort-org').each(function() {
+        $(this).click(function() {
+            $("td.sort-org").sortElements(function(a, b) {
+                return Number($.text([a])) > Number($.text([b])) ?
+                       inverseORG ? -1 : 1
+                     : inverseORG ? 1 : -1;
+            }, function() {
+                return this.parentNode;
+            });
+            if (inverseORG) {
+                $("#sort-org .sort-dir").html (sortArrow (1, 1));
+            } else {
+                $("#sort-org .sort-dir").html (sortArrow (0, 1));
+            }
+            $("#sort-dtu .sort-dir").html (sortArrow (0, 0));
+            inverseORG = !inverseORG;
+            inverseDTU = false;
+        });
+    });
+    $('#sort-dtu').each(function() {
+        $(this).click(function() {
+            $("td.sort-dtu").sortElements(function(a, b) {
+                return Number($.text([a])) > Number($.text([b])) ?
+                       inverseDTU ? -1 : 1
+                     : inverseDTU ? 1 : -1;
+            }, function() {
+                return this.parentNode;
+            });
+            if (inverseDTU) {
+                $("#sort-dtu .sort-dir").html (sortArrow (1, 1));
+            } else {
+                $("#sort-dtu .sort-dir").html (sortArrow (0, 1));
+            }
+            $("#sort-org .sort-dir").html (sortArrow (0, 0));
+            inverseDTU = !inverseDTU;
+            inverseORG = false;
+        });
+    });
+
     loadPubInfoByStartYear(byDeptUrl, startYear, endYear, byDeptReport)
 }
 
+function sortArrow(up, used) {
+    var svg = '<svg height="14" width="24">';
+    if (up) {
+        if (used) {
+            svg += '<polygon points="12,2 22,12 2,12 12,2" style="fill:red;stroke:white;stroke-width:2" />';
+        } else {
+            svg += '<polygon points="12,2 22,12 2,12 12,2" style="fill:none;stroke:white;stroke-width:2" />';
+        }
+    } else {
+        if (used) {
+            svg += '<polygon points="12,12 2,2 22,2 12,12" style="fill:red;stroke:white;stroke-width:2" />';
+        } else {
+            svg += '<polygon points="12,12 2,2 22,2 12,12" style="fill:none;stroke:white;stroke-width:2" />';
+        }
+    }
+    svg += '</svg>';
+    return svg;
+}
 
 function byDeptReport(response, startYear, endYear) {
     if (response.departments.length > 0) {
@@ -194,44 +258,111 @@ function doSummaryTable(response) {
     var html = `
     <div id="summaryTable">
     <hr/>
-    <h2>Overview</h2>
+    <h2 class="rep">Compare key output and impact indicators</h2>
     <table id="rep1" class="pub-counts">
     `;
     if (response.summary.country) {
         $("#collab-summary-country").html(",&nbsp" + response.summary.country).removeClass("hidden");
     }
-    html += "<tr><th class=\"col1\"></th><th class=\"col2\">" + response.summary.name + "</th><th class=\"col3\">Technical University of Denmark</th></tr>";
-    html += doSummaryTableRow (0, 0, "Number of publications",                                     response.summary.orgTotal,      response.summary.dtuTotal);
-    html += doSummaryTableRow (0, 0, "Number of citations",                                        response.summary.orgCitesTotal, response.summary.dtuCitesTotal);
-    html += doSummaryTableRow (1, 0, "Simple citation impact (average citations per publication)", response.summary.orgImpact,     response.summary.dtuImpact);
-    html += doSummaryTableRow (1, 0, "Normalised citation impact (global average 1.0)",            response.summary.orgimp,        response.summary.dtuimp);
-    html += doSummaryTableRow (0, 1, "% of publications in global top 10% most cited",             response.summary.orgt10,        response.summary.dtut10);
-    html += doSummaryTableRow (0, 1, "% of publications in global top 1% most cited",              response.summary.orgt1,         response.summary.dtut1);
-    html += doSummaryTableRow (0, 1, "% of publications with industry collaboration",              response.summary.orgcind,       response.summary.dtucind);
-    html += doSummaryTableRow (0, 1, "% of publications with international collaboration",         response.summary.orgcint,       response.summary.dtucint);
+    html += "<tr><th class=\"col1\"></th><th class=\"col2\">Partner</th><th class=\"col3\">DTU</th></tr>";
+    html += doSummaryTableRow (0, 0, "Number of publications",                             '',          response.summary.orgTotal,      response.summary.dtuTotal);
+    html += doSummaryTableRow (0, 0, "Number of citations",                                '',          response.summary.orgCitesTotal, response.summary.dtuCitesTotal);
+    html += doSummaryTableRow (1, 0, "Simple citation impact (citations / publication)",   '',          response.summary.orgImpact,     response.summary.dtuImpact);
+    html += doSummaryTableRow (2, 0, "Normalised citation impact (global average 1.0)",    'ind-nci',   response.summary.orgimp,        response.summary.dtuimp);
+    html += doSummaryTableRow (0, 1, "% of publications in top 10% most cited",            'ind-top10', response.summary.orgt10,        response.summary.dtut10);
+    html += doSummaryTableRow (0, 1, "% of publications in top 1% most cited",             'ind-top1',  response.summary.orgt1,         response.summary.dtut1);
+    html += doSummaryTableRow (0, 1, "% of publications with industry collaboration",      '',          response.summary.orgcind,       response.summary.dtucind);
+    html += doSummaryTableRow (0, 1, "% of publications with international collaboration", '',          response.summary.orgcint,       response.summary.dtucint);
+    html += `
+        <div id="ind-nci-dialog" title="Normalised citation impact">
+          <p>
+              Citations per publication normalised for subject, year, and publication type.
+              The world average is equal to 1.
+              Example: A normalised citation impact of 1.23 means that the impact is 23% above the world average.
+          </p>
+        </div>
+        <div id="ind-top10-dialog" title="% of publications in top 10% most cited">
+          <p>
+              Proportion of the publications belonging to the top 10% most cited in a given subject category, year, and publication type.
+          </p>
+        </div>
+        <div id="ind-top1-dialog" title="% of publications in top 1% most cited">
+          <p>
+              Proportion of the publications belonging to the top 1% most cited in a given subject category, year, and publication type.
+          </p>
+        </div>
+    `;
     $("#collab-summary-container").append(html);
+
+    $("#ind-nci-dialog").hide();
+    $("#ind-top10-dialog").hide();
+    $("#ind-top1-dialog").hide();
+    $("#ind-nci").click(function() {
+        $("#ind-nci-dialog").dialog({
+            resizable: false,
+            height: "auto",
+            width: 400,
+            modal: true,
+            buttons: {
+                Close: function() {
+                    $( this ).dialog( "close" );
+                }
+            },
+            position: { my: "left top", at: "left bottom", of: "#ind-nci" }
+        });
+    });
+    $("#ind-top10").click(function() {
+        $("#ind-top10-dialog").dialog({
+            resizable: false,
+            height: "auto",
+            width: 400,
+            modal: true,
+            buttons: {
+                Close: function() {
+                    $( this ).dialog( "close" );
+                }
+            },
+            position: { my: "left top", at: "left bottom", of: "#ind-nci" }
+        });
+    });
+    $("#ind-top1").click(function() {
+        $("#ind-top1-dialog").dialog({
+            resizable: false,
+            height: "auto",
+            width: 400,
+            modal: true,
+            buttons: {
+                Close: function() {
+                    $( this ).dialog( "close" );
+                }
+            },
+            position: { my: "left top", at: "left bottom", of: "#ind-nci" }
+        });
+    });
 }
 
-function doSummaryTableRow(real, percent, label, org, dtu) {
+function doSummaryTableRow(real, percent, label, info, org, dtu) {
     var vo = org;
     var vd = dtu;
-    console.log(typeof(vo));
     if (real) {
         if (vo) {
-            vo = vo.toFixed(1);
+            vo = vo.toFixed(real);
         }
         if (vd) {
-            vd = vd.toFixed(1);
+            vd = vd.toFixed(real);
         }
     } else if (percent) {
         if (vo) {
-            vo = vo.toFixed(2) + "%";
+            vo = vo.toFixed(percent) + "%";
         }
         if (vd) {
-            vd = vd.toFixed(2) + "%";
+            vd = vd.toFixed(percent) + "%";
         }
     }
-    return "<tr><td class=\"rep-label\">" + label + "</td><td class=\"rep-num\">" + vo + "</td><td class=\"rep-num\">" + vd + "</td></tr>";
+    if (info) {
+        info = ' <button id="' + info + '" class="" style="border: 0px;"><span class="ui-icon ui-icon-info"></span></button>';
+    }
+    return "<tr><td class=\"rep-label\">" + label + info + "</td><td class=\"rep-num\">" + vo + "</td><td class=\"rep-num\">" + vd + "</td></tr>";
 }
 
 function doTopCategoryTable(response) {
@@ -239,8 +370,23 @@ function doTopCategoryTable(response) {
     <table id="rep3" class="pub-counts">
         <tr>
             <th class="col1">Research publication subjects</th>
-            <th class="col2" colspan="2">Partner</th>
-            <th class="col3" colspan="2">DTU</th>
+            <th class="col2" colspan="2">
+                <div id="sort-org" style="color: white;">
+                    Partner
+                    <div class="sort-dir" style="height: 23px;"></div>
+                </div>
+            </th>
+            <th class="col3" colspan="2">
+                <div id="sort-dtu" style="color: white;">
+                    DTU
+                    <div class="sort-dir" style="height: 23px;"></div>
+                </div>
+            </th>
+            <th class="col4" rowspan="2">
+                <div style="color: white;">
+                    Co-pubs
+                </div>
+            </th>
         </tr>
         <tr>
             <th class="col1">Compare partner and DTU</th>
@@ -255,9 +401,10 @@ function doTopCategoryTable(response) {
         if (n < 20) {
             var row = "<tr class=\"rep-row\" id=\"tc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td>" +
                       "<td class=\"rep-num\">" + value.number + "</td>" +
-                      "<td class=\"rep-num\">" + value.rank + "</td>" +
+                      "<td class=\"rep-num sort-org\">" + value.rank + "</td>" +
                       "<td class=\"rep-num\">" + value.DTUnumber + "</td>" +
-                      "<td class=\"rep-num\">" + value.DTUrank + "</td>" +
+                      "<td class=\"rep-num sort-dtu\">" + value.DTUrank + "</td>" +
+                      "<td class=\"rep-num\">" + value.copub + "</td>" +
                       "</tr>";
             html += row;
             n++;
@@ -274,10 +421,11 @@ function idkey(name) {
 
 function doPubCategoryTable(totals, startYear, endYear) {
     var html = `
+    <h2 class="rep">Compare collaboration top research subjects with institutional</h2>
     <table id="rep4" class="pub-counts">
       <tr>
-        <th class="col1">Research publication subjects</th>
-        <th class="col2">Co-publications</th>
+        <th class="col1">Collaboration  publication subjects</th>
+        <th class="col2">Co-pubs</th>
         <th class="col3">Partner rank</th>
         <th class="col4">DTU rank</th>
       </tr>
@@ -306,14 +454,12 @@ function doDepartmentTable(totals, name, startYear, endYear) {
     var html = `
     <div id="departmentTable">
     <hr/>
-    <h2>Co-publications by department</h2>
+    <h2 class="rep">Co-publications by department</h2>
     <table id="rep5" class="pub-counts">
       <tr>
         <th class="col1">DTU department</th>
         <th class="col2">Publications</th>
-        <th class="col3">`;
-    html += name + ' department';
-    html += `</th>
+        <th class="col3">Partner departments</th>
       </tr>
     `;
 
@@ -374,14 +520,13 @@ function doPubCountTable(totals, DTUtotals) {
     var html = `
     <div id="pubCountTable">
     <hr/>
-    <h2>Number of publications per year</h2>
+    <h2 class="rep">Compare the annual publication output</h2>
     <table id="rep2" class="pub-counts">
       <tr>
         <th class="col1">Year</th>
-        <th class="col2">
+        <th class="col2">Partner</th>
+        <th class="col3">DTU</th>
     `;
-    html += uni.trim() + "</th>";
-    html += "<th class=\"col3\">Technical University of Denmark</th></tr>";
     $.each(years, function(key, value) {
         html += "<tr><td class=\"rep-label\">" + key;
         if (key > 2017) {

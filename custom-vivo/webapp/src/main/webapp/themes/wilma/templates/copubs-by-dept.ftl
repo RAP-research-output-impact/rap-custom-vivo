@@ -63,6 +63,7 @@
         </table>
     </div>
 </#list>
+<br/><br/><br/>
 <div id="footer-spacer">
 </div>
 ${stylesheets.add('<link rel="stylesheet" href="${urls.base}/css/individual/individual-vivo.css" />')}

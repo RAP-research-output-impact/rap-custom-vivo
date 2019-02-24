@@ -292,60 +292,71 @@ ul.copubdept {
     font-weight: bold;
 }
 /* Report tables */
+#individual-info h2.rep {
+    font-size: 18px;
+    font-weight: bold;
+}
 table#rep1 th.col1 {
     width: 420px;
 }
 table#rep1 th.col2 {
-    width: 300px;
+    width: 100px;
     text-align: right;
 }
 table#rep1 th.col3 {
-    width: 300px;
+    width: 100px;
     text-align: right;
 }
 table#rep2 th.col1 {
     width: 100px;
 }
 table#rep2 th.col2 {
-    width: 300px;
+    width: 100px;
     text-align: right;
 }
 table#rep2 th.col3 {
-    width: 300px;
+    width: 100px;
     text-align: right;
 }
 table#rep3 th.col1 {
-    width: 500px;
+    width: 400px;
 }
 table#rep3 th.col2 {
-    width: 200px;
+    width: 120px;
     text-align: center;
+    vertical-align: middle;
 }
 table#rep3 th.col3 {
-    width: 200px;
+    width: 120px;
     text-align: center;
+    vertical-align: middle;
+}
+table#rep3 th.col4 {
+    width: 80px;
+    text-align: center;
+    vertical-align: middle;
 }
 table#rep3 th.col21 {
-    width: 97px;
-    text-align: right;
+    width: 57px;
+    text-align: center;
 }
 table#rep3 th.col22 {
-    width: 97px;
-    text-align: right;
+    width: 57px;
+    text-align: center;
 }
 table#rep3 th.col31 {
-    width: 97px;
-    text-align: right;
+    width: 57px;
+    text-align: center;
 }
 table#rep3 th.col32 {
-    width: 97px;
-    text-align: right;
+    width: 57px;
+    text-align: center;
 }
 table#rep4 th.col1 {
-    width: 500px;
+    width: 400px;
 }
 table#rep4 th.col2 {
-    width: 200px;
+    width: 100px;
     text-align: right;
 }
 table#rep4 th.col3 {
@@ -391,7 +402,6 @@ table#rep5 th.col3 {
 #sort-org {
     display: inline-block;
     height: 100%;
-    min-width: 300px;
     cursor: pointer;
 }
 #sort-pub {
