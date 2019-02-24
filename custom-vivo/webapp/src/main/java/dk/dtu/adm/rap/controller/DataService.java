@@ -329,7 +329,6 @@ public class DataService {
 
     private Object getSummary(Connection mysql, HashMap<String, Integer> orgmap, String orgUri, Integer startYear, Integer endYear) {
         log.debug("getSummary: " + orgUri);
-        String yearFilter = getYearFilter(startYear, endYear);
         String yearDtv = getYearDtv(startYear, endYear);
         String dtvFilter = getDtvFilter(startYear, endYear);
         String rq = "SELECT \n" +
@@ -533,9 +532,11 @@ public class DataService {
                 String sub = resultSet.getString("sub");
                 HashMap<String, String> s = subs.get(Integer.parseInt(sub));
                 thisItem.put("name", s.get("label"));
-                thisItem.put("category", namespace + s.get("name"));
+                String catUri = namespace + s.get("name");
+                thisItem.put("category", catUri);
                 thisItem.put("number", resultSet.getString("c"));
                 thisItem.put("rank", rank++);
+                thisItem.put("copub", getCategoryCopub (catUri, namespace + orgID, startYear, endYear));
                 outRows.add(thisItem);
             }
         } catch (SQLException e) {
@@ -551,6 +552,42 @@ public class DataService {
         log.debug("done - getTopCategories");
         AddCategoriesRanks(mysql, orgmap, namespace, null, startYear, endYear, outRows);
         return outRows;
+    }
+
+    private Integer getCategoryCopub(final String catUri, final String orgUri, Integer startYear, Integer endYear) {
+        String yearDtv = getYearDtv(startYear, endYear);
+        String dtvFilter = getDtvFilter(startYear, endYear);
+        String rq = "SELECT (COUNT(DISTINCT ?pub) as ?coPubSub)\n" +
+                    "WHERE {\n" +
+                    "    ?org a foaf:Organization ;\n" +
+                    "        vivo:relatedBy ?address .\n" +
+                    "    ?address a wos:Address ;\n" +
+                    "        vivo:relates ?pub .\n" +
+                    "    ?pub a wos:Publication ;\n" +
+                    "        wos:hasCategory ?cat .\n" +
+                         yearDtv +
+                         dtvFilter +
+                    "}\n";
+        ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
+        q2.setCommandText(rq);
+        q2.setIri("org", orgUri);
+        q2.setIri("cat", catUri);
+        String query = q2.toString();
+        log.debug("Subject copub query:\n" + query);
+        ArrayList subArray = this.storeUtils.getFromStoreJSON(query);
+        log.debug("done - Subject copub sparql");
+        if (subArray.isEmpty()) {
+            log.debug("done - Subject copub empty");
+            return 0;
+        }
+        JSONObject sub = (JSONObject)subArray.get(0);
+        try {
+            Integer n = (Integer)sub.get("coPubSub");
+            return n;
+        } catch (JSONException e) {
+            log.debug("sub empty");
+            return 0;
+        }
     }
 
     private ArrayList AddCategoriesRanks(Connection mysql, HashMap<String, Integer> orgmap, String namespace, final String orgID, Integer startYear, Integer endYear, ArrayList<JSONObject> subjects) {
