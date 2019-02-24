@@ -193,7 +193,8 @@
                      "</a></td><td class=\"sort-pub\" style=\"text-align: right;\">" + data.orgs[i].publications + "</td></tr>";
         }
         $("#map-org-list tbody").html(tbody);
-        $("#sort-pub .sort-dir").html ('<div class="sort-dir-button"><span class="sort-dir-arrow">&uarr;</span>&nbsp;Sort</div>');
+        $("#sort-pub .sort-dir").html (sortArrow (1, 1));
+        $("#sort-org .sort-dir").html (sortArrow (0, 0));
         $('#sort-org').each(function() {
             var inverse = false;
             $(this).click(function() {
@@ -205,11 +206,11 @@
                     return this.parentNode;
                 });
                 if (inverse) {
-                    $("#sort-org .sort-dir").html ('<div class="sort-dir-button"><span class="sort-dir-arrow">&uarr;</span>&nbsp;Sort</div>');
+                    $("#sort-org .sort-dir").html (sortArrow (1, 1));
                 } else {
-                    $("#sort-org .sort-dir").html ('<div class="sort-dir-button"><span class="sort-dir-arrow">&darr;</span>&nbsp;Sort</div>');
+                    $("#sort-org .sort-dir").html (sortArrow (0, 1));
                 }
-                $("#sort-pub .sort-dir").html ('');
+                $("#sort-pub .sort-dir").html (sortArrow (0, 0));
                 inverse = !inverse;
             });
         });
@@ -224,14 +225,33 @@
                     return this.parentNode;
                 });
                 if (inverse) {
-                    $("#sort-pub .sort-dir").html ('<div class="sort-dir-button"><span class="sort-dir-arrow">&uarr;</span>&nbsp;Sort</div>');
+                    $("#sort-pub .sort-dir").html (sortArrow (1, 1));
                 } else {
-                    $("#sort-pub .sort-dir").html ('<div class="sort-dir-button"><span class="sort-dir-arrow">&darr;</span>&nbsp;Sort</div>');
+                    $("#sort-pub .sort-dir").html (sortArrow (0, 1));
                 }
-                $("#sort-org .sort-dir").html ('');
+                $("#sort-org .sort-dir").html (sortArrow (0, 0));
                 inverse = !inverse;
             });
         });
+    }
+
+    function sortArrow(up, used) {
+        var svg = '<svg height="14" width="24">';
+        if (up) {
+            if (used) {
+                svg += '<polygon points="12,2 22,12 2,12 12,2" style="fill:red;stroke:white;stroke-width:2" />';
+            } else {
+                svg += '<polygon points="12,2 22,12 2,12 12,2" style="fill:none;stroke:white;stroke-width:2" />';
+            }
+        } else {
+            if (used) {
+                svg += '<polygon points="12,12 2,2 22,2 12,12" style="fill:red;stroke:white;stroke-width:2" />';
+            } else {
+                svg += '<polygon points="12,12 2,2 22,2 12,12" style="fill:none;stroke:white;stroke-width:2" />';
+            }
+        }
+        svg += '</svg>';
+        return svg;
     }
 
     function loadData(url, callback) {
