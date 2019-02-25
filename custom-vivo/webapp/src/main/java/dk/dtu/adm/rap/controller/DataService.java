@@ -105,6 +105,7 @@ public class DataService {
                 jo.put("categories", getRelatedPubCategories(mysql, orgmap, namespace, uri, startYearInt, endYearInt));
                 jo.put("org_totals", getSummaryPubCount(mysql, orgmap, vid, startYearInt, endYearInt));
                 jo.put("dtu_totals", getSummaryPubCount(mysql, orgmap, "org-technical-university-of-denmark", startYearInt, endYearInt));
+                jo.put("copub_totals", getSummaryCopubCount(uri, startYearInt, endYearInt));
                 jo.put("top_categories", getTopCategories(mysql, orgmap, namespace, vid, startYearInt, endYearInt));
                 jo.put("by_department", getCoPubsByDepartment(uri, startYearInt, endYearInt));
             } catch (JSONException e) {
@@ -501,6 +502,28 @@ public class DataService {
         sql_close(statement, resultSet);
         log.debug("done - getSummaryPubCount");
         return outRows;
+    }
+    
+    private ArrayList getSummaryCopubCount(final String orgUri, 
+            Integer startYear, Integer endYear) {
+        log.debug("Hello. running summary copub count query");
+        String rq = readQuery("summaryCopubCount/getSummaryCopubCount.rq");
+        ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
+        q2.setCommandText(rq);
+        q2.setIri("collab", orgUri);
+        if(startYear == null) {
+            startYear = 1;
+        }
+        if(endYear == null) {
+            endYear = 9999;
+        }
+        q2.setLiteral("startYear", String.format("%04d", startYear) + "-01-01T00:00:00", 
+                XSDDatatype.XSDdateTime);
+        q2.setLiteral("endYear", String.format("%04d", endYear) + "-12-31T23:59:59", 
+                XSDDatatype.XSDdateTime);
+        String query = q2.toString();
+        log.debug("Summary copub count query:\n" + query);
+        return this.storeUtils.getFromStoreJSON(query);
     }
 
     private ArrayList getTopCategories(Connection mysql, HashMap<String, Integer> orgmap, String namespace, final String orgID, Integer startYear, Integer endYear) {

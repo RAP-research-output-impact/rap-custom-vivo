@@ -7,6 +7,7 @@
 
 .pub-counts {
     min-width: 20em;
+    margin-bottom: 24px;
 }
 
 .pub-counts td, .pub-counts th {
@@ -291,6 +292,9 @@ ul.copubdept {
     font-size: 16px;
     font-weight: bold;
 }
+#pubCountTable {
+  margin-bottom: 24px;
+}
 /* Report tables */
 #individual-info h2.rep {
     font-size: 18px;
@@ -315,6 +319,10 @@ table#rep2 th.col2 {
     text-align: right;
 }
 table#rep2 th.col3 {
+    width: 100px;
+    text-align: right;
+}
+table#rep2 th.col4 {
     width: 100px;
     text-align: right;
 }
@@ -483,4 +491,10 @@ table#copub-authors td {
 .footnote {
     font-size: 12px;
     font-style: italic;
+}
+#collab-summary-container .chart-box {
+  margin: 30px 0;
+}
+svg, svg g, svg text {
+  font-family: "Lucida Sans Unicode", "Lucida Grande", 'Geneva', helvetica, sans-serif
 }

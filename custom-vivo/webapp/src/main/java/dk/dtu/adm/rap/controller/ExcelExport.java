@@ -1,8 +1,9 @@
 package dk.dtu.adm.rap.controller;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.DecimalFormat;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -14,6 +15,10 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.batik.transcoder.TranscoderException;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
@@ -28,13 +33,18 @@ import org.apache.poi.ss.usermodel.BorderExtent;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Picture;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.PropertyTemplate;
 import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -55,6 +65,8 @@ public class ExcelExport extends VitroHttpServlet {
     private final static String ORG_PARAM = "orgLocalName";
     private final static String STARTYEAR_PARAM = "startYear";
     private final static String ENDYEAR_PARAM = "endYear";
+    private final static String SVG_1_PARAM = "svgStr1";
+    private final static String SVG_2_PARAM = "svgStr2";
     private final static String DATA_SERVICE = "/vds/report/org/";
     private final static String THIS_SERVLET = "/excelExport";
     private static final String CONTENT_TYPE = 
@@ -86,10 +98,12 @@ public class ExcelExport extends VitroHttpServlet {
         }
         String startYear = vreq.getParameter(STARTYEAR_PARAM);
         String endYear = vreq.getParameter(ENDYEAR_PARAM);
+        String svgStr1 = vreq.getParameter(SVG_1_PARAM);
+        String svgStr2 = vreq.getParameter(SVG_2_PARAM);
         try {
             JSONObject json = getJson(getBaseURI(vreq), orgLocalName, startYear, endYear, vreq);
             JSONObject byDeptJson = getByDeptJson(getBaseURI(vreq), orgLocalName, startYear, endYear, vreq);            
-            XSSFWorkbook wb = generateWorkbook(json, byDeptJson);        
+            XSSFWorkbook wb = generateWorkbook(json, byDeptJson, svgStr1, svgStr2);        
             response.setContentType(CONTENT_TYPE);
             OutputStream out = response.getOutputStream();        
             wb.write(out);
@@ -114,15 +128,15 @@ public class ExcelExport extends VitroHttpServlet {
     }
 
     private XSSFWorkbook generateWorkbook(
-            JSONObject json, JSONObject byDeptJson) throws JSONException {
+            JSONObject json, JSONObject byDeptJson, String svgStr1, String svgStr2) throws JSONException {
         XSSFWorkbook wb = new XSSFWorkbook();
-        generateWorksheet("Report", wb, json, byDeptJson, !DETAILS);
-        generateWorksheet("Details", wb, json, byDeptJson, DETAILS);
+        generateWorksheet("Report", wb, json, byDeptJson, svgStr1, svgStr2, !DETAILS);
+        generateWorksheet("Details", wb, json, byDeptJson, svgStr1, svgStr2, DETAILS);
         return wb;
     }
     
     private XSSFWorkbook generateWorksheet(String sheetName, XSSFWorkbook wb, 
-            JSONObject json, JSONObject byDeptJson, boolean details) 
+            JSONObject json, JSONObject byDeptJson, String svgStr1, String svgStr2, boolean details) 
                     throws JSONException {
         XSSFSheet sheet = wb.createSheet(sheetName);
         PropertyTemplate pt = new PropertyTemplate();
@@ -146,6 +160,14 @@ public class ExcelExport extends VitroHttpServlet {
         } catch (JSONException e) {
             log.error(e, e);
         }
+        try {
+            addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 26, 0, 4);
+            for(int i = 0; i < 24; i++) {
+                rowCreator.createRow();
+            }
+        } catch (Exception e) {
+            log.error(e, e);
+        }
         rowCreator.createRow();
         rowCreator.createRow();
         try {
@@ -160,8 +182,19 @@ public class ExcelExport extends VitroHttpServlet {
         } catch (JSONException e) {
             log.error(e, e);
         }
+        try {
+            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 26, 0, 9);
+            for(int i = 0; i < 24; i++) {
+                rowCreator.createRow();
+            }
+        } catch (Exception e) {
+            log.error(e, e);
+        }        
         rowCreator.createRow();
         rowCreator.createRow();
+        for(int i = 0; i < 26; i++) {
+            rowCreator.createRow();
+        }
         try {
             addByDepartment(byDeptJson, wb, sheet, rowCreator, pt, details);
         } catch (JSONException e) {
@@ -173,6 +206,40 @@ public class ExcelExport extends VitroHttpServlet {
         sheet.setColumnWidth(2, 6000);
         sheet.setColumnWidth(3, 6000);
         return wb;
+    }
+    
+    private void addSvg(String svgStr, XSSFSheet sheet, XSSFWorkbook workbook, 
+            int row1, int row2, int col1, int col2) {
+        if(svgStr == null || sheet == null || workbook == null) {
+            return;
+        }            
+        CreationHelper helper = workbook.getCreationHelper();
+        final XSSFDrawing drawing = sheet.createDrawingPatriarch();
+        final ClientAnchor anchor = helper.createClientAnchor();
+        anchor.setAnchorType( ClientAnchor.AnchorType.MOVE_AND_RESIZE );
+        // add namespace because without it, Batik will balk
+        if(!svgStr.contains("xmlns")) {
+            svgStr = svgStr.replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"");
+        }        
+        ByteArrayOutputStream png = new ByteArrayOutputStream();        
+        PNGTranscoder transcoder = new PNGTranscoder();
+        TranscoderInput input = new TranscoderInput(new StringReader(svgStr));
+        TranscoderOutput output = new TranscoderOutput(png);        
+        try {
+            transcoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, new Float(1000));
+            transcoder.transcode(input, output);
+        } catch (TranscoderException e) {
+            throw new RuntimeException(e);
+        }        
+        int pictureIndex = workbook.addPicture(
+                png.toByteArray(), Workbook.PICTURE_TYPE_PNG);              
+        anchor.setRow1( row1 );
+        anchor.setRow2( row2 );
+        anchor.setCol1( col1 );
+        anchor.setCol2( col2 );
+        Picture pict = drawing.createPicture( anchor, pictureIndex );
+        //pict.resize();
+        
     }
     
     private static final boolean DETAILS = true;
