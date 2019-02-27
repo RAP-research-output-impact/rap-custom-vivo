@@ -19,20 +19,6 @@
 
 <script>
 
-let module = {
-  db: {
-    foo: '123'
-  },
-  controllers: [{
-      name: 'foo',
-      args: {
-        init: '/'
-      },
-      fn: () => {
-        console.log('foo')
-      }
-    }]
-}
 var individualUri = "${individual.uri}";
 
 var svgStr1;
@@ -214,8 +200,8 @@ function collabSummary(response, startYear, endYear) {
 
         let pubsByResearchSubjChartOpt = {
           data: myData,
-          width: 600,
-          maxWidth: 700,
+          width: 750,
+          maxWidth: 750,
           height: 570,
           maxHeight: 600,
           minHeight: 450,
@@ -242,7 +228,7 @@ function collabSummary(response, startYear, endYear) {
         // BJL: send client-side-generated SVG markup to the Excel download
 	svgStr1 = tempChartHolder.getElementsByTagName('div')[0].innerHTML;
         setExportLink(individualLocalName, $("#startYear").val(), $("#endYear").val(), svgStr1, svgStr2);
-        
+
 	tempChartHolder.remove()
     }
 
@@ -1079,11 +1065,11 @@ function doPubCountTable(totals, DTUtotals, copubs) {
     lineChart(copubsChartOpt)
 
     html += tempChartHolder.innerHTML
-    
+
     // BJL: send client-side-generated SVG markup to the Excel download
     svgStr2 = tempChartHolder.getElementsByTagName('div')[0].innerHTML;
     setExportLink(individualLocalName, $("#startYear").val(), $("#endYear").val(), svgStr1, svgStr2);
-        
+
     tempChartHolder.remove()
 
     $("#collab-summary-container").append(html);
