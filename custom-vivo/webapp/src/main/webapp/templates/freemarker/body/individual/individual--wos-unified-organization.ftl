@@ -558,12 +558,14 @@ function doDepartmentTable(totals, name, startYear, endYear) {
 
     // CALL RESPONSIVE CHARTS FN after elements are in dom
     let responsiveCharts = document.querySelectorAll('.chart-box[minH]')
-    responsiveCharts.forEach(x => resizeChart(x))
+    if (window.ResizeObserver) {
+      responsiveCharts.forEach(x => resizeChart(x))
+    }
 
 }
 
 
-/*** FN TO RESIZE CHARTS ***/
+/*** FN TO RESIZE CHARTS - at this moment available only in chrome and opera ***/
 function resizeChart(target) {
   let minH = target.getAttribute('minH');
   let widthTrigger = 0
