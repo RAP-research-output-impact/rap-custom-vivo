@@ -46,6 +46,7 @@ if (individualLocalName != "org-technical-university-of-denmark") {
             <span id="collab-summary-total"></span> co-publications
             <span id="collab-summary-cat"></span>
             <form id='export-report_form' method='post', action=''>
+              <input class='export-report export-report_local-name' name='orgLocalName' type='text' hidden value='' />
               <input class='export-report export-report_start-year' name='startYear' type='text' hidden value='' />
               <input class='export-report export-report_end-year' name='endYear' type='text' hidden value='' />
               <input class='export-report export-report_svg1' type='text' name='svgStr1' hidden value='' />
@@ -69,6 +70,7 @@ if (individualLocalName != "org-technical-university-of-denmark") {
         info_message("Updating Co-publication report for end year " + $("#endYear").val());
         loadPubInfoByStartYear(vds, $("#startYear").val(), $("#endYear").val(), collabSummary);
     });
+    setExportFormBase();
     setExportForm();
 
     loadPubInfo(vds, collabSummary);
@@ -1141,11 +1143,15 @@ function downloadCsv(csv, filename) {
     downloadLink.click();
 }
 
+function setExportFormBase() {
+  let form = document.querySelector('#export-report_form')
+  form.action = "${urls.base}/excelExport/" + individualLocalName + ".xlsx"
+
+  let inputLocalName = document.querySelector('.export-report_local-name')
+  inputLocalName.value = individualLocalName
+}
 
 function setExportForm(svgStr1, svgStr2) {
-  let form = document.querySelector('#export-report_form')
-  let actionString = "${urls.base}/excelExport/" + individualLocalName + ".xlsx?orgLocalName=" + individualLocalName
-  if (form.action !== actionString) form.action = actionString
 
   let startYear = document.querySelector('#startYear').value
   let input1 = document.querySelector('.export-report_start-year')
