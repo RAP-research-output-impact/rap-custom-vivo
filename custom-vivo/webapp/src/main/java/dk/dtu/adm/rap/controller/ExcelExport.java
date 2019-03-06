@@ -15,6 +15,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.axis.utils.StringUtils;
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
@@ -98,6 +99,12 @@ public class ExcelExport extends VitroHttpServlet {
         }
         String startYear = vreq.getParameter(STARTYEAR_PARAM);
         String endYear = vreq.getParameter(ENDYEAR_PARAM);
+        if(StringUtils.isEmpty(startYear)) {
+            startYear = null;
+        }
+        if(StringUtils.isEmpty(endYear)) {
+            endYear = null;
+        }
         String svgStr1 = vreq.getParameter(SVG_1_PARAM);
         String svgStr2 = vreq.getParameter(SVG_2_PARAM);
         try {
@@ -108,6 +115,7 @@ public class ExcelExport extends VitroHttpServlet {
             OutputStream out = response.getOutputStream();        
             wb.write(out);
         } catch (JSONException e) {
+            log.error(e, e);
             throw new RuntimeException(e);
         }       
     }
@@ -659,6 +667,10 @@ public class ExcelExport extends VitroHttpServlet {
                 // we don't want to ask for HTML or whatever the browser wanted
                 continue;
             }
+            if("content-type".equalsIgnoreCase(headerName)) {
+                // don't pass on things like form-url-encoded, etc.
+                continue;
+            }
             Enumeration<String> headerValues = vreq.getHeaders(headerName);
             while(headerValues.hasMoreElements()) {
                 String headerValue = headerValues.nextElement();
@@ -667,11 +679,16 @@ public class ExcelExport extends VitroHttpServlet {
             }
         }
         HttpResponse response = null;
+        String jsonStr = null;
         try {
             response = httpClient.execute(get);
-            String jsonStr = EntityUtils.toString(response.getEntity(), "UTF-8");                
+            jsonStr = EntityUtils.toString(response.getEntity(), "UTF-8");                
             JSONObject json = new JSONObject(jsonStr);
             return json;
+        } catch (JSONException e) {            
+            log.error(e, e);
+            log.error("Error parsing service response \n" + jsonStr);
+            throw(e);
         } finally {
             if(response != null) {
                 EntityUtils.consume(response.getEntity());
