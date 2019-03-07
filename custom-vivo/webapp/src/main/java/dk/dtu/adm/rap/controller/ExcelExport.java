@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -35,11 +36,14 @@ import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.Comment;
 import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Picture;
+import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -82,6 +86,21 @@ public class ExcelExport extends VitroHttpServlet {
             + " in Web of Science.";
     private static final int LATENCY_FOOTNOTE_START_YEAR = 2018;
     private static final int SUBJECTS_CUTOFF = 20;
+    
+    private static final String NORMALIZED_CITATION_IMPACT_COMMENT = 
+            "Normalized citation impact: Citations per publication normalised "
+            + "for subject, year, and "
+            + "publication type. The world average is equal to 1. Example: "
+            + "A normalised citation impact of 1.23 means that the impact is "
+            + "23% above the world average.";
+    private static final String TOP_10_PERCENT_COMMENT = 
+            "% of publications in top 10% most cited: \r\n" +  
+            "Proportion of the publications belonging to the top 10% most cited "
+            + "in a given subject category, year, and publication type.";
+    private static final String TOP_1_PERCENT_COMMENT = 
+            "% of publications in top 1% most cited\r\n" +  
+            "Proportion of the publications belonging to the top 1% most cited "
+            + "in a given subject category, year, and publication type.";
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -169,8 +188,8 @@ public class ExcelExport extends VitroHttpServlet {
             log.error(e, e);
         }
         try {
-            addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 26, 0, 4);
-            for(int i = 0; i < 24; i++) {
+            addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 22, 0, 4);
+            for(int i = 0; i < 19; i++) {
                 rowCreator.createRow();
             }
         } catch (Exception e) {
@@ -191,7 +210,7 @@ public class ExcelExport extends VitroHttpServlet {
             log.error(e, e);
         }
         try {
-            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 26, 0, 9);
+            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 26, 0, 8);
             for(int i = 0; i < 24; i++) {
                 rowCreator.createRow();
             }
@@ -200,9 +219,6 @@ public class ExcelExport extends VitroHttpServlet {
         }        
         rowCreator.createRow();
         rowCreator.createRow();
-        for(int i = 0; i < 26; i++) {
-            rowCreator.createRow();
-        }
         try {
             addByDepartment(byDeptJson, wb, sheet, rowCreator, pt, details);
         } catch (JSONException e) {
@@ -314,45 +330,107 @@ public class ExcelExport extends VitroHttpServlet {
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
         XSSFCell blankHeader = addBoldText(wb, header, 0, " ");
         blankHeader.setCellStyle(headerStyleFirstColumn);
-        XSSFCell orgHeader = addBoldText(wb, header, 1, getOrgName(data));
-        orgHeader.setCellStyle(headerStyleRemainingColumns);
-        XSSFCell dtuHeader = addBoldText(wb, header, 2, DTU);
-        dtuHeader.setCellStyle(headerStyleRemainingColumns);
-        XSSFRow row = rowCreator.createRow();
-        XSSFCell cell = row.createCell(0);
-        cell.setCellValue("Publications");
-        cell.setCellStyle(getDataStyleText(wb));            
-        cell = row.createCell(1);
-        cell.setCellValue(summary.getInt("orgTotal"));
-        cell.setCellStyle(getDataStyle(wb));
-        cell = row.createCell(2);
-        cell.setCellStyle(getDataStyle(wb));
-        cell.setCellValue(summary.getInt("dtuTotal"));
-        row = rowCreator.createRow();
-        cell = row.createCell(0);
-        cell.setCellValue("Citations");
-        cell.setCellStyle(getDataStyleText(wb));            
-        cell = row.createCell(1);
-        cell.setCellValue(summary.getInt("orgCitesTotal"));
-        cell.setCellStyle(getDataStyle(wb));
-        cell = row.createCell(2);
-        cell.setCellStyle(getDataStyle(wb));
-        cell.setCellValue(summary.getInt("dtuCitesTotal"));
-        row = rowCreator.createRow();
-        cell = row.createCell(0);
-        cell.setCellValue("Impact *");
-        cell.setCellStyle(getDataStyleText(wb));            
-        cell = row.createCell(1);
-        cell.setCellValue(roundImpact(summary.getDouble("orgImpact")));
-        cell.setCellStyle(getImpactStyle(wb));
-        cell = row.createCell(2);
-        cell.setCellStyle(getImpactStyle(wb));
-        cell.setCellValue(roundImpact(summary.getDouble("dtuImpact")));
-        drawBorders(3, pt, startingIndex, rowCreator);
-        row = rowCreator.createRow();
         sheet.addMergedRegion(new CellRangeAddress(
-                rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
-        addItalicText(wb, row, 0, IMPACT_FOOTNOTE);
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
+        XSSFCell orgHeader = addBoldText(wb, header, 2, getOrgName(data));
+        orgHeader.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell dtuHeader = addBoldText(wb, header, 3, DTU);
+        dtuHeader.setCellStyle(headerStyleRemainingColumns);
+        addSummaryRow("Number of publications", 
+                summary.getInt("orgTotal"), null, 
+                summary.getInt("dtuTotal"), null, 
+                Arrays.asList(getDataStyleText(wb), getDataStyle(wb), getDataStyle(wb)), 
+                null, wb, sheet, rowCreator);
+        addSummaryRow("Number of citations", 
+                summary.getInt("orgCitesTotal"), null, 
+                summary.getInt("dtuCitesTotal"), null, 
+                Arrays.asList(getDataStyleText(wb), getDataStyle(wb), getDataStyle(wb)), 
+                null, wb, sheet, rowCreator);
+        addSummaryRow("Simple citation impact (citations / publication)", 
+                null, roundImpact(summary.getDouble("orgImpact")), 
+                null, roundImpact(summary.getDouble("dtuImpact")), 
+                Arrays.asList(getDataStyleText(wb), getImpactStyle(wb), getImpactStyle(wb)), 
+                null, wb, sheet, rowCreator);
+        addSummaryRow("Normalized citation impact (global average 1.0)", 
+                null, roundImpact(summary.getDouble("orgimp")), 
+                null, roundImpact(summary.getDouble("dtuimp")), 
+                Arrays.asList(getDataStyleText(wb), getImpactStyle(wb), getImpactStyle(wb)), 
+                NORMALIZED_CITATION_IMPACT_COMMENT, wb, sheet, rowCreator);
+        addSummaryRow("% of publications in top 10% most cited", 
+                null, roundImpact(summary.getDouble("orgt10")), 
+                null, roundImpact(summary.getDouble("dtut10")), 
+                Arrays.asList(getDataStyleText(wb), getImpactStyle(wb), getImpactStyle(wb)), 
+                TOP_10_PERCENT_COMMENT, wb, sheet, rowCreator);
+        addSummaryRow("% of publications in top 1% most cited", 
+                null, roundImpact(summary.getDouble("orgt1")), 
+                null, roundImpact(summary.getDouble("dtut1")), 
+                Arrays.asList(getDataStyleText(wb), getImpactStyle(wb), getImpactStyle(wb)), 
+                TOP_1_PERCENT_COMMENT, wb, sheet, rowCreator);
+        addSummaryRow("% of publications with industry collaboration", 
+                null, roundImpact(summary.getDouble("orgcind")), 
+                null, roundImpact(summary.getDouble("dtucind")), 
+                Arrays.asList(getDataStyleText(wb), getImpactStyle(wb), getImpactStyle(wb)), 
+                null, wb, sheet, rowCreator);
+        addSummaryRow("% of publications with international collaboration", 
+                null, roundImpact(summary.getDouble("orgcint")), 
+                null, roundImpact(summary.getDouble("dtucint")), 
+                Arrays.asList(getDataStyleText(wb), getImpactStyle(wb), getImpactStyle(wb)), 
+                null, wb, sheet, rowCreator);
+        drawBorders(4, pt, startingIndex, rowCreator);
+        //row = rowCreator.createRow();
+        //sheet.addMergedRegion(new CellRangeAddress(
+        //        rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
+        //addItalicText(wb, row, 0, IMPACT_FOOTNOTE);
+    }
+    
+    private void addSummaryRow(String textValue, Integer orgInt, 
+            Double orgDouble, Integer dtuInt, Double dtuDouble, 
+            List<CellStyle> styles, String comment,
+            XSSFWorkbook wb, XSSFSheet sheet, RowCreator rowCreator) {
+        if(styles.size() != 3) {
+            throw new RuntimeException("Expected 3 styles in summary row; found " + styles.size());
+        }
+        XSSFRow row = rowCreator.createRow();        
+        XSSFCell cell = row.createCell(0);
+        cell.setCellValue(textValue);
+        cell.setCellStyle(styles.get(0));   
+        if(comment != null) {
+            addCellComment(comment, row, cell, wb, sheet);
+        }
+        cell = row.createCell(1);
+        cell.setCellStyle(styles.get(0));
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
+        cell = row.createCell(2);
+        if(orgInt != null) {
+            cell.setCellValue(orgInt.intValue());
+        } else {
+            cell.setCellValue(orgDouble.doubleValue());
+        }
+        cell.setCellStyle(styles.get(1));
+        cell = row.createCell(3);
+        if(dtuInt != null) {
+            cell.setCellValue(dtuInt.intValue());
+        } else {
+            cell.setCellValue(dtuDouble.doubleValue());
+        }
+        cell.setCellStyle(styles.get(2));        
+    }
+    
+    private void addCellComment(String commentStr, XSSFRow row, XSSFCell cell, 
+            XSSFWorkbook wb, XSSFSheet sheet) {
+        Drawing drawing = sheet.createDrawingPatriarch();
+        CreationHelper helper = wb.getCreationHelper();        
+        // Put comment in an area to the right of the table
+        ClientAnchor anchor = helper.createClientAnchor();
+        anchor.setCol1(cell.getColumnIndex());
+        anchor.setCol2(cell.getColumnIndex() + 2);
+        anchor.setRow1(row.getRowNum());
+        anchor.setRow2(row.getRowNum() + 5);
+        Comment comment = drawing.createCellComment(anchor);
+        RichTextString rtf = helper.createRichTextString(commentStr);
+        comment.setString(rtf);
+        cell.setCellComment(comment);        
     }
     
     private void addTotals(List<Integer> years, JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
@@ -378,6 +456,8 @@ public class ExcelExport extends VitroHttpServlet {
             XSSFCell dtuHeader = addBoldText(wb, header, 2, DTU);
             dtuHeader.setCellStyle(headerStyleRemainingColumns);
         }
+        XSSFCell copubHeader = addBoldText(wb, header, 3, "Co-pubs");
+        copubHeader.setCellStyle(headerStyleRemainingColumns);
         for(Integer year : years) {
             XSSFRow row = rowCreator.createRow();
             XSSFCell cell = row.createCell(0);
@@ -401,8 +481,14 @@ public class ExcelExport extends VitroHttpServlet {
                     cell.setCellValue(dtuTotal);
                 }
             }
+            cell = row.createCell(3);
+            cell.setCellStyle(getDataStyle(wb));
+            Integer copubTotal = getTotal(data, "copub_totals", year);
+            if(copubTotal != null) {
+                cell.setCellValue(copubTotal);
+            }
         }
-        drawBorders(dtuDataAvailable? 3 : 2, pt, startingIndex, rowCreator);
+        drawBorders(4, pt, startingIndex, rowCreator);
         XSSFRow row = rowCreator.createRow();
         row.setHeightInPoints(30);
         sheet.addMergedRegion(new CellRangeAddress(
