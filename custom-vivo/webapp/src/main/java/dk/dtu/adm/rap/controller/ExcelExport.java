@@ -229,6 +229,9 @@ public class ExcelExport extends VitroHttpServlet {
         sheet.setColumnWidth(1, 6000);
         sheet.setColumnWidth(2, 6000);
         sheet.setColumnWidth(3, 6000);
+        sheet.setColumnWidth(4, 6000);
+        sheet.setColumnWidth(5, 6000);
+        sheet.setColumnWidth(6, 6000);
         return wb;
     }
     
@@ -500,6 +503,58 @@ public class ExcelExport extends VitroHttpServlet {
         cell.setCellStyle(style);
     }
     
+    private void addTopCategories(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
+            RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
+        CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
+        CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);        
+        XSSFRow preheader = rowCreator.createRow();
+        int startingIndex = rowCreator.getRowIndex();
+        preheader.setHeight((short) (preheader.getHeight() * 2));        
+        XSSFCell preheader0 = addBoldText(wb, preheader, 0, "Research publication subjects");
+        preheader0.setCellStyle(headerStyleFirstColumn);
+        XSSFCell preheader1 = preheader.createCell(1);
+        preheader1.setCellStyle(headerStyleFirstColumn);
+        XSSFCell preheader2 = addBoldText(wb, preheader, 2, "Partner");
+        preheader2.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell preheader3 = preheader.createCell(3);
+        preheader3.setCellStyle(headerStyleFirstColumn);
+        XSSFCell preheader4 = addBoldText(wb, preheader, 4, "DTU");
+        preheader4.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell preheader6 = addBoldText(wb, preheader, 6, "Co-pubs");
+        XSSFCell preheader5 = preheader.createCell(5);
+        preheader5.setCellStyle(headerStyleFirstColumn);
+        preheader6.setCellStyle(headerStyleRemainingColumns);
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 2, 3));
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 4, 5));
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex + 1, 6, 6));
+        XSSFRow header = rowCreator.createRow();
+        header.setHeight((short) (header.getHeight() * 2));                
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
+        XSSFCell header0 = addBoldText(wb, header, 0, "Compare partner and DTU");
+        header0.setCellStyle(headerStyleFirstColumn);
+        XSSFCell header1 = preheader.createCell(1);
+        header1.setCellStyle(headerStyleFirstColumn);
+        XSSFCell header2 = addBoldText(wb, header, 2, "Publ.");
+        header2.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell header3 = addBoldText(wb, header, 3, "Rank");
+        header3.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell header4 = addBoldText(wb, header, 4, "Publ.");
+        header4.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell header5 = addBoldText(wb, header, 5, "Rank");
+        header5.setCellStyle(headerStyleRemainingColumns);
+        JSONArray array = data.getJSONArray("top_categories");
+        addNameNumberArray(array, Arrays.asList(
+                "number", "rank", "DTUnumber", "DTUrank", "copub"),
+                rowCreator, wb, sheet);
+        drawBorders(7, pt, startingIndex, rowCreator);        
+    }
+    
     private void addCategories(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
             RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
         XSSFRow header = rowCreator.createRow();
@@ -509,41 +564,28 @@ public class ExcelExport extends VitroHttpServlet {
                 rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
         CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
-        XSSFCell header0 = addBoldText(wb, header, 0, "Collaboration top research subjects");
+        XSSFCell header0 = addBoldText(wb, header, 0, "Collaboration publication subjects");
         header0.setCellStyle(headerStyleFirstColumn);
-        XSSFCell header2 = addBoldText(wb, header, 2, "Publications");
+        XSSFCell header2 = addBoldText(wb, header, 2, "Co-pubs");
         header2.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell header3 = addBoldText(wb, header, 3, "Partner rank");
+        header3.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell header4 = addBoldText(wb, header, 4, "DTU rank");
+        header4.setCellStyle(headerStyleRemainingColumns);
         JSONArray array = data.getJSONArray("categories");
-        addNameNumberArray(array, rowCreator, wb, sheet);
-        drawBorders(3, pt, startingIndex, rowCreator);        
+        addNameNumberArray(array, Arrays.asList("number", "rank", "DTUrank"), 
+                rowCreator, wb, sheet);
+        drawBorders(5, pt, startingIndex, rowCreator);        
     }
     
-    private void addTopCategories(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
-            RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
-        XSSFRow header = rowCreator.createRow();
-        header.setHeight((short) (header.getHeight() * 2));
-        int startingIndex = rowCreator.getRowIndex();
-        sheet.addMergedRegion(new CellRangeAddress(
-                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
-        CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
-        CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
-        XSSFCell header0 = addBoldText(wb, header, 0, "Partner's top research subjects");
-        header0.setCellStyle(headerStyleFirstColumn);
-        XSSFCell header2 = addBoldText(wb, header, 2, "Publications");
-        header2.setCellStyle(headerStyleRemainingColumns);
-        JSONArray array = data.getJSONArray("top_categories");
-        addNameNumberArray(array, rowCreator, wb, sheet);
-        drawBorders(3, pt, startingIndex, rowCreator);        
-    }
-    
-    private void addNameNumberArray(JSONArray array, RowCreator rowCreator,
-            XSSFWorkbook wb, XSSFSheet sheet) throws JSONException {
+    private void addNameNumberArray(JSONArray array, List<String> dataColumns, 
+            RowCreator rowCreator, XSSFWorkbook wb, XSSFSheet sheet) 
+                    throws JSONException {
         for(int i = 0; i < array.length(); i++) {
             if(i == SUBJECTS_CUTOFF) {
                 break;
             }
             JSONObject object = array.getJSONObject(i);
-            int value = object.getInt("number");
             String name = object.getString("name");
             XSSFRow row = rowCreator.createRow();
             sheet.addMergedRegion(new CellRangeAddress(
@@ -553,9 +595,14 @@ public class ExcelExport extends VitroHttpServlet {
             cell.setCellStyle(getDataStyleText(wb));
             cell = row.createCell(1);
             cell.setCellStyle(getDataStyleText(wb));
-            cell = row.createCell(2);
-            cell.setCellValue(value);
-            cell.setCellStyle(getDataStyle(wb));
+            int columnPos = 1;
+            for(String dataColumn : dataColumns) {
+                columnPos++;
+                cell = row.createCell(columnPos);
+                cell.setCellValue(object.getInt(dataColumn));
+                cell.setCellStyle(getDataStyle(wb));
+            }
+            
         }
     }
     
