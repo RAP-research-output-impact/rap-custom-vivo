@@ -106,8 +106,10 @@ public class DataService {
                 jo.put("org_totals", getSummaryPubCount(mysql, orgmap, vid, startYearInt, endYearInt));
                 jo.put("dtu_totals", getSummaryPubCount(mysql, orgmap, "org-technical-university-of-denmark", startYearInt, endYearInt));
                 jo.put("copub_totals", getSummaryCopubCount(uri, startYearInt, endYearInt));
+                log.debug("done - getSummaryCopubCount");
                 jo.put("top_categories", getTopCategories(mysql, orgmap, namespace, vid, startYearInt, endYearInt));
                 jo.put("by_department", getCoPubsByDepartment(uri, startYearInt, endYearInt));
+                log.debug("done - getCoPubsByDepartment");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -372,7 +374,7 @@ public class DataService {
         q2.setCommandText(rq);
         q2.setIri("org", orgUri);
         String query = q2.toString();
-        log.debug("Summary pub count query:\n" + query);
+        log.debug("getSummary query:\n" + query);
         ArrayList summaryArray = this.storeUtils.getFromStoreJSON(query);
         log.debug("done - getSummary sparql");
         if (summaryArray.isEmpty()) {
@@ -506,7 +508,7 @@ public class DataService {
     
     private ArrayList getSummaryCopubCount(final String orgUri, 
             Integer startYear, Integer endYear) {
-        log.debug("Hello. running summary copub count query");
+        log.debug("getSummaryCopubCount - " + orgUri);
         String rq = readQuery("summaryCopubCount/getSummaryCopubCount.rq");
         ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
         q2.setCommandText(rq);
@@ -572,8 +574,8 @@ public class DataService {
             e.printStackTrace();
         }
         sql_close(statement, resultSet);
-        log.debug("done - getTopCategories");
         AddCategoriesRanks(mysql, orgmap, namespace, null, startYear, endYear, outRows);
+        log.debug("done - getTopCategories");
         return outRows;
     }
 
@@ -798,7 +800,7 @@ public class DataService {
     }
 
     private ArrayList getRelatedPubCategories(Connection mysql, HashMap<String, Integer> orgmap, String namespace, final String orgUri, Integer startYear, Integer endYear) {
-        log.debug("Running org category query");
+        log.debug("getRelatedPubCategories - " + orgUri);
         String rq = "" +
                 "SELECT ?category (SAMPLE(?label) as ?name) (COUNT(distinct ?pub) as ?number)\n" +
                 "WHERE { \n" +
@@ -818,14 +820,15 @@ public class DataService {
         ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
         q2.setIri("org", orgUri);
         String query = q2.toString();
-        log.debug("Related categories query:\n" + query);
+        log.debug("getRelatedPubCategories query:\n" + query);
         ArrayList<JSONObject> outRows = this.storeUtils.getFromStoreJSON(query);
         AddCategoriesRanks(mysql, orgmap, namespace, orgUri.replaceAll(".*/", ""), startYear, endYear, outRows);
+        log.debug("done - getRelatedPubCategories");
         return outRows;
     }
 
     private ArrayList getCoPubsByDepartment(String orgUri, Integer startYear, Integer endYear) {
-        log.debug("Running copub by department query");
+        log.debug("getCoPubsByDepartment - " + orgUri);
         String rq = "" +
                 "SELECT DISTINCT ?dtuSubOrg ?dtuSubOrgName ?otherOrgs (COUNT(DISTINCT ?pub) as ?number)\n" +
                 "WHERE {\n" +
