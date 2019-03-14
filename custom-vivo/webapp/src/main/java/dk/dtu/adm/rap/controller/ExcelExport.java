@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -15,6 +16,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.axis.utils.StringUtils;
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
@@ -34,11 +36,14 @@ import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.Comment;
 import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Picture;
+import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -82,6 +87,21 @@ public class ExcelExport extends VitroHttpServlet {
     private static final int LATENCY_FOOTNOTE_START_YEAR = 2018;
     private static final int SUBJECTS_CUTOFF = 20;
     
+    private static final String NORMALIZED_CITATION_IMPACT_COMMENT = 
+            "Normalized citation impact: Citations per publication normalised "
+            + "for subject, year, and "
+            + "publication type. The world average is equal to 1. Example: "
+            + "A normalised citation impact of 1.23 means that the impact is "
+            + "23% above the world average.";
+    private static final String TOP_10_PERCENT_COMMENT = 
+            "% of publications in top 10% most cited: \r\n" +  
+            "Proportion of the publications belonging to the top 10% most cited "
+            + "in a given subject category, year, and publication type.";
+    private static final String TOP_1_PERCENT_COMMENT = 
+            "% of publications in top 1% most cited\r\n" +  
+            "Proportion of the publications belonging to the top 1% most cited "
+            + "in a given subject category, year, and publication type.";
+    
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
@@ -98,6 +118,12 @@ public class ExcelExport extends VitroHttpServlet {
         }
         String startYear = vreq.getParameter(STARTYEAR_PARAM);
         String endYear = vreq.getParameter(ENDYEAR_PARAM);
+        if(StringUtils.isEmpty(startYear)) {
+            startYear = null;
+        }
+        if(StringUtils.isEmpty(endYear)) {
+            endYear = null;
+        }
         String svgStr1 = vreq.getParameter(SVG_1_PARAM);
         String svgStr2 = vreq.getParameter(SVG_2_PARAM);
         try {
@@ -108,6 +134,7 @@ public class ExcelExport extends VitroHttpServlet {
             OutputStream out = response.getOutputStream();        
             wb.write(out);
         } catch (JSONException e) {
+            log.error(e, e);
             throw new RuntimeException(e);
         }       
     }
@@ -161,8 +188,8 @@ public class ExcelExport extends VitroHttpServlet {
             log.error(e, e);
         }
         try {
-            addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 26, 0, 4);
-            for(int i = 0; i < 24; i++) {
+            addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 22, 0, 4);
+            for(int i = 0; i < 19; i++) {
                 rowCreator.createRow();
             }
         } catch (Exception e) {
@@ -183,7 +210,7 @@ public class ExcelExport extends VitroHttpServlet {
             log.error(e, e);
         }
         try {
-            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 26, 0, 9);
+            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 26, 0, 8);
             for(int i = 0; i < 24; i++) {
                 rowCreator.createRow();
             }
@@ -192,9 +219,6 @@ public class ExcelExport extends VitroHttpServlet {
         }        
         rowCreator.createRow();
         rowCreator.createRow();
-        for(int i = 0; i < 26; i++) {
-            rowCreator.createRow();
-        }
         try {
             addByDepartment(byDeptJson, wb, sheet, rowCreator, pt, details);
         } catch (JSONException e) {
@@ -205,6 +229,9 @@ public class ExcelExport extends VitroHttpServlet {
         sheet.setColumnWidth(1, 6000);
         sheet.setColumnWidth(2, 6000);
         sheet.setColumnWidth(3, 6000);
+        sheet.setColumnWidth(4, 6000);
+        sheet.setColumnWidth(5, 6000);
+        sheet.setColumnWidth(6, 6000);
         return wb;
     }
     
@@ -306,45 +333,107 @@ public class ExcelExport extends VitroHttpServlet {
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
         XSSFCell blankHeader = addBoldText(wb, header, 0, " ");
         blankHeader.setCellStyle(headerStyleFirstColumn);
-        XSSFCell orgHeader = addBoldText(wb, header, 1, getOrgName(data));
-        orgHeader.setCellStyle(headerStyleRemainingColumns);
-        XSSFCell dtuHeader = addBoldText(wb, header, 2, DTU);
-        dtuHeader.setCellStyle(headerStyleRemainingColumns);
-        XSSFRow row = rowCreator.createRow();
-        XSSFCell cell = row.createCell(0);
-        cell.setCellValue("Publications");
-        cell.setCellStyle(getDataStyleText(wb));            
-        cell = row.createCell(1);
-        cell.setCellValue(summary.getInt("orgTotal"));
-        cell.setCellStyle(getDataStyle(wb));
-        cell = row.createCell(2);
-        cell.setCellStyle(getDataStyle(wb));
-        cell.setCellValue(summary.getInt("dtuTotal"));
-        row = rowCreator.createRow();
-        cell = row.createCell(0);
-        cell.setCellValue("Citations");
-        cell.setCellStyle(getDataStyleText(wb));            
-        cell = row.createCell(1);
-        cell.setCellValue(summary.getInt("orgCitesTotal"));
-        cell.setCellStyle(getDataStyle(wb));
-        cell = row.createCell(2);
-        cell.setCellStyle(getDataStyle(wb));
-        cell.setCellValue(summary.getInt("dtuCitesTotal"));
-        row = rowCreator.createRow();
-        cell = row.createCell(0);
-        cell.setCellValue("Impact *");
-        cell.setCellStyle(getDataStyleText(wb));            
-        cell = row.createCell(1);
-        cell.setCellValue(roundImpact(summary.getDouble("orgImpact")));
-        cell.setCellStyle(getImpactStyle(wb));
-        cell = row.createCell(2);
-        cell.setCellStyle(getImpactStyle(wb));
-        cell.setCellValue(roundImpact(summary.getDouble("dtuImpact")));
-        drawBorders(3, pt, startingIndex, rowCreator);
-        row = rowCreator.createRow();
         sheet.addMergedRegion(new CellRangeAddress(
-                rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
-        addItalicText(wb, row, 0, IMPACT_FOOTNOTE);
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
+        XSSFCell orgHeader = addBoldText(wb, header, 2, getOrgName(data));
+        orgHeader.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell dtuHeader = addBoldText(wb, header, 3, DTU);
+        dtuHeader.setCellStyle(headerStyleRemainingColumns);
+        addSummaryRow("Number of publications", 
+                summary.getInt("orgTotal"), null, 
+                summary.getInt("dtuTotal"), null, 
+                Arrays.asList(getDataStyleText(wb), getDataStyle(wb), getDataStyle(wb)), 
+                null, wb, sheet, rowCreator);
+        addSummaryRow("Number of citations", 
+                summary.getInt("orgCitesTotal"), null, 
+                summary.getInt("dtuCitesTotal"), null, 
+                Arrays.asList(getDataStyleText(wb), getDataStyle(wb), getDataStyle(wb)), 
+                null, wb, sheet, rowCreator);
+        addSummaryRow("Simple citation impact (citations / publication)", 
+                null, roundImpact(summary.getDouble("orgImpact")), 
+                null, roundImpact(summary.getDouble("dtuImpact")), 
+                Arrays.asList(getDataStyleText(wb), getImpactStyle(wb), getImpactStyle(wb)), 
+                null, wb, sheet, rowCreator);
+        addSummaryRow("Normalized citation impact (global average 1.0)", 
+                null, roundImpact(summary.getDouble("orgimp")), 
+                null, roundImpact(summary.getDouble("dtuimp")), 
+                Arrays.asList(getDataStyleText(wb), getImpactStyle(wb), getImpactStyle(wb)), 
+                NORMALIZED_CITATION_IMPACT_COMMENT, wb, sheet, rowCreator);
+        addSummaryRow("% of publications in top 10% most cited", 
+                null, roundImpact(summary.getDouble("orgt10")), 
+                null, roundImpact(summary.getDouble("dtut10")), 
+                Arrays.asList(getDataStyleText(wb), getImpactStyle(wb), getImpactStyle(wb)), 
+                TOP_10_PERCENT_COMMENT, wb, sheet, rowCreator);
+        addSummaryRow("% of publications in top 1% most cited", 
+                null, roundImpact(summary.getDouble("orgt1")), 
+                null, roundImpact(summary.getDouble("dtut1")), 
+                Arrays.asList(getDataStyleText(wb), getImpactStyle(wb), getImpactStyle(wb)), 
+                TOP_1_PERCENT_COMMENT, wb, sheet, rowCreator);
+        addSummaryRow("% of publications with industry collaboration", 
+                null, roundImpact(summary.getDouble("orgcind")), 
+                null, roundImpact(summary.getDouble("dtucind")), 
+                Arrays.asList(getDataStyleText(wb), getImpactStyle(wb), getImpactStyle(wb)), 
+                null, wb, sheet, rowCreator);
+        addSummaryRow("% of publications with international collaboration", 
+                null, roundImpact(summary.getDouble("orgcint")), 
+                null, roundImpact(summary.getDouble("dtucint")), 
+                Arrays.asList(getDataStyleText(wb), getImpactStyle(wb), getImpactStyle(wb)), 
+                null, wb, sheet, rowCreator);
+        drawBorders(4, pt, startingIndex, rowCreator);
+        //row = rowCreator.createRow();
+        //sheet.addMergedRegion(new CellRangeAddress(
+        //        rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
+        //addItalicText(wb, row, 0, IMPACT_FOOTNOTE);
+    }
+    
+    private void addSummaryRow(String textValue, Integer orgInt, 
+            Double orgDouble, Integer dtuInt, Double dtuDouble, 
+            List<CellStyle> styles, String comment,
+            XSSFWorkbook wb, XSSFSheet sheet, RowCreator rowCreator) {
+        if(styles.size() != 3) {
+            throw new RuntimeException("Expected 3 styles in summary row; found " + styles.size());
+        }
+        XSSFRow row = rowCreator.createRow();        
+        XSSFCell cell = row.createCell(0);
+        cell.setCellValue(textValue);
+        cell.setCellStyle(styles.get(0));   
+        if(comment != null) {
+            addCellComment(comment, row, cell, wb, sheet);
+        }
+        cell = row.createCell(1);
+        cell.setCellStyle(styles.get(0));
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
+        cell = row.createCell(2);
+        if(orgInt != null) {
+            cell.setCellValue(orgInt.intValue());
+        } else {
+            cell.setCellValue(orgDouble.doubleValue());
+        }
+        cell.setCellStyle(styles.get(1));
+        cell = row.createCell(3);
+        if(dtuInt != null) {
+            cell.setCellValue(dtuInt.intValue());
+        } else {
+            cell.setCellValue(dtuDouble.doubleValue());
+        }
+        cell.setCellStyle(styles.get(2));        
+    }
+    
+    private void addCellComment(String commentStr, XSSFRow row, XSSFCell cell, 
+            XSSFWorkbook wb, XSSFSheet sheet) {
+        Drawing drawing = sheet.createDrawingPatriarch();
+        CreationHelper helper = wb.getCreationHelper();        
+        // Put comment in an area to the right of the table
+        ClientAnchor anchor = helper.createClientAnchor();
+        anchor.setCol1(cell.getColumnIndex());
+        anchor.setCol2(cell.getColumnIndex() + 2);
+        anchor.setRow1(row.getRowNum());
+        anchor.setRow2(row.getRowNum() + 5);
+        Comment comment = drawing.createCellComment(anchor);
+        RichTextString rtf = helper.createRichTextString(commentStr);
+        comment.setString(rtf);
+        cell.setCellComment(comment);        
     }
     
     private void addTotals(List<Integer> years, JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
@@ -370,6 +459,8 @@ public class ExcelExport extends VitroHttpServlet {
             XSSFCell dtuHeader = addBoldText(wb, header, 2, DTU);
             dtuHeader.setCellStyle(headerStyleRemainingColumns);
         }
+        XSSFCell copubHeader = addBoldText(wb, header, 3, "Co-pubs");
+        copubHeader.setCellStyle(headerStyleRemainingColumns);
         for(Integer year : years) {
             XSSFRow row = rowCreator.createRow();
             XSSFCell cell = row.createCell(0);
@@ -393,8 +484,14 @@ public class ExcelExport extends VitroHttpServlet {
                     cell.setCellValue(dtuTotal);
                 }
             }
+            cell = row.createCell(3);
+            cell.setCellStyle(getDataStyle(wb));
+            Integer copubTotal = getTotal(data, "copub_totals", year);
+            if(copubTotal != null) {
+                cell.setCellValue(copubTotal);
+            }
         }
-        drawBorders(dtuDataAvailable? 3 : 2, pt, startingIndex, rowCreator);
+        drawBorders(4, pt, startingIndex, rowCreator);
         XSSFRow row = rowCreator.createRow();
         row.setHeightInPoints(30);
         sheet.addMergedRegion(new CellRangeAddress(
@@ -406,6 +503,58 @@ public class ExcelExport extends VitroHttpServlet {
         cell.setCellStyle(style);
     }
     
+    private void addTopCategories(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
+            RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
+        CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
+        CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);        
+        XSSFRow preheader = rowCreator.createRow();
+        int startingIndex = rowCreator.getRowIndex();
+        preheader.setHeight((short) (preheader.getHeight() * 2));        
+        XSSFCell preheader0 = addBoldText(wb, preheader, 0, "Research publication subjects");
+        preheader0.setCellStyle(headerStyleFirstColumn);
+        XSSFCell preheader1 = preheader.createCell(1);
+        preheader1.setCellStyle(headerStyleFirstColumn);
+        XSSFCell preheader2 = addBoldText(wb, preheader, 2, "Partner");
+        preheader2.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell preheader3 = preheader.createCell(3);
+        preheader3.setCellStyle(headerStyleFirstColumn);
+        XSSFCell preheader4 = addBoldText(wb, preheader, 4, "DTU");
+        preheader4.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell preheader6 = addBoldText(wb, preheader, 6, "Co-pubs");
+        XSSFCell preheader5 = preheader.createCell(5);
+        preheader5.setCellStyle(headerStyleFirstColumn);
+        preheader6.setCellStyle(headerStyleRemainingColumns);
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 2, 3));
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 4, 5));
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex + 1, 6, 6));
+        XSSFRow header = rowCreator.createRow();
+        header.setHeight((short) (header.getHeight() * 2));                
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
+        XSSFCell header0 = addBoldText(wb, header, 0, "Compare partner and DTU");
+        header0.setCellStyle(headerStyleFirstColumn);
+        XSSFCell header1 = preheader.createCell(1);
+        header1.setCellStyle(headerStyleFirstColumn);
+        XSSFCell header2 = addBoldText(wb, header, 2, "Publ.");
+        header2.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell header3 = addBoldText(wb, header, 3, "Rank");
+        header3.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell header4 = addBoldText(wb, header, 4, "Publ.");
+        header4.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell header5 = addBoldText(wb, header, 5, "Rank");
+        header5.setCellStyle(headerStyleRemainingColumns);
+        JSONArray array = data.getJSONArray("top_categories");
+        addNameNumberArray(array, Arrays.asList(
+                "number", "rank", "DTUnumber", "DTUrank", "copub"),
+                rowCreator, wb, sheet);
+        drawBorders(7, pt, startingIndex, rowCreator);        
+    }
+    
     private void addCategories(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
             RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
         XSSFRow header = rowCreator.createRow();
@@ -415,41 +564,28 @@ public class ExcelExport extends VitroHttpServlet {
                 rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
         CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
-        XSSFCell header0 = addBoldText(wb, header, 0, "Collaboration top research subjects");
+        XSSFCell header0 = addBoldText(wb, header, 0, "Collaboration publication subjects");
         header0.setCellStyle(headerStyleFirstColumn);
-        XSSFCell header2 = addBoldText(wb, header, 2, "Publications");
+        XSSFCell header2 = addBoldText(wb, header, 2, "Co-pubs");
         header2.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell header3 = addBoldText(wb, header, 3, "Partner rank");
+        header3.setCellStyle(headerStyleRemainingColumns);
+        XSSFCell header4 = addBoldText(wb, header, 4, "DTU rank");
+        header4.setCellStyle(headerStyleRemainingColumns);
         JSONArray array = data.getJSONArray("categories");
-        addNameNumberArray(array, rowCreator, wb, sheet);
-        drawBorders(3, pt, startingIndex, rowCreator);        
+        addNameNumberArray(array, Arrays.asList("number", "rank", "DTUrank"), 
+                rowCreator, wb, sheet);
+        drawBorders(5, pt, startingIndex, rowCreator);        
     }
     
-    private void addTopCategories(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
-            RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
-        XSSFRow header = rowCreator.createRow();
-        header.setHeight((short) (header.getHeight() * 2));
-        int startingIndex = rowCreator.getRowIndex();
-        sheet.addMergedRegion(new CellRangeAddress(
-                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
-        CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
-        CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
-        XSSFCell header0 = addBoldText(wb, header, 0, "Partner's top research subjects");
-        header0.setCellStyle(headerStyleFirstColumn);
-        XSSFCell header2 = addBoldText(wb, header, 2, "Publications");
-        header2.setCellStyle(headerStyleRemainingColumns);
-        JSONArray array = data.getJSONArray("top_categories");
-        addNameNumberArray(array, rowCreator, wb, sheet);
-        drawBorders(3, pt, startingIndex, rowCreator);        
-    }
-    
-    private void addNameNumberArray(JSONArray array, RowCreator rowCreator,
-            XSSFWorkbook wb, XSSFSheet sheet) throws JSONException {
+    private void addNameNumberArray(JSONArray array, List<String> dataColumns, 
+            RowCreator rowCreator, XSSFWorkbook wb, XSSFSheet sheet) 
+                    throws JSONException {
         for(int i = 0; i < array.length(); i++) {
             if(i == SUBJECTS_CUTOFF) {
                 break;
             }
             JSONObject object = array.getJSONObject(i);
-            int value = object.getInt("number");
             String name = object.getString("name");
             XSSFRow row = rowCreator.createRow();
             sheet.addMergedRegion(new CellRangeAddress(
@@ -459,9 +595,14 @@ public class ExcelExport extends VitroHttpServlet {
             cell.setCellStyle(getDataStyleText(wb));
             cell = row.createCell(1);
             cell.setCellStyle(getDataStyleText(wb));
-            cell = row.createCell(2);
-            cell.setCellValue(value);
-            cell.setCellStyle(getDataStyle(wb));
+            int columnPos = 1;
+            for(String dataColumn : dataColumns) {
+                columnPos++;
+                cell = row.createCell(columnPos);
+                cell.setCellValue(object.getInt(dataColumn));
+                cell.setCellStyle(getDataStyle(wb));
+            }
+            
         }
     }
     
@@ -659,6 +800,10 @@ public class ExcelExport extends VitroHttpServlet {
                 // we don't want to ask for HTML or whatever the browser wanted
                 continue;
             }
+            if("content-type".equalsIgnoreCase(headerName)) {
+                // don't pass on things like form-url-encoded, etc.
+                continue;
+            }
             Enumeration<String> headerValues = vreq.getHeaders(headerName);
             while(headerValues.hasMoreElements()) {
                 String headerValue = headerValues.nextElement();
@@ -667,11 +812,16 @@ public class ExcelExport extends VitroHttpServlet {
             }
         }
         HttpResponse response = null;
+        String jsonStr = null;
         try {
             response = httpClient.execute(get);
-            String jsonStr = EntityUtils.toString(response.getEntity(), "UTF-8");                
+            jsonStr = EntityUtils.toString(response.getEntity(), "UTF-8");                
             JSONObject json = new JSONObject(jsonStr);
             return json;
+        } catch (JSONException e) {            
+            log.error(e, e);
+            log.error("Error parsing service response \n" + jsonStr);
+            throw(e);
         } finally {
             if(response != null) {
                 EntityUtils.consume(response.getEntity());

@@ -40,14 +40,19 @@ if (individualLocalName != "org-technical-university-of-denmark") {
     info_message_setup();
     info_message("Loading Co-publication report");
     var searchLink = base + "/search?classgroup=http%3A%2F%2Fvivoweb.org%2Fontology%23vitroClassGrouppublications&querytext=&facet_organization-enhanced_ss=" + encodeURIComponent(individualUri);
+
     var html = `
         <h2 id="collab-summary">
             <span id="collab-summary-total"></span> co-publications
             <span id="collab-summary-cat"></span>
-	    <a id="report-export" class="report-export" href="#">Download Excel</a>
-            <#-- original Javascript export
-	    <a class="report-export" href="#">Export</a>
-	    -->
+            <form id='export-report_form' method='post', action=''>
+              <input class='export-report export-report_local-name' name='orgLocalName' type='text' hidden value='' />
+              <input class='export-report export-report_start-year' name='startYear' type='text' hidden value='' />
+              <input class='export-report export-report_end-year' name='endYear' type='text' hidden value='' />
+              <input class='export-report export-report_svg1' type='text' name='svgStr1' hidden value='' />
+              <input class='export-report export-report_svg2' type='text' name='svgStr2' hidden value='' />
+              <button type='submit' class="export-report_btn">Download Excel</button>
+            </form>
         </h2>
         <p><a href="--link--">Show list</a> of all publications since 2007</p>
     `.replace('--link--', searchLink);
@@ -55,23 +60,21 @@ if (individualLocalName != "org-technical-university-of-denmark") {
     $("#endYear").corner();
     $("#individual-info").append(html);
     $("#startYear").change(function() {
-        setExportLink(individualLocalName, $("#startYear").val(), $("#endYear").val());
+        setExportForm();
         info_message("Updating Co-publication report for start year " + $("#startYear").val());
         loadPubInfoByStartYear(vds, $("#startYear").val(), $("#endYear").val(), collabSummary);
     });
     $("#endYear").change(function() {
-        setExportLink(individualLocalName, $("#startYear").val(), $("#endYear").val());
+        setExportForm();
         info_message("Updating Co-publication report for end year " + $("#endYear").val());
         loadPubInfoByStartYear(vds, $("#startYear").val(), $("#endYear").val(), collabSummary);
     });
-    setExportLink(individualLocalName, $("#startYear").val(), $("#endYear").val());
+    setExportFormBase();
+    setExportForm();
+
     loadPubInfo(vds, collabSummary);
     document.addEventListener('click', function (e) {
-        if (hasClass(e.target, 'report-export')) {
-	    // Original Javascript export
-            // var html = document.querySelector("table").outerHTML
-            // exportTable(html, "co-publication-" + individualLocalName + ".tsv");
-        } else if (hasClass(e.target, 'view-dept')) {
+        if (hasClass(e.target, 'view-dept')) {
             $(e.target).parents('tr').nextUntil('.copubdept-head').toggle();
             label = $(e.target);
             if(label.html()=="Expand to show details"){
@@ -227,7 +230,7 @@ function collabSummary(response, startYear, endYear) {
 
         // BJL: send client-side-generated SVG markup to the Excel download
 	svgStr1 = tempChartHolder.getElementsByTagName('div')[0].innerHTML;
-        setExportLink(individualLocalName, $("#startYear").val(), $("#endYear").val(), svgStr1, svgStr2);
+    setExportForm(svgStr1, svgStr2);
 
 	tempChartHolder.remove()
     }
@@ -421,7 +424,7 @@ function doSummaryTableRow(real, percent, label, info, org, dtu) {
         }
     }
     if (info) {
-        info = ' <button id="' + info + '" class="" style="border: 0px;"><span class="ui-icon ui-icon-info"></span></button>';
+        info = ' <button id="' + info + '" class="info-button" style="border: 0px;"><span class="ui-icon ui-icon-info"></span></button>';
     }
     return "<tr><td class=\"rep-label\">" + label + info + "</td><td class=\"rep-num\">" + vo + "</td><td class=\"rep-num\">" + vd + "</td></tr>";
 }
@@ -1070,7 +1073,7 @@ function doPubCountTable(totals, DTUtotals, copubs) {
 
     // BJL: send client-side-generated SVG markup to the Excel download
     svgStr2 = tempChartHolder.getElementsByTagName('div')[0].innerHTML;
-    setExportLink(individualLocalName, $("#startYear").val(), $("#endYear").val(), svgStr1, svgStr2);
+    setExportForm(svgStr1, svgStr2);
 
     tempChartHolder.remove()
 
@@ -1139,26 +1142,36 @@ function downloadCsv(csv, filename) {
     downloadLink.click();
 }
 
-function setExportLink(individualLocalName, startYear, endYear) {
-    setExportLink(individualLocalName, startYear, endYear, null, null);
+function setExportFormBase() {
+  let form = document.querySelector('#export-report_form')
+  form.action = "${urls.base}/excelExport/" + individualLocalName + ".xlsx"
+
+  let inputLocalName = document.querySelector('.export-report_local-name')
+  inputLocalName.value = individualLocalName
 }
 
-function setExportLink(individualLocalName, startYear, endYear, svgStr1, svgStr2) {
-    var href = "${urls.base}/excelExport/" + individualLocalName + ".xlsx?orgLocalName=" + individualLocalName;
-    if(startYear != null) {
-        href += "&startYear=" + startYear;
-    }
-    if(endYear != null) {
-        href += "&endYear=" + endYear;
-    }
-    if(svgStr1 != null) {
-        href += "&svgStr1=" + encodeURIComponent(svgStr1);
-    }
-    if(svgStr2 != null) {
-        href += "&svgStr2=" + encodeURIComponent(svgStr2);
-    }
-    $("#report-export").attr("href", href);
+function setExportForm(svgStr1, svgStr2) {
+
+  let startYear = document.querySelector('#startYear').value
+  let input1 = document.querySelector('.export-report_start-year')
+  input1.value = startYear
+
+  let endYear = document.querySelector('#endYear').value
+  let input2 = document.querySelector('.export-report_end-year')
+  input2.value = endYear
+
+  if(svgStr1) {
+    let input3 = document.querySelector('.export-report_svg1')
+    input3.value = svgStr1
+  }
+
+  if (svgStr2) {
+    let input4 = document.querySelector('.export-report_svg2')
+    input4.value = svgStr2
+  }
 }
+
+
 
 function exportTable(html, filename) {
     var csv = [];

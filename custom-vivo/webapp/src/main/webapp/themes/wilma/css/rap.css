@@ -20,6 +20,10 @@
     padding: 5px;
 }
 
+.info-button {
+    background-color: transparent;
+}
+
 /*
 .pub-counts tr:nth-child(even){background-color: #f2f2f2;}
 */
@@ -45,11 +49,21 @@ td.dtu-dept-num {
 }
 
 
-#collab-summary a.report-export {
+.export-report_btn:hover {
+  text-decoration: none;
+}
+.export-report_btn {
+    border: none;
+    color: #2485AE;
+    background:none;
     float: right;
     margin-right: 1em;
     font-variant: small-caps;
     text-decoration: none;
+    padding:0;
+    font-size: 100%;
+    cursor: pointer;
+    text-decoration: underline;
 }
 
 
