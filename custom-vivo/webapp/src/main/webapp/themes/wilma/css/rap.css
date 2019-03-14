@@ -10,6 +10,11 @@
     margin-bottom: 24px;
 }
 
+#rep2.pub-counts {
+    min-width: 20em;
+    margin-bottom: 4px;
+}
+
 .pub-counts td, .pub-counts th {
     border: 1px solid #ddd;
     padding: 5px;

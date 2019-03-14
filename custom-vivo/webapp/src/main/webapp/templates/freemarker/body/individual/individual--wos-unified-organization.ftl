@@ -44,7 +44,7 @@ if (individualLocalName != "org-technical-university-of-denmark") {
         <h2 id="collab-summary">
             <span id="collab-summary-total"></span> co-publications
             <span id="collab-summary-cat"></span>
-	    <a id="report-export" class="report-export" href="#">Export</a>
+	    <a id="report-export" class="report-export" href="#">Download Excel</a>
             <#-- original Javascript export
 	    <a class="report-export" href="#">Export</a>
 	    -->
