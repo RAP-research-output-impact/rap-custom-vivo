@@ -800,8 +800,8 @@ public class ExcelExport extends VitroHttpServlet {
                 // we don't want to ask for HTML or whatever the browser wanted
                 continue;
             }
-            if("content-type".equalsIgnoreCase(headerName)) {
-                // don't pass on things like form-url-encoded, etc.
+            if(headerName.toLowerCase().startsWith("content")) {
+                // don't pass on things like form-url-encoded, content-length, etc.
                 continue;
             }
             Enumeration<String> headerValues = vreq.getHeaders(headerName);
