@@ -49,13 +49,16 @@ PREFIX xsd:      <http://www.w3.org/2001/XMLSchema#>
 PREFIX owl:      <http://www.w3.org/2002/07/owl#>
 PREFIX obo:      <http://purl.obolibrary.org/obo/>
 PREFIX vivo:     <http://vivoweb.org/ontology/core#>
-PREFIX wos:      <http://webofscience.com/ontology/wos#> .
-PREFIX foaf:     <http://purl.org/ontology/bibo/> .
+PREFIX wos:      <http://webofscience.com/ontology/wos#> 
+PREFIX foaf:     <http://purl.org/ontology/bibo/> 
 
-# TODO insert real query
-SELECT ?label WHERE {
-    ?x a owl:Class .
-    ?x rdfs:label ?label
+SELECT ?p ?title ?journal WHERE {
+    ?individualUri rdfs:label ?title 
+    BIND(?individualUri as ?p)
+    OPTIONAL {
+      ?individualUri vivo:hasPublicationVenue ?venue .
+      ?venue rdfs:label ?journal .
+    }
 }
 
 """ .

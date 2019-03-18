@@ -1,5 +1,20 @@
  <div class="copubdept-pubmeta">
-    <h6><a href="${profileUrl(publication.p)}"">${publication.title}</a>&nbsp;<span class="listDateTime">${publication.date[0..9]}</span></h6>
+    <#-- <h6><a href="${profileUrl(publication.p)}"">${publication.title}</a>&nbsp;<span class="listDateTime">${publication.date[0..9]}</span></h6> -->
+    <h6>
+    <#assign publication = publication[0]>
+    <#if publication.p??>
+    <a href="${individual.profileUrl}"">
+    </#if>
+    <#if publication.title??>
+      xx${publication.title!}yy
+    </#if>
+    <#if publication.p??>
+      </a>&nbsp;
+    </#if>
+    <#if publication.date??>
+      <span class="listDateTime">${publication.date[0..9]}</span></h6>
+    </#if>
+    <p>Journal: ${publication.journal!}</p>
     <div class="pub-ids">
         <#if publication.doi?has_content>
             <span class="pub-id-link">Full Text via DOI:&nbsp;<a href="http://doi.org/${publication.doi}"  title="Full Text via DOI" target="external">${publication.doi}</a></span>
