@@ -51,9 +51,8 @@ if (individualLocalName != "org-technical-university-of-denmark") {
               <input class='export-report export-report_end-year' name='endYear' type='text' hidden value='' />
               <input class='export-report export-report_svg1' type='text' name='svgStr1' hidden value='' />
               <input class='export-report export-report_svg2' type='text' name='svgStr2' hidden value='' />
-              <button type='submit' class="export-report_btn">Export</button>
+              <button type='submit' class="export-report_btn">Download Excel</button>
             </form>
-
         </h2>
         <p><a href="--link--">Show list</a> of all publications since 2007</p>
     `.replace('--link--', searchLink);
@@ -425,7 +424,7 @@ function doSummaryTableRow(real, percent, label, info, org, dtu) {
         }
     }
     if (info) {
-        info = ' <button id="' + info + '" class="" style="border: 0px;"><span class="ui-icon ui-icon-info"></span></button>';
+        info = ' <button id="' + info + '" class="info-button" style="border: 0px;"><span class="ui-icon ui-icon-info"></span></button>';
     }
     return "<tr><td class=\"rep-label\">" + label + info + "</td><td class=\"rep-num\">" + vo + "</td><td class=\"rep-num\">" + vd + "</td></tr>";
 }
