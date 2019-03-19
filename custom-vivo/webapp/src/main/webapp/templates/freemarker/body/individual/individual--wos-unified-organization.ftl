@@ -205,9 +205,9 @@ function collabSummary(response, startYear, endYear) {
           data: myData,
           width: 750,
           maxWidth: 750,
-          height: 570,
+          height: myData.length < 10 ? 300 : 570,
           maxHeight: 600,
-          minHeight: 450,
+          minHeight: myData.length < 10 ? 300 : 450,
           margin: {
             top: 40,
             right: 20,
@@ -220,8 +220,8 @@ function collabSummary(response, startYear, endYear) {
           styleFn: styleHBarchart,
           styleFnOpt: {
             barFillColor: '#030F4F',
-            oyF: '16px',
-            oxF: '16px'
+            oyF: '15px',
+            oxF: '14px'
           }
         }
         hBarchart(pubsByResearchSubjChartOpt)
@@ -614,7 +614,7 @@ function createLineChart({data, insertAt, title, svgId, width, maxWidth, height,
 
   // create x and y axis function
   let yAxis = (g) => g.call(d3.axisLeft(y))
-  let xAxis = (g) => g.call(d3.axisBottom(x))
+  let xAxis = (g) => g.call(d3.axisBottom(x).ticks(xDomain.length))
 
 
   // fn to generate line
@@ -791,11 +791,11 @@ function createHBarchart({data, insertAt, svgId, width, maxWidth, height, maxHei
       .padding(0.2) // should be customizable
 
   let x = d3.scaleLinear()
-      .domain( [d3.max(xDomain), 0] ).nice()
+      .domain( [Math.round(d3.max(xDomain))+1, 0] ).nice()
       .range([width-margin.right-margin.left, 0])
 
-
-  let xAxis = (g) => g.call(d3.axisBottom(x))
+  let ticksTotal = d3.max(xDomain) < 7 ? d3.max(xDomain) : null
+  let xAxis = (g) => g.call(d3.axisBottom(x).ticks(ticksTotal))
   let yAxis = (g) => g.call(d3.axisLeft(y))
 
 
@@ -1032,7 +1032,6 @@ function doPubCountTable(totals, DTUtotals, copubs) {
     tempChartHolder.className += 'chartDrawnButHidden'
     tempChartHolder.setAttribute("style", "position: absolute; top: -1000; left:-1000;")
     document.body.append(tempChartHolder)
-
     let myData = copubs.map(x => (
                               {
                                 value: x.number,
