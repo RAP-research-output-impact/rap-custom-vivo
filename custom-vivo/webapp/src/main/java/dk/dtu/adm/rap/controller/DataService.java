@@ -10,6 +10,8 @@ import dk.dtu.adm.rap.utils.DataCache;
 import edu.cornell.mannlib.vedit.beans.LoginStatusBean;
 import edu.cornell.mannlib.vitro.webapp.config.ConfigurationProperties;
 import edu.cornell.mannlib.vitro.webapp.controller.VitroRequest;
+
+import org.apache.axis.utils.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -328,6 +330,9 @@ public class DataService {
                     "Restricted to authenticated users").build();
         }
         String dept = vreq.getParameter(orgParamName);
+        if(StringUtils.isEmpty(dept)) {
+            dept = null;
+        }
         String yearStart = vreq.getParameter("startYear");
         String yearEnd = vreq.getParameter("endYear");
         if(yearStart == null || yearEnd == null) {
