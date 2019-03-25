@@ -383,7 +383,7 @@ public class DataService {
     @Produces("application/json")
     public Response getPartnersByFunder(@Context HttpServletRequest request) {
         return processPartnerOrFunderRequest(
-                request, "partners-by-funder", "funder", new PartnerByFunderListGenerator());
+                request, "partners_by_funder", "funder", new PartnerByFunderListGenerator());
     }
     
     private interface PartnerOrFunderJSONGenerator {
@@ -531,8 +531,12 @@ public class DataService {
                         "ORDER BY DESC(?publications)";
             ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
             q2.setLiteral("yearStart", yearStart);
-            q2.setLiteral("yearEnd", yearEnd);            
-            q2.setIri("funder", funderNamespace + funder);
+            q2.setLiteral("yearEnd", yearEnd); 
+            String funderIri = funder;
+            if(!funder.startsWith(funderNamespace)) {
+                funderIri = funderNamespace + funder;
+            }
+            q2.setIri("funder", funderIri);
             String query = q2.toString();
             log.debug("Partners by funder query:\n" + query);
             return storeUtils.getFromStoreJSON(query);

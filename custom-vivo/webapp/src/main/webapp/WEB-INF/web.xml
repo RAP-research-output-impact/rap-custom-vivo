@@ -1528,6 +1528,10 @@
     <servlet-name>StaticTemplateController</servlet-name>
     <url-pattern>/copub-partner</url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>StaticTemplateController</servlet-name>
+    <url-pattern>/copub-partner-by-funder</url-pattern>
+  </servlet-mapping>
  
   <servlet>
     <servlet-name>ExcelExportController</servlet-name>

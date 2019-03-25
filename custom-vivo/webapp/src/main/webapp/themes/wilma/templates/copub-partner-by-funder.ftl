@@ -53,7 +53,7 @@
         </script>
         &gt;
         <span id="bc-world-map">
-           Funders 
+           Funder 
         </span>
         <span id="bc-world-map-link">
             <a id="bc-world-map-link-anchor">World map</a>
@@ -108,7 +108,7 @@
                                 <tr>
                                     <th style="text-align: left; vertical-align: middle; min-width: 600px; background-color: #3d423d; color: white;">
                                         <div id="sort-org" style="color: white;">
-                                            Funders
+                                            Partners
                                             <div class="sort-dir" style="height: 23px;"></div>
                                         </div>
                                         <form style="display: inline-block; float: right;" onSubmit="return (false);">
@@ -189,35 +189,34 @@
     var base = "${urls.base}";
     var profileBase = base + "/individual?uri="
     var serviceBase = base + "/vds/report/"
-    var partnerBase = base + "/copub-partner-by-funder"
 
-    fetchFunderData();
+    fetchPartnerData();
 
     $("#dtu-dep").change(function() {
         console.log ("dtu-dep changed");
-        fetchFunderData();
+        fetchPartnerData();
     });
     $("#year-from").change(function() {
         console.log ("year-from changed");
-        fetchFunderData();
+        fetchPartnerData();
     });
     $("#year-to").change(function() {
         console.log ("year-to changed");
-        fetchFunderData();
+        fetchPartnerData();
     });
 
-    function fetchFunderData() {
-        var mapData = serviceBase + "funders?dept=" + $("#dtu-dep").val() + "&startYear=" + $('#year-from').val() + "&endYear=" + $('#year-to').val();
+    function fetchPartnerData() {
+        var mapData = serviceBase + "partners-by-funder?funder=" + urlParams.get('funder') + "&startYear=" + $('#year-from').val() + "&endYear=" + $('#year-to').val();
         console.log ("loading: " + mapData);
-        $('#funders-container').addClass('spinner');
+        $('#partners-container').addClass('spinner');
         loadData(mapData, orgList);
     }
 
     function orgList(data) {
         var tbody = "";
-        for (var i = 0, j = data.funders.length; i < j; i++){
-            tbody += "<tr><td class=\"map-org-org sort-org\"><a href=\"" + partnerBase + "?funder=" + data.funders[i].funder + "&startYear=" + $('#year-from').val() + "&endYear=" + $('#year-to').val() + "&funderName=" + data.funders[i].name + "\">" + data.funders[i].name +
-                     "</a></td><td class=\"sort-pub\" style=\"text-align: right;\">" + data.funders[i].publications + "</td></tr>";
+        for (var i = 0, j = data.partners_by_funder.length; i < j; i++){
+            tbody += "<tr><td class=\"map-org-org sort-org\"><a href=\"" + profileBase + data.partners_by_funder[i].partner + "\">" + data.partners_by_funder[i].name +
+                     "</a></td><td class=\"sort-pub\" style=\"text-align: right;\">" + data.partners_by_funder[i].publications + "</td></tr>";
         }
         $("#map-org-list tbody").html(tbody);
         $("#sort-pub .sort-dir").html (sortArrow (1, 1));
@@ -260,7 +259,7 @@
                 inverse = !inverse;
             });
         });
-        $('#funders-container').removeClass('spinner');
+        $('#partners-container').removeClass('spinner');
     }
 
     function sortArrow(up, used) {
