@@ -26,6 +26,8 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -316,7 +318,222 @@ public class DataService {
         ResponseBuilder builder = Response.ok(data);
         return builder.build();
     }
+    
+    private Response processPartnerOrFunderRequest(HttpServletRequest request, 
+            String requestLabel, String orgParamName, 
+            PartnerOrFunderJSONGenerator generator) {
+        VitroRequest vreq = new VitroRequest(request);
+        if (!authorized(vreq)) {
+            return Response.status(403).type("text/plain").entity(
+                    "Restricted to authenticated users").build();
+        }
+        String dept = vreq.getParameter(orgParamName);
+        String yearStart = vreq.getParameter("startYear");
+        String yearEnd = vreq.getParameter("endYear");
+        if(yearStart == null || yearEnd == null) {
+            return Response.status(Status.BAD_REQUEST).entity(
+                    "Parameters startYear and endYear must be specified").build();
+        }
+        ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
+        String cacheRoot = props.getProperty("DataCache.root");
+        String deptStr = (dept == null) ? "all" : dept;
+        String cacheFilename = requestLabel + "-" + deptStr + "." + yearStart + "." + yearEnd;
+        String data = cache.read(cacheRoot, cacheFilename);
+        if (data == null) {
+            long start = System.currentTimeMillis();
+            JSONObject jo = new JSONObject();
+            try {
+                namespace = props.getProperty("Vitro.defaultNamespace");
+                StoreUtils storeUtils = new StoreUtils();
+                storeUtils.setRdfService(namespace, vreq.getRDFService());
+                jo.put(requestLabel, generator.getData(dept, yearStart, yearEnd, namespace, storeUtils));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            data = jo.toString();
+            cache.write(cacheRoot, cacheFilename, data, (System.currentTimeMillis() - start));
+        }
+        ResponseBuilder builder = Response.ok(data);
+        return builder.build();
+    }
+    
+    @Path("/partners")
+    @GET
+    @Produces("application/json")
+    public Response getPartners(@Context HttpServletRequest request) {
+        return processPartnerOrFunderRequest(
+                request, "partners", "dept", new PartnerListGenerator());
+    }
+    
+    @Path("/funders")
+    @GET
+    @Produces("application/json")
+    public Response getFunders(@Context HttpServletRequest request) {
+        return processPartnerOrFunderRequest(
+                request, "funders", "dept", new FunderListGenerator());
+    }
+    
+    @Path("/partners-by-funder")
+    @GET
+    @Produces("application/json")
+    public Response getPartnersByFunder(@Context HttpServletRequest request) {
+        return processPartnerOrFunderRequest(
+                request, "partners-by-funder", "funder", new PartnerByFunderListGenerator());
+    }
+    
+    private interface PartnerOrFunderJSONGenerator {
+        public ArrayList getData(String org, String yearStart, String yearEnd, 
+                String orgNamespace, StoreUtils storeUtils);
+    }
+    
+    private class PartnerListGenerator implements PartnerOrFunderJSONGenerator {
+        
+        /**
+         * @param dept Department RDF local name. May be null.  If null, partners 
+         *             list will be generated for all of DTU.
+         * @param yearStart May not be null.
+         * @param yearEnd May not be null.
+         * @param deptNamespace The namespace to which the local name in 'dept' will
+         *                      be appended. May not be null.
+         * @param StoreUtils                     
+         * @return
+         */
+        public ArrayList getData(String dept, String yearStart, String yearEnd, 
+                String deptNamespace, StoreUtils storeUtils) {
+            String deptStr = (dept == null) ? "all of DTU" : dept; 
+            log.debug("Querying for partner list for " + deptStr);
+                String rq = "SELECT ?partner (MIN(?partnerLabel) AS ?name) (COUNT(DISTINCT ?pub) as ?publications)\n" + 
+                        "WHERE {\n";
+                if(dept != null) {
+                    rq +=
+                        "  ?dtuAddress vivo:relates ?dept  .\n" + 
+                        "  ?dtuAddress a wos:Address .\n" + 
+                        "  ?dtuAddress vivo:relates ?pub .\n";
+                }
+                rq +=
+                        "  ?pub a wos:Publication .\n" + 
+                        "  ?partnerAddress vivo:relates ?pub .\n" + 
+                        "  ?partnerAddress a wos:Address .\n" + 
+                        "  ?partnerAddress vivo:relates ?partner .\n" + 
+                        "  ?partner a wos:UnifiedOrganization .\n" + 
+                        "  FILTER (?partner != d:org-technical-university-of-denmark)\n" + 
+                        "  ?partner rdfs:label ?partnerLabel .\n" + 
+                        "  ?pub vivo:dateTimeValue ?dtv .\n" + 
+                        "  ?dtv vivo:dateTime ?dateTime .\n" + 
+                        "  FILTER(xsd:dateTime(CONCAT(?yearStart, \"-01-01T00:00:00\")) <= ?dateTime)\n" + 
+                        "  FILTER(xsd:dateTime(CONCAT(?yearEnd, \"-12-31T23:59:59\")) >= ?dateTime)\n" + 
+                        "}\n" + 
+                        "GROUP by ?partner\n" + 
+                        "ORDER BY DESC(?publications)";
+            ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
+            q2.setLiteral("yearStart", yearStart);
+            q2.setLiteral("yearEnd", yearEnd);
+            if(dept != null) {
+                q2.setIri("dept", deptNamespace + dept);
+            }
+            String query = q2.toString();
+            log.debug("Partners query:\n" + query);
+            return storeUtils.getFromStoreJSON(query);
+        }
+    }
 
+    private class FunderListGenerator implements PartnerOrFunderJSONGenerator {
+        
+        /**
+         * @param dept Department RDF local name. May be null.  If null, partners 
+         *             list will be generated for all of DTU.
+         * @param yearStart May not be null.
+         * @param yearEnd May not be null.
+         * @param deptNamespace The namespace to which the local name in 'dept' will
+         *                      be appended. May not be null.
+         * @param StoreUtils                     
+         * @return
+         */
+        public ArrayList getData(String dept, String yearStart, String yearEnd, 
+                String deptNamespace, StoreUtils storeUtils) {
+            String deptStr = (dept == null) ? "all of DTU" : dept; 
+            log.debug("Querying for funder list for " + deptStr);
+                String rq = "SELECT ?funder (MIN(?funderLabel) AS ?name) (COUNT(DISTINCT ?pub) as ?publications)\n" + 
+                        "WHERE {\n";
+                if(dept != null) {
+                    rq +=
+                        "  ?dtuAddress vivo:relates ?dept  .\n" + 
+                        "  ?dtuAddress a wos:Address .\n" + 
+                        "  ?dtuAddress vivo:relates ?pub .\n";
+                }
+                rq +=
+                        "  ?pub a wos:Publication .\n" + 
+                        "  ?grant vivo:relates ?pub .\n" + 
+                        "  ?grant a vivo:Grant .\n" + 
+                        "  ?grant vivo:relates ?funder .\n" + 
+                        "  ?funder a wos:Funder .\n" +
+                        "  ?funder rdfs:label ?funderLabel . \n" +
+                        "  ?pub vivo:dateTimeValue ?dtv .\n" + 
+                        "  ?dtv vivo:dateTime ?dateTime .\n" + 
+                        "  FILTER(xsd:dateTime(CONCAT(?yearStart, \"-01-01T00:00:00\")) <= ?dateTime)\n" + 
+                        "  FILTER(xsd:dateTime(CONCAT(?yearEnd, \"-12-31T23:59:59\")) >= ?dateTime)\n" + 
+                        "}\n" + 
+                        "GROUP by ?funder\n" + 
+                        "ORDER BY DESC(?publications)";
+            ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
+            q2.setLiteral("yearStart", yearStart);
+            q2.setLiteral("yearEnd", yearEnd);
+            if(dept != null) {
+                q2.setIri("dept", deptNamespace + dept);
+            }
+            String query = q2.toString();
+            log.debug("Funders query:\n" + query);
+            return storeUtils.getFromStoreJSON(query);
+        }
+    }
+
+        private class PartnerByFunderListGenerator implements PartnerOrFunderJSONGenerator {
+        
+        /**
+         * @param funder Funder RDF local name. May be null.  If null, partners 
+         *             list will be generated for all of DTU.
+         * @param yearStart May not be null.
+         * @param yearEnd May not be null.
+         * @param deptNamespace The namespace to which the local name in 'dept' will
+         *                      be appended. May not be null.
+         * @param StoreUtils                     
+         * @return
+         */
+        public ArrayList getData(String funder, String yearStart, String yearEnd, 
+                String funderNamespace, StoreUtils storeUtils) {
+            if(funder == null) {
+                throw new RuntimeException("Parameter 'funder' is required");
+            }
+            log.debug("Querying for partner list for funder " + funder);
+                String rq = "SELECT ?partner (MIN(?partnerLabel) AS ?name) (COUNT(DISTINCT ?pub) as ?publications)\n" + 
+                        "WHERE {\n" + 
+                        "  ?grant vivo:relates ?funder .\n" + 
+                        "  ?grant a vivo:Grant .\n" + 
+                        "  ?grant vivo:relates ?pub .\n" + 
+                        "  ?pub a wos:Publication .\n" + 
+                        "  ?dtuAddress vivo:relates ?pub .\n" + 
+                        "  ?dtuAddress a wos:Address .\n" + 
+                        "  ?dtuAddress vivo:relates ?partner  .\n" + 
+                        "  ?partner a wos:UnifiedOrganization .\n" + 
+                        "  ?partner rdfs:label ?partnerLabel .                     \n" + 
+                        "  FILTER (?partner != d:org-technical-university-of-denmark)\n" + 
+                        "  ?pub vivo:dateTimeValue ?dtv .\n" + 
+                        "  ?dtv vivo:dateTime ?dateTime .\n" +  
+                        "  FILTER(xsd:dateTime(CONCAT(?yearStart, \"-01-01T00:00:00\")) <= ?dateTime)\n" + 
+                        "  FILTER(xsd:dateTime(CONCAT(?yearEnd, \"-12-31T23:59:59\")) >= ?dateTime)\n" + 
+                        "}\n" + 
+                        "GROUP by ?partner\n" + 
+                        "ORDER BY DESC(?publications)";
+            ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
+            q2.setLiteral("yearStart", yearStart);
+            q2.setLiteral("yearEnd", yearEnd);            
+            q2.setIri("funder", funderNamespace + funder);
+            String query = q2.toString();
+            log.debug("Partners by funder query:\n" + query);
+            return storeUtils.getFromStoreJSON(query);
+        }
+    }
+    
     private String getYearFilter(Integer startYear, Integer endYear) {
         String yearFilter = "";
         if(startYear != null) {
