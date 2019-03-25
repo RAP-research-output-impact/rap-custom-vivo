@@ -386,6 +386,14 @@ public class DataService {
                 request, "partners_by_funder", "funder", new PartnerByFunderListGenerator());
     }
     
+    @Path("/copub-subjects")
+    @GET
+    @Produces("application/json")
+    public Response getCopubsBySubject(@Context HttpServletRequest request) {
+        return processPartnerOrFunderRequest(
+                request, "subjects", "dept", new SubjectListGenerator());
+    }
+    
     private interface PartnerOrFunderJSONGenerator {
         public ArrayList getData(String org, String yearStart, String yearEnd, 
                 String orgNamespace, StoreUtils storeUtils);
@@ -542,6 +550,53 @@ public class DataService {
             return storeUtils.getFromStoreJSON(query);
         }
     }
+        
+    private class SubjectListGenerator implements PartnerOrFunderJSONGenerator {
+            
+            /**
+             * @param dept Department RDF local name. May be null.  If null, partners 
+             *             list will be generated for all of DTU.
+             * @param yearStart May not be null.
+             * @param yearEnd May not be null.
+             * @param deptNamespace The namespace to which the local name in 'dept' will
+             *                      be appended. May not be null.
+             * @param StoreUtils                     
+             * @return
+             */
+            public ArrayList getData(String dept, String yearStart, String yearEnd, 
+                    String deptNamespace, StoreUtils storeUtils) {
+                String deptStr = (dept == null) ? "all of DTU" : dept; 
+                log.debug("Querying for subject list for " + deptStr);
+                    String rq = "SELECT ?subject (MIN(?subjectLabel) AS ?name) (COUNT(DISTINCT ?pub) as ?publications)\n" + 
+                            "WHERE {\n";
+                    if(dept != null) {
+                        rq +=
+                            "  ?dtuAddress vivo:relates ?dept  .\n" + 
+                            "  ?dtuAddress a wos:Address .\n" + 
+                            "  ?dtuAddress vivo:relates ?pub .\n";
+                    }
+                    rq +=
+                            "  ?pub a wos:Publication .\n" + 
+                            "  ?pub wos:hasCategory ?subject . \n" +
+                            "  ?subject rdfs:label ?subjectLabel . \n" +
+                            "  ?pub vivo:dateTimeValue ?dtv .\n" + 
+                            "  ?dtv vivo:dateTime ?dateTime .\n" + 
+                            "  FILTER(xsd:dateTime(CONCAT(?yearStart, \"-01-01T00:00:00\")) <= ?dateTime)\n" + 
+                            "  FILTER(xsd:dateTime(CONCAT(?yearEnd, \"-12-31T23:59:59\")) >= ?dateTime)\n" + 
+                            "}\n" + 
+                            "GROUP by ?subject\n" + 
+                            "ORDER BY DESC(?publications)";
+                ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
+                q2.setLiteral("yearStart", yearStart);
+                q2.setLiteral("yearEnd", yearEnd);
+                if(dept != null) {
+                    q2.setIri("dept", deptNamespace + dept);
+                }
+                String query = q2.toString();
+                log.debug("Subjects query:\n" + query);
+                return storeUtils.getFromStoreJSON(query);
+            }
+        }
     
     private String getYearFilter(Integer startYear, Integer endYear) {
         String yearFilter = "";
