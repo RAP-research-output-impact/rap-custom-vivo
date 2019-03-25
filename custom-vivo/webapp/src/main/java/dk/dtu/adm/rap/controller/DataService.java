@@ -247,9 +247,19 @@ public class DataService {
         if (!authorized(vreq)) {
             return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
         }
+        String dept = vreq.getParameter("dept");
+        String dep = "";
+        if ((dept == null) || (dept == "")) {
+            dept = null;
+            dep = "all";
+        } else {
+            dep = dept;
+        }
+        String yearStart = vreq.getParameter("startYear");
+        String yearEnd = vreq.getParameter("endYear");
         ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
         String cacheRoot = props.getProperty("DataCache.root");
-        String data = cache.read(cacheRoot, "worldmap");
+        String data = cache.read(cacheRoot, "worldmap." + dep + "." + yearStart + "." + yearEnd);
         if (data == null) {
             long start = System.currentTimeMillis();
             JSONObject jo = new JSONObject();
@@ -257,12 +267,12 @@ public class DataService {
                 namespace = props.getProperty("Vitro.defaultNamespace");
                 this.storeUtils = new StoreUtils();
                 this.storeUtils.setRdfService(namespace, vreq.getRDFService());
-                jo.put("summary", getWorldwidePubs());
+                jo.put("summary", getWorldwidePubs(dept, yearStart, yearEnd));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
             data = jo.toString();
-            cache.write(cacheRoot, "worldmap", data, (System.currentTimeMillis() - start));
+            cache.write(cacheRoot, "worldmap." + dep + "." + yearStart + "." + yearEnd, data, (System.currentTimeMillis() - start));
         }
         ResponseBuilder builder = Response.ok(data);
         return builder.build();
@@ -276,9 +286,19 @@ public class DataService {
         if (!authorized(vreq)) {
             return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
         }
+        String dept = vreq.getParameter("dept");
+        String dep = "";
+        if ((dept == null) || (dept == "")) {
+            dept = null;
+            dep = "all";
+        } else {
+            dep = dept;
+        }
+        String yearStart = vreq.getParameter("startYear");
+        String yearEnd = vreq.getParameter("endYear");
         ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
         String cacheRoot = props.getProperty("DataCache.root");
-        String data = cache.read(cacheRoot, "country-" + cCode);
+        String data = cache.read(cacheRoot, "country-" + cCode + "." + dep + "." + yearStart + "." + yearEnd);
         if (data == null) {
             long start = System.currentTimeMillis();
             JSONObject jo = new JSONObject();
@@ -286,12 +306,12 @@ public class DataService {
                 namespace = props.getProperty("Vitro.defaultNamespace");
                 this.storeUtils = new StoreUtils();
                 this.storeUtils.setRdfService(namespace, vreq.getRDFService());
-                jo.put("orgs", getCoPubsCountry(cCode.toUpperCase()));
+                jo.put("orgs", getCoPubsCountry(cCode.toUpperCase(), dept, yearStart, yearEnd));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
             data = jo.toString();
-            cache.write(cacheRoot, "country-" + cCode, data, (System.currentTimeMillis() - start));
+            cache.write(cacheRoot, "country-" + cCode + "." + dep + "." + yearStart + "." + yearEnd, data, (System.currentTimeMillis() - start));
         }
         ResponseBuilder builder = Response.ok(data);
         return builder.build();
@@ -484,9 +504,12 @@ public class DataService {
         ResultSet resultSet = null;
         try {
             statement = mysql.createStatement();
+            log.info("select year,total from inds where org=" + Integer.toString (id) + " and year >= " + Integer.toString(startYear) +
+                     " and year <= " + Integer.toString(endYear));
             resultSet = statement.executeQuery("select year,total from inds where org=" + Integer.toString (id) + " and year >= " + Integer.toString(startYear) +
                                                " and year <= " + Integer.toString(endYear));
             while (resultSet.next()) {
+                log.info("adding " + resultSet.getString("year") + " : " + resultSet.getString("total"));
                 JSONObject thisItem = new JSONObject();
                 thisItem.put("year", resultSet.getString("year"));
                 thisItem.put("number", resultSet.getString("total"));
@@ -867,52 +890,109 @@ public class DataService {
         return this.storeUtils.getFromStoreJSON(query);
     }
 
-    private ArrayList getWorldwidePubs() {
+    private ArrayList getWorldwidePubs(String dept, String yearStart, String yearEnd) {
         log.debug("Querying for country codes for copublication");
-        String rq = "select ?code (COUNT(DISTINCT ?pub) as ?publications)\n" +
-                "    where {\n" +
-                "        ?org a wos:UnifiedOrganization ;\n" +
-                "            obo:RO_0001025 ?country ;\n" +
-                "            vivo:relatedBy ?address .\n" +
-                "      ?country a vivo:Country ;\n" +
-                "               geo:codeISO3 ?code .\n" +
-                "      ?address a wos:Address ;\n" +
-                "      vivo:relates ?pub .\n" +
-                "      ?pub a wos:Publication .\n" +
-                "    FILTER (?org != d:org-technical-university-of-denmark)\n" +
-                "    }\n" +
-                "    GROUP by ?code\n" +
-                "    ORDER BY DESC(?publications)" ;
+        String rq;
+        if (dept == null) {
+            rq = "SELECT ?code (COUNT(DISTINCT ?pub) as ?publications)\n" +
+                 "WHERE {\n" +
+                 "    ?pub a wos:Publication .\n" +
+                 "    ?orgAddress vivo:relates ?pub .\n" +
+                 "    ?orgAddress geo:codeISO3 ?code .\n" +
+                 "    ?pub vivo:dateTimeValue ?dtv .\n" +
+                 "    ?dtv vivo:dateTime ?dateTime .\n" +
+                 "    FILTER(xsd:dateTime(\"" + yearStart + "-01-01T00:00:00\") <= ?dateTime)\n" +
+                 "    FILTER(xsd:dateTime(\"" + yearEnd + "-12-31T23:59:59\") >= ?dateTime)\n" +
+                 "}\n" +
+                 "GROUP by ?code\n" +
+                 "ORDER BY DESC(?publications)\n";
+        } else {
+            rq = "SELECT ?code (COUNT(DISTINCT ?pub) as ?publications)\n" +
+                 "WHERE {\n" +
+                 "    ?dtuAddress vivo:relates d:" + dept + " .\n" +
+                 "    ?dtuAddress a wos:Address .\n" +
+                 "    ?dtuAddress vivo:relates ?pub .\n" +
+                 "    ?pub a wos:Publication .\n" +
+                 "    ?orgAddress vivo:relates ?pub .\n" +
+                 "    ?orgAddress geo:codeISO3 ?code .\n" +
+                 "    ?pub vivo:dateTimeValue ?dtv .\n" +
+                 "    ?dtv vivo:dateTime ?dateTime .\n" +
+                 "    FILTER(xsd:dateTime(\"" + yearStart + "-01-01T00:00:00\") <= ?dateTime)\n" +
+                 "    FILTER(xsd:dateTime(\"" + yearEnd + "-12-31T23:59:59\") >= ?dateTime)\n" +
+                 "}\n" +
+                 "GROUP by ?code\n" +
+                 "ORDER BY DESC(?publications)\n";
+        }
         ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
         String query = q2.toString();
         log.debug("Country pubs query:\n" + query);
         return this.storeUtils.getFromStoreJSON(query);
     }
 
-    private ArrayList getCoPubsCountry(String countryCode) {
+    private ArrayList getCoPubsCountry(String countryCode, String dept, String yearStart, String yearEnd) {
         log.debug("Running query to find copubs by country and org");
-        String rq = "select ?org ?name (COUNT(DISTINCT ?pub) as ?publications)" +
-                "where {\n" +
-                "  ?org a wos:UnifiedOrganization ;\n" +
-                "       rdfs:label ?name ;\n" +
-                "       vivo:relatedBy ?address ;\n" +
-                "       obo:RO_0001025 ?country .\n" +
-                "  ?country a vivo:Country ;\n" +
-                "           geo:codeISO3 ?countryCode^^<http://www.w3.org/2001/XMLSchema#string> .\n" +
-                "  ?address a wos:Address ;\n" +
-                "           vivo:relates ?pub .\n" +
-                "  ?pub a wos:Publication .\n" +
-                "  FILTER (?org != d:org-technical-university-of-denmark)\n" +
-                "}\n" +
-                "GROUP BY ?org ?name \n" +
-                "ORDER BY DESC(?publications)";
+        String rq;
+        if (dept == null) {
+            rq = "select ?org ?name ?publications\n" +
+                 "where {\n" +
+                 "    ?org obo:RO_0001025 ?country .\n" +
+                 "    ?country geo:codeISO3 \"" + countryCode + "\"^^<http://www.w3.org/2001/XMLSchema#string> .\n" +
+                 "    {\n" +
+                 "        select ?org ?name (COUNT(DISTINCT ?pub) as ?publications)\n" +
+                 "        where {\n" +
+                 "            ?pub a wos:Publication .\n" +
+                 "            ?orgAddress vivo:relates ?pub .\n" +
+                 "            ?orgAddress geo:codeISO3 \"" + countryCode + "\"^^<http://www.w3.org/2001/XMLSchema#string> .\n" +
+                 "            ?org a wos:UnifiedOrganization ;\n" +
+                 "                rdfs:label ?name ;\n" +
+                 "                vivo:relatedBy ?orgAddress .\n" +
+                 "                ?orgAddress vivo:relates ?pub .\n" +
+                 "            ?pub vivo:dateTimeValue ?dtv .\n" +
+                 "            ?dtv vivo:dateTime ?dateTime .\n" +
+                 "            FILTER(xsd:dateTime(\"" + yearStart + "-01-01T00:00:00\") <= ?dateTime)\n" +
+                 "            FILTER(xsd:dateTime(\"" + yearEnd + "-12-31T23:59:59\") >= ?dateTime)\n" +
+                 "            FILTER (?org != d:org-technical-university-of-denmark)\n" +
+                 "        }\n" +
+                 "        GROUP BY ?org ?name\n" +
+                 "        ORDER BY DESC(?publications)\n" +
+                 "    }\n" +
+                 "}\n" +
+                 "ORDER BY DESC(?publications)\n";
+        } else {
+            rq = "select ?org ?name ?publications\n" +
+                 "where {\n" +
+                 "    ?org obo:RO_0001025 ?country .\n" +
+                 "    ?country geo:codeISO3 \"" + countryCode + "\"^^<http://www.w3.org/2001/XMLSchema#string> .\n" +
+                 "    {\n" +
+                 "        select ?org ?name (COUNT(DISTINCT ?pub) as ?publications)\n" +
+                 "        where {\n" +
+                 "            ?dtuAddress vivo:relates d:" + dept + " .\n" +
+                 "            ?dtuAddress a wos:Address .\n" +
+                 "            ?dtuAddress vivo:relates ?pub .\n" +
+                 "            ?pub a wos:Publication .\n" +
+                 "            ?orgAddress vivo:relates ?pub .\n" +
+                 "            ?orgAddress geo:codeISO3 \"" + countryCode + "\"^^<http://www.w3.org/2001/XMLSchema#string> .\n" +
+                 "            ?org a wos:UnifiedOrganization ;\n" +
+                 "                rdfs:label ?name ;\n" +
+                 "                vivo:relatedBy ?orgAddress .\n" +
+                 "                ?orgAddress vivo:relates ?pub .\n" +
+                 "            ?pub vivo:dateTimeValue ?dtv .\n" +
+                 "            ?dtv vivo:dateTime ?dateTime .\n" +
+                 "            FILTER(xsd:dateTime(\"" + yearStart + "-01-01T00:00:00\") <= ?dateTime)\n" +
+                 "            FILTER(xsd:dateTime(\"" + yearEnd + "-12-31T23:59:59\") >= ?dateTime)\n" +
+                 "            FILTER (?org != d:org-technical-university-of-denmark)\n" +
+                 "        }\n" +
+                 "        GROUP BY ?org ?name\n" +
+                 "        ORDER BY DESC(?publications)\n" +
+                 "    }\n" +
+                 "}\n" +
+                 "ORDER BY DESC(?publications)\n";
+        }
         ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
-        q2.setLiteral("countryCode", countryCode);
         String query = q2.toString();
         log.debug("Related categories query:\n" + query);
         return this.storeUtils.getFromStoreJSON(query);
     }
-
 
     private Model deptModel(String externalOrgUri, Integer startYear, Integer endYear) {
         String rq = readQuery("coPubByDept/vds/summaryModel.rq");

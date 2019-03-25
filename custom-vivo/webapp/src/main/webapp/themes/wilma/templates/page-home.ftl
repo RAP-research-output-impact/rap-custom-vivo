@@ -45,10 +45,10 @@
                                     DTU collaboration
                                 </p>
                                 <p>
-                                    <a href="${urls.base}/copub"><img src="${urls.theme}/images/worldmap.png"/></a>
+                                    <a href="${urls.base}/copub-choose"><img src="${urls.theme}/images/worldmap.png"/></a>
                                 </p>
                                 <div class="page-home-go">
-                                    <button class="go-button" onClick="window.location.href='${urls.base}/copub'">Go</button>
+                                    <button class="go-button" onClick="window.location.href='${urls.base}/copub-choose'">Go</button>
                                 </div>
                                 <div class="page-home-test">
                                     &beta; test

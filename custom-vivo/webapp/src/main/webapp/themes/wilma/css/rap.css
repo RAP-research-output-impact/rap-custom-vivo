@@ -460,6 +460,35 @@ table#rep5 th.col3 {
     width: 200px;
     margin-left: 16px;
 }
+body.copub-choose {
+    background-color: #f3f3f0;
+}
+#DTUdepartment {
+    border-width: 1px;
+    border-color: #666666;
+    margin-right: 20px;
+}
+#copub-choose-list li {
+    font-size: 18px;
+}
+#copub-choose-heading {
+    text-align: center;
+}
+#copub-choose-title {
+    text-align: center;
+    color: #941010;
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 30px;
+}
+#copub-choose-desc {
+    text-align: center;
+    font-size: 18px;
+    margin-top: 20px;
+}
+#copub-choose-graphic {
+    text-align: center;
+}
 .copubs-by-dept h2 {
     margin-left: 10px;
 }
@@ -482,6 +511,7 @@ table#rep5 th.col3 {
 html, body {
     min-height: 100vh;
     margin: 0;
+    background-color: white;
 }
 div#main-content {
     min-height: 100vh;

@@ -9,25 +9,103 @@
 
 <!-- worldmap -->
 <section class="home-sections" id="worldmap">
+    <div id="copub-breadcrumbs" style="margin-top: 20px;">
+        <a href="../copub-choose">Ext. collaboration</a>
+        &gt;
+        <span id="bc-dep">
+            <select id="dtu-dep" name="dtu-dep">
+                <option value="">Entire university</option>
+                <option value="dtusuborg-centre-for-oil-and-gas-dtu">Centre for Oil and Gas - DTU</option>
+                <option value="dtusuborg-dtu-aqua">DTU Aqua</option>
+                <option value="dtusuborg-dtu-bioengineering">DTU Bioengineering</option>
+                <option value="dtusuborg-dtu-bioinformatics">DTU Bioinformatics</option>
+                <option value="dtusuborg-dtu-biosustain">DTU Biosustain</option>
+                <option value="dtusuborg-dtu-business">DTU Business</option>
+                <option value="dtusuborg-dtu-chemical-engineering">DTU Chemical Engineering</option>
+                <option value="dtusuborg-dtu-chemistry">DTU Chemistry</option>
+                <option value="dtusuborg-dtu-civil-engineering">DTU Civil Engineering</option>
+                <option value="dtusuborg-dtu-compute">DTU Compute</option>
+                <option value="dtusuborg-dtu-danchip">DTU Danchip</option>
+                <option value="dtusuborg-dtu-diplom">DTU Diplom</option>
+                <option value="dtusuborg-dtu-electrical-engineering">DTU Electrical Engineering</option>
+                <option value="dtusuborg-dtu-energy">DTU Energy</option>
+                <option value="dtusuborg-dtu-environment">DTU Environment</option>
+                <option value="dtusuborg-dtu-food">DTU Food</option>
+                <option value="dtusuborg-dtu-fotonik">DTU Fotonik</option>
+                <option value="dtusuborg-dtu-health-tech">DTU Health Tech</option>
+                <option value="dtusuborg-dtu-management-engineering">DTU Management Engineering</option>
+                <option value="dtusuborg-dtu-mechanical-engineering">DTU Mechanical Engineering</option>
+                <option value="dtusuborg-dtu-nanotech">DTU Nanotech</option>
+                <option value="dtusuborg-dtu-nutech">DTU Nutech</option>
+                <option value="dtusuborg-dtu-physics">DTU Physics</option>
+                <option value="dtusuborg-dtu-space">DTU Space</option>
+                <option value="dtusuborg-dtu-systems-biology">DTU Systems Biology</option>
+                <option value="dtusuborg-dtu-vet">DTU Vet</option>
+                <option value="dtusuborg-dtu-wind-energy">DTU Wind Energy</option>
+                <option value="dtusuborg-dtu-department-unknown">DTU department unknown</option>
+                <option value="dtusuborg-ris-dtu">Risø DTU</option>
+            </select>
+        </span>
+        <span id="bc-dep-view">
+        </span>
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            $("#dtu-dep").val(urlParams.get('dept'));
+        </script>
+        &gt;
+        <span id="bc-world-map">
+            World map
+        </span>
+        <span id="bc-world-map-link">
+            <a id="bc-world-map-link-anchor">World map</a>
+        </span>
+        &gt;
+        <span id="bc-country">
+        </span>
+        <span id="bc-range">
+            From
+            <select id="year-from" name="year-from">
+                <option value="2007">2007</option>
+                <option value="2008">2008</option>
+                <option value="2009">2009</option>
+                <option value="2010">2010</option>
+                <option value="2011">2011</option>
+                <option value="2012">2012</option>
+                <option value="2013">2013</option>
+                <option value="2014" selected="selected">2014</option>
+                <option value="2015">2015</option>
+                <option value="2016">2016</option>
+                <option value="2017">2017</option>
+                <option value="2018">2018</option>
+                <option value="2019">2019</option>
+            </select>
+            -
+            <select id="year-to" name="year-to">
+                <option value="2007">2007</option>
+                <option value="2008">2008</option>
+                <option value="2009">2009</option>
+                <option value="2010">2010</option>
+                <option value="2011">2011</option>
+                <option value="2012">2012</option>
+                <option value="2013">2013</option>
+                <option value="2014">2014</option>
+                <option value="2015">2015</option>
+                <option value="2016">2016</option>
+                <option value="2017">2017</option>
+                <option value="2018">2018</option>
+                <option value="2019" selected="selected">2019</option>
+            </select>
+        </span>
+        <span id="bc-range-view">
+        </span>
+    </div>
     <div id="copub-map-heading">
-        <h1 id="copub-map-title">DTU global collaboration map</h1>
         <div id="copub-map-sub-title" style="text-align: center;">
             Zoom using your mouse scroll wheel, or the controls top right, and select a country.
         </div>
     </div>
-    <div id="copub-list-heading">
-        <h1 id="copub-list-title">DTU collaboration</h1>
-        <div id="copub-list-sub-title" style="text-align: center;">
-            Back to world view
-        </div>
-    </div>
     <div id="copub-map-container">
         <div id="copub-map">
-            <div style="float: right; margin-right: 5px;">
-                <button id="zoom-button-out" class="zoom-button" data-zoom="out">-</button>
-                <div id="zoom-info"></div>
-                <button id="zoom-button-in" class="zoom-button" data-zoom="in">+</button>
-            </div>
         </div>
         <div id="copub-map-info" style="display: inline-block; float: left;">
             <table>
@@ -66,7 +144,19 @@
 
 <script>
     $("#copub-map-info").hide();
-    $("#copub-list-heading").hide();
+    $("#bc-world-map-link").hide();
+    $("#bc-world-map-link-anchor").click(function() {
+        $("#bc-world-map-link").hide();
+        $("#bc-world-map").show();
+        $("#bc-country").hide();
+        $("#copub-map-heading").show();
+        $('#copub-map').show();
+        $('#copub-map-info').hide();
+        $("#bc-range").show();
+        $("#bc-range-view").hide();
+        $("#bc-dep").show();
+        $("#bc-dep-view").hide();
+    });
     $("#copub-filter").keyup(function() {
         $(".map-org-org").each(function() {
             if ($(this).text().search(new RegExp($("#copub-filter").val(), "i")) != -1) {
@@ -104,14 +194,10 @@
     //
     // co-pub world map
     //
-    $('#copub-map-container').addClass('spinner');
     var base = "${urls.base}";
     var profileBase = base + "/individual?uri="
     var serviceBase = base + "/vds/report/"
-    var mapData = serviceBase + "worldmap/";
     var countryData = serviceBase + "country/";
-
-    var pubCounts = loadData(mapData, prepMapData);
 
     // See: https://bost.ocks.org/mike/bubble-map/
     // Create radius for bubbles.
@@ -119,10 +205,41 @@
         .domain([1, 5000])
         .range([5, 20]);
 
+    fetchMapData();
+
+    $("#dtu-dep").change(function() {
+        console.log ("dtu-dep changed");
+        fetchMapData();
+    });
+    $("#year-from").change(function() {
+        console.log ("year-from changed");
+        fetchMapData();
+    });
+    $("#year-to").change(function() {
+        console.log ("year-to changed");
+        fetchMapData();
+    });
+
+    function addZoom() {
+        var html = "<div style=\"float: right; margin-right: 5px;\">" +
+                   "    <button id=\"zoom-button-out\" class=\"zoom-button\" data-zoom=\"out\">-</button>" +
+                   "    <div id=\"zoom-info\"></div>" +
+                   "    <button id=\"zoom-button-in\" class=\"zoom-button\" data-zoom=\"in\">+</button>" +
+                   "</div>";
+        $("#copub-map").html(html);
+    }
+    function fetchMapData() {
+        var mapData = serviceBase + "worldmap?dept=" + $("#dtu-dep").val() + "&startYear=" + $('#year-from').val() + "&endYear=" + $('#year-to').val();
+        console.log ("loading: " + mapData);
+        $('#copub-map-container').addClass('spinner');
+        addZoom();
+        loadData(mapData, prepMapData);
+    }
+
     function prepMapData(data) {
         var out = [];
-        for (var i =0, j = data.summary.length; i < j; i++) {
-            var d = {}
+        for (var i = 0, j = data.summary.length; i < j; i++) {
+            var d = {};
             var count = data.summary[i].publications;
             if (count > 0) {
                 d['centered'] = data.summary[i].code;
@@ -155,27 +272,32 @@
                     return '<div class="hoverinfo">' + country + ' ' + data.publications + ' co-publications</div>'
                 }
         });
-        $("#copub-list-sub-title").click(function() {
-            $("#copub-map-heading").show();
-            $("#copub-list-heading").hide();
-            $('#copub-map').show();
-            $('#copub-map-info').hide();
-        });
         d3.selectAll(".datamaps-bubble").on('click', function(bubble) {
             $("#copub-filter").val("");
             $("#map-org-list tbody").html("<tr><td colspan=\"2\">Loading...</td></tr>");
-            loadData(countryData + bubble.centered, orgList);
+
+
+            var countryDataURL = countryData + bubble.centered + "?dept=" + $("#dtu-dep").val() + "&startYear=" + $('#year-from').val() + "&endYear=" + $('#year-to').val();
+            loadData(countryDataURL, orgList);
             var irec = $('#copub-map-info').get(0).getBoundingClientRect();
             var view = Math.max(document.documentElement.clientHeight, window.innerHeight);
             console.log (irec);
             console.log (view);
+
+            $("#bc-world-map-link").show();
+            $("#bc-world-map").hide();
+            $("#bc-range").hide();
+            $("#bc-range-view").html("From " + $('#year-from').val() + " - " + $('#year-to').val());
+            $("#bc-dep").hide();
+            $("#bc-dep-view").html($("#dtu-dep option:selected").text());
+
             if (countryKey[bubble.centered]) {
-                $("#copub-list-title").html("DTU collaboration with " + countryKey[bubble.centered]);
+                $("#bc-country").html(countryKey[bubble.centered] + " &gt; ");
             } else {
-                $("#copub-list-title").html("DTU collaboration with " + bubble.centered);
+                $("#bc-country").html(bubble.centered + " &gt; ");
             }
+            $("#bc-country").show();
             $("#copub-map-heading").hide();
-            $("#copub-list-heading").show();
             $('#copub-map').hide();
             $('#copub-map-info').show();
         });
