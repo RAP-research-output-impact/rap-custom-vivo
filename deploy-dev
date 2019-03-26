@@ -13,6 +13,6 @@ then
     mkdir --parents webapp/src/main/webapp/WEB-INF/resources
 fi
 cp build-dev.properties webapp/src/main/webapp/WEB-INF/resources/build.properties
-mvn $* -Dhttps.protocols=TLSv1.2 install -s settings-dev.xml
+mvn $* -Dhttps.protocols=TLSv1.2 clean install -s settings-dev.xml
 /etc/init.d/tomcat8 start
 exit 0
