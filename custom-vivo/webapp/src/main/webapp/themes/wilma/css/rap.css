@@ -90,6 +90,18 @@ td.dtu-dept-num {
     border: 1px solid #666666;
     padding: 3px;
 }
+#map-country-list {
+    border: 1px solid #666666;
+    padding: 3px;
+}
+#map-country-list td {
+    border: 1px solid #666666;
+    padding: 3px;
+}
+#map-country-list th {
+    border: 1px solid #666666;
+    padding: 3px;
+}
 #copub-form form {
     margin-left: auto;
     margin-right: auto;
@@ -432,6 +444,14 @@ table#rep5 th.col3 {
     cursor: pointer;
 }
 #sort-pub {
+    cursor: pointer;
+}
+#sort-cty {
+    display: inline-block;
+    height: 100%;
+    cursor: pointer;
+}
+#sort-cty-pub {
     cursor: pointer;
 }
 #copub-map-title {
