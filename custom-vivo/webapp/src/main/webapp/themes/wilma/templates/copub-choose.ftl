@@ -21,9 +21,9 @@
                     <ul id="copub-choose-list">
                         <li><a href="javascript:copub_link('copub');">World map</a></li>
                         <li><a href="javascript:copub_link('copub-country');">Country - browse or search</a></li>
-                        <li><!--a href="javascript:copub_link('copub-partner');"-->Partner - browse or search<!--/a--></li>
-                        <li><!--a href="javascript:copub_link('copub-funder');"-->Funder - browse or search<!--/a--></li>
-                        <li><!--a href="javascript:copub_link('copub-subject');"-->Subject - browse or search<!--/a--></li>
+                        <li><a href="javascript:copub_link('copub-partner');">Partner - browse or search</a></li>
+                        <li><a href="javascript:copub_link('copub-funder');">Funder - browse or search</a></li>
+                        <li><a href="javascript:copub_link('copub-subject');">Subject - browse or search</a></li>
                     </ul>
                 </td>
             </tr>
