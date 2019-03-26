@@ -1,22 +1,14 @@
 package dk.dtu.adm.rap.controller;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
-import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
-import com.hp.hpl.jena.query.ParameterizedSparqlString;
-import com.hp.hpl.jena.rdf.model.Model;
-import dk.dtu.adm.rap.utils.StoreUtils;
-import dk.dtu.adm.rap.utils.DataCache;
-import edu.cornell.mannlib.vedit.beans.LoginStatusBean;
-import edu.cornell.mannlib.vitro.webapp.config.ConfigurationProperties;
-import edu.cornell.mannlib.vitro.webapp.controller.VitroRequest;
-
-import org.apache.axis.utils.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.io.IOException;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -30,34 +22,37 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
+import org.apache.axis.utils.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
+import com.hp.hpl.jena.query.ParameterizedSparqlString;
+import com.hp.hpl.jena.rdf.model.Model;
+
+import dk.dtu.adm.rap.utils.DataCache;
+import dk.dtu.adm.rap.utils.StoreUtils;
+import edu.cornell.mannlib.vedit.beans.LoginStatusBean;
+import edu.cornell.mannlib.vitro.webapp.config.ConfigurationProperties;
+import edu.cornell.mannlib.vitro.webapp.controller.VitroRequest;
 
 @Path("/report/")
 public class DataService {
 
-    @Context
-    private HttpServletRequest httpRequest;
-
-    private static final Log log = LogFactory.getLog(DataService.class.getName());
-    private static String namespace;
-    private StoreUtils storeUtils;
+    private static final Log log = LogFactory.getLog(DataService.class.getName());    
     private static final DataCache cache = new DataCache();
 
     @Path("/org/{vid}")
     @GET
     @Produces("application/json")
-    public Response getOrg(@PathParam("vid") String vid, @Context Request request) {
-        return getOrg(vid, null, null, request);
+    public Response getOrg(@PathParam("vid") String vid, 
+            @Context Request request, @Context HttpServletRequest httpRequest) {
+        return getOrg(vid, null, null, request, httpRequest);
     }
 
     @Path("/org/{vid}/{startYear}")
@@ -65,8 +60,8 @@ public class DataService {
     @Produces("application/json")
     public Response getOrg(@PathParam("vid") String vid,
             @PathParam("startYear") String startYear,
-            @Context Request request) {
-        return getOrg(vid, startYear, null, request);
+            @Context Request request, @Context HttpServletRequest httpRequest) {
+        return getOrg(vid, startYear, null, request, httpRequest);
     }
 
     @Path("/org/{vid}/{startYear}/{endYear}")
@@ -75,7 +70,7 @@ public class DataService {
     public Response getOrg(@PathParam("vid") String vid,
             @PathParam("startYear") String startYear,
             @PathParam("endYear") String endYear,
-            @Context Request request) {
+            @Context Request request, @Context HttpServletRequest httpRequest) {
 
         VitroRequest vreq = new VitroRequest(httpRequest);
 
@@ -83,7 +78,7 @@ public class DataService {
         Integer endYearInt = parseInt(endYear);
 
         if (!authorized(vreq)) {
-            return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
+            notAuthorizedResponse();
         }
         ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
         String cacheRoot = props.getProperty("DataCache.root");
@@ -101,21 +96,19 @@ public class DataService {
             long start = System.currentTimeMillis();
             JSONObject jo = new JSONObject();
             try {
-                namespace = props.getProperty("Vitro.defaultNamespace");
-                String uri = namespace + vid;
-                this.storeUtils = new StoreUtils();
-                this.storeUtils.setRdfService(namespace, vreq.getRDFService());
-                jo.put("summary",    getSummary(mysql, orgmap, uri, startYearInt, endYearInt));
-                jo.put("categories", getRelatedPubCategories(mysql, orgmap, namespace, uri, startYearInt, endYearInt));
+                StoreUtils storeUtils = getStoreUtils(httpRequest);
+                String uri = storeUtils.getNamespace() + vid;
+                jo.put("summary",    getSummary(mysql, orgmap, uri, startYearInt, endYearInt, storeUtils));
+                jo.put("categories", getRelatedPubCategories(mysql, orgmap, storeUtils.getNamespace(), uri, startYearInt, endYearInt, storeUtils));
                 jo.put("org_totals", getSummaryPubCount(mysql, orgmap, vid, startYearInt, endYearInt));
                 jo.put("dtu_totals", getSummaryPubCount(mysql, orgmap, "org-technical-university-of-denmark", startYearInt, endYearInt));
-                jo.put("copub_totals", getSummaryCopubCount(uri, startYearInt, endYearInt));
+                jo.put("copub_totals", getSummaryCopubCount(uri, startYearInt, endYearInt, storeUtils));
                 log.debug("done - getSummaryCopubCount");
-                jo.put("top_categories", getTopCategories(mysql, orgmap, namespace, vid, startYearInt, endYearInt));
-                jo.put("by_department", getCoPubsByDepartment(uri, startYearInt, endYearInt));
+                jo.put("top_categories", getTopCategories(mysql, orgmap, storeUtils.getNamespace(), vid, startYearInt, endYearInt, storeUtils));
+                jo.put("by_department", getCoPubsByDepartment(uri, startYearInt, endYearInt, storeUtils));
                 log.debug("done - getCoPubsByDepartment");
             } catch (JSONException e) {
-                e.printStackTrace();
+                log.error(e, e);
             }
             data = jo.toString();
             cache.write(cacheRoot, cachekey, data, (System.currentTimeMillis() - start));
@@ -141,8 +134,8 @@ public class DataService {
     @GET
     @Produces("application/json")
     public Response getCoPubByDept(@PathParam("vid") String vid,
-            @Context Request request) {
-        return getCoPubByDept(vid, null, null, request);
+            @Context Request request, @Context HttpServletRequest httpRequest) {
+        return getCoPubByDept(vid, null, null, request, httpRequest);
     }
 
     @Path("/org/{vid}/by-dept/{startYear}")
@@ -150,8 +143,8 @@ public class DataService {
     @Produces("application/json")
     public Response getCoPubByDept(@PathParam("vid") String vid,
             @PathParam("startYear") String startYear,
-            @Context Request request) {
-        return getCoPubByDept(vid, startYear, null, request);
+            @Context Request request, @Context HttpServletRequest httpRequest) {
+        return getCoPubByDept(vid, startYear, null, request, httpRequest);
     }
 
     @Path("/org/{vid}/by-dept/{startYear}/{endYear}")
@@ -160,54 +153,53 @@ public class DataService {
     public Response getCoPubByDept(@PathParam("vid") String vid,
             @PathParam("startYear") String startYear,
             @PathParam("endYear") String endYear,
-            @Context Request request) {
+            @Context Request request, @Context HttpServletRequest httpRequest) {
         VitroRequest vreq = new VitroRequest(httpRequest);
 
         Integer startYearInt = parseInt(startYear);
         Integer endYearInt = parseInt(endYear);
 
         if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
-            return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
+            notAuthorizedResponse();
         }
 
         ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
-        namespace = props.getProperty("Vitro.defaultNamespace");
+        String namespace = props.getProperty("Vitro.defaultNamespace");
         String wosDataVersion = props.getProperty("wos.dataVersion");
         Boolean cacheActive = Boolean.parseBoolean(props.getProperty("wos.cacheActive"));
         String uri = namespace + vid;
 
-        //setup storeUtils
-        this.storeUtils = new StoreUtils();
-        this.storeUtils.setRdfService(namespace, vreq.getRDFService());
-
+       
         ResponseBuilder builder = null;
         EntityTag etag = new EntityTag(wosDataVersion + uri);
         if (cacheActive.equals(true) && wosDataVersion != null) {
             log.info("Etag caching active");
             builder = request.evaluatePreconditions(etag);
         }
-        String orgName = this.storeUtils.getFromStore(getQuery("SELECT ?name where { <" + uri + "> rdfs:label ?name }")).get(0).get("name").toString();
-
+        StoreUtils storeUtils = getStoreUtils(httpRequest);
+        String orgName = storeUtils.getFromStore(getQuery(
+                "SELECT ?name where { <" + uri + "> rdfs:label ?name }", storeUtils)).get(0).get(
+                        "name").toString();
         // cached resource did change -> serve updated content
         if (builder == null) {
-            Model tmpModel = deptModel(uri, startYearInt, endYearInt);
+            Model tmpModel = deptModel(uri, startYearInt, endYearInt, storeUtils);
             String rq = readQuery("coPubByDept/vds/dtuSubOrgCount.rq");
             log.debug("Dept query:\n" + rq);
-            ArrayList<HashMap> depts = this.storeUtils.getFromModel(getQuery(rq), tmpModel);
+            ArrayList<HashMap> depts = storeUtils.getFromModel(getQuery(rq, storeUtils), tmpModel);
             JSONArray out = new JSONArray();
             for (HashMap dept: depts) {
                 if ( dept.get("org") != null ) {
                     String deptUri = dept.get("org").toString();
-                    String exOrgRq = getQuery(readQuery("coPubByDept/vds/externalSubOrgCount.rq"));
-                    ParameterizedSparqlString q2 = this.storeUtils.getQuery(exOrgRq);
+                    String exOrgRq = getQuery(readQuery("coPubByDept/vds/externalSubOrgCount.rq"), storeUtils);
+                    ParameterizedSparqlString q2 = storeUtils.getQuery(exOrgRq);
                     q2.setIri("org", deptUri);
                     String exOrgQuery = q2.toString();
                     log.debug("External Dept query:\n" + exOrgQuery);
                     ArrayList<HashMap> subOrgs = null;
                     try {
-                        subOrgs = this.storeUtils.getFromModelJSON(exOrgQuery, tmpModel);
+                        subOrgs = storeUtils.getFromModelJSON(exOrgQuery, tmpModel);
                     } catch (JSONException e) {
-                        e.printStackTrace();
+                        log.error(e, e);
                     }
                     dept.put("sub_orgs", new JSONArray(subOrgs));
                     out.put(dept);
@@ -219,7 +211,7 @@ public class DataService {
                 jo.put("name", orgName);
                 jo.put("departments", out);
             } catch (JSONException e) {
-                e.printStackTrace();
+                log.error(e, e);
             }
             String outJson = jo.toString();
             builder = Response.ok(outJson);
@@ -229,11 +221,15 @@ public class DataService {
         return builder.build();
     }
 
+    private boolean authorized(HttpServletRequest request) {
+        return authorized(new VitroRequest(request));
+    }
+    
     private boolean authorized(VitroRequest vreq) {
         if (LoginStatusBean.getBean(vreq).isLoggedIn()) {
             return true;
         }
-        String addr = httpRequest.getRemoteAddr();
+        String addr = vreq.getRemoteAddr();
         if (addr.equals("127.0.0.1")) {
             return true;
         }
@@ -242,14 +238,19 @@ public class DataService {
         }
         return false;
     }
+    
+    private Response notAuthorizedResponse() {
+        return Response.status(403).type("text/plain").entity(
+                "Restricted to authenticated users").build();
+    }
 
     @Path("/worldmap")
     @GET
     @Produces("application/json")
-    public Response getWorldMap(@Context Request request) {
+    public Response getWorldMap(@Context Request request, @Context HttpServletRequest httpRequest) {
         VitroRequest vreq = new VitroRequest(httpRequest);
         if (!authorized(vreq)) {
-            return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
+            notAuthorizedResponse();
         }
         String dept = vreq.getParameter("dept");
         String dep = "";
@@ -268,12 +269,10 @@ public class DataService {
             long start = System.currentTimeMillis();
             JSONObject jo = new JSONObject();
             try {
-                namespace = props.getProperty("Vitro.defaultNamespace");
-                this.storeUtils = new StoreUtils();
-                this.storeUtils.setRdfService(namespace, vreq.getRDFService());
-                jo.put("summary", getWorldwidePubs(dept, yearStart, yearEnd));
+                StoreUtils storeUtils = getStoreUtils(httpRequest);
+                jo.put("summary", getWorldwidePubs(dept, yearStart, yearEnd, storeUtils));
             } catch (JSONException e) {
-                e.printStackTrace();
+                log.error(e, e);
             }
             data = jo.toString();
             cache.write(cacheRoot, "worldmap." + dep + "." + yearStart + "." + yearEnd, data, (System.currentTimeMillis() - start));
@@ -285,10 +284,11 @@ public class DataService {
     @Path("/country/{cCode}")
     @GET
     @Produces("application/json")
-    public Response getCountry(@PathParam("cCode") String cCode, @Context Request request) {
+    public Response getCountry(@PathParam("cCode") String cCode, 
+            @Context Request request, @Context HttpServletRequest httpRequest) {
         VitroRequest vreq = new VitroRequest(httpRequest);
         if (!authorized(vreq)) {
-            return Response.status(403).type("text/plain").entity("Restricted to authenticated users").build();
+            notAuthorizedResponse();
         }
         String dept = vreq.getParameter("dept");
         String dep = "";
@@ -307,12 +307,10 @@ public class DataService {
             long start = System.currentTimeMillis();
             JSONObject jo = new JSONObject();
             try {
-                namespace = props.getProperty("Vitro.defaultNamespace");
-                this.storeUtils = new StoreUtils();
-                this.storeUtils.setRdfService(namespace, vreq.getRDFService());
-                jo.put("orgs", getCoPubsCountry(cCode.toUpperCase(), dept, yearStart, yearEnd));
+                StoreUtils storeUtils = getStoreUtils(httpRequest);
+                jo.put("orgs", getCoPubsCountry(cCode.toUpperCase(), dept, yearStart, yearEnd, storeUtils));
             } catch (JSONException e) {
-                e.printStackTrace();
+                log.error(e, e);
             }
             data = jo.toString();
             cache.write(cacheRoot, "country-" + cCode + "." + dep + "." + yearStart + "." + yearEnd, data, (System.currentTimeMillis() - start));
@@ -324,22 +322,22 @@ public class DataService {
     private Response processPartnerOrFunderRequest(HttpServletRequest request, 
             String requestLabel, String orgParamName, 
             PartnerOrFunderJSONGenerator generator) {
-        VitroRequest vreq = new VitroRequest(request);
-        if (!authorized(vreq)) {
+        StoreUtils storeUtils = getStoreUtils(request);
+        if (!authorized(request)) {
             return Response.status(403).type("text/plain").entity(
                     "Restricted to authenticated users").build();
         }
-        String dept = vreq.getParameter(orgParamName);
+        String dept = request.getParameter(orgParamName);
         if(StringUtils.isEmpty(dept)) {
             dept = null;
         }
-        String yearStart = vreq.getParameter("startYear");
-        String yearEnd = vreq.getParameter("endYear");
+        String yearStart = request.getParameter("startYear");
+        String yearEnd = request.getParameter("endYear");
         if(yearStart == null || yearEnd == null) {
             return Response.status(Status.BAD_REQUEST).entity(
                     "Parameters startYear and endYear must be specified").build();
         }
-        ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
+        ConfigurationProperties props = ConfigurationProperties.getBean(request);
         String cacheRoot = props.getProperty("DataCache.root");
         String deptStr = (dept == null) ? "all" : dept;
         String cacheFilename = requestLabel + "-" + deptStr + "." + yearStart + "." + yearEnd;
@@ -347,13 +345,10 @@ public class DataService {
         if (data == null) {
             long start = System.currentTimeMillis();
             JSONObject jo = new JSONObject();
-            try {
-                namespace = props.getProperty("Vitro.defaultNamespace");
-                StoreUtils storeUtils = new StoreUtils();
-                storeUtils.setRdfService(namespace, vreq.getRDFService());
-                jo.put(requestLabel, generator.getData(dept, yearStart, yearEnd, namespace, storeUtils));
+            try {                
+                jo.put(requestLabel, generator.getData(dept, yearStart, yearEnd, storeUtils));
             } catch (JSONException e) {
-                e.printStackTrace();
+                log.error(e, e);
             }
             data = jo.toString();
             cache.write(cacheRoot, cacheFilename, data, (System.currentTimeMillis() - start));
@@ -396,7 +391,7 @@ public class DataService {
     
     private interface PartnerOrFunderJSONGenerator {
         public ArrayList getData(String org, String yearStart, String yearEnd, 
-                String orgNamespace, StoreUtils storeUtils);
+                StoreUtils storeUtils);
     }
     
     private class PartnerListGenerator implements PartnerOrFunderJSONGenerator {
@@ -406,13 +401,11 @@ public class DataService {
          *             list will be generated for all of DTU.
          * @param yearStart May not be null.
          * @param yearEnd May not be null.
-         * @param deptNamespace The namespace to which the local name in 'dept' will
-         *                      be appended. May not be null.
          * @param StoreUtils                     
          * @return
          */
         public ArrayList getData(String dept, String yearStart, String yearEnd, 
-                String deptNamespace, StoreUtils storeUtils) {
+                StoreUtils storeUtils) {
             String deptStr = (dept == null) ? "all of DTU" : dept; 
             log.debug("Querying for partner list for " + deptStr);
                 String rq = "SELECT ?partner (MIN(?partnerLabel) AS ?name) (COUNT(DISTINCT ?pub) as ?publications)\n" + 
@@ -442,7 +435,7 @@ public class DataService {
             q2.setLiteral("yearStart", yearStart);
             q2.setLiteral("yearEnd", yearEnd);
             if(dept != null) {
-                q2.setIri("dept", deptNamespace + dept);
+                q2.setIri("dept", storeUtils.getNamespace() + dept);
             }
             String query = q2.toString();
             log.debug("Partners query:\n" + query);
@@ -457,13 +450,11 @@ public class DataService {
          *             list will be generated for all of DTU.
          * @param yearStart May not be null.
          * @param yearEnd May not be null.
-         * @param deptNamespace The namespace to which the local name in 'dept' will
-         *                      be appended. May not be null.
          * @param StoreUtils                     
          * @return
          */
         public ArrayList getData(String dept, String yearStart, String yearEnd, 
-                String deptNamespace, StoreUtils storeUtils) {
+                StoreUtils storeUtils) {
             String deptStr = (dept == null) ? "all of DTU" : dept; 
             log.debug("Querying for funder list for " + deptStr);
                 String rq = "SELECT ?funder (MIN(?funderLabel) AS ?name) (COUNT(DISTINCT ?pub) as ?publications)\n" + 
@@ -492,7 +483,7 @@ public class DataService {
             q2.setLiteral("yearStart", yearStart);
             q2.setLiteral("yearEnd", yearEnd);
             if(dept != null) {
-                q2.setIri("dept", deptNamespace + dept);
+                q2.setIri("dept", storeUtils.getNamespace() + dept);
             }
             String query = q2.toString();
             log.debug("Funders query:\n" + query);
@@ -507,13 +498,11 @@ public class DataService {
          *             list will be generated for all of DTU.
          * @param yearStart May not be null.
          * @param yearEnd May not be null.
-         * @param deptNamespace The namespace to which the local name in 'dept' will
-         *                      be appended. May not be null.
          * @param StoreUtils                     
          * @return
          */
         public ArrayList getData(String funder, String yearStart, String yearEnd, 
-                String funderNamespace, StoreUtils storeUtils) {
+                StoreUtils storeUtils) {
             if(funder == null) {
                 throw new RuntimeException("Parameter 'funder' is required");
             }
@@ -541,8 +530,8 @@ public class DataService {
             q2.setLiteral("yearStart", yearStart);
             q2.setLiteral("yearEnd", yearEnd); 
             String funderIri = funder;
-            if(!funder.startsWith(funderNamespace)) {
-                funderIri = funderNamespace + funder;
+            if(!funder.startsWith(storeUtils.getNamespace())) {
+                funderIri = storeUtils.getNamespace() + funder;
             }
             q2.setIri("funder", funderIri);
             String query = q2.toString();
@@ -564,7 +553,7 @@ public class DataService {
              * @return
              */
             public ArrayList getData(String dept, String yearStart, String yearEnd, 
-                    String deptNamespace, StoreUtils storeUtils) {
+                    StoreUtils storeUtils) {
                 String deptStr = (dept == null) ? "all of DTU" : dept; 
                 log.debug("Querying for subject list for " + deptStr);
                     String rq = "SELECT ?subject (MIN(?subjectLabel) AS ?name) (COUNT(DISTINCT ?pub) as ?publications)\n" + 
@@ -590,7 +579,7 @@ public class DataService {
                 q2.setLiteral("yearStart", yearStart);
                 q2.setLiteral("yearEnd", yearEnd);
                 if(dept != null) {
-                    q2.setIri("dept", deptNamespace + dept);
+                    q2.setIri("dept", storeUtils.getNamespace() + dept);
                 }
                 String query = q2.toString();
                 log.debug("Subjects query:\n" + query);
@@ -631,7 +620,9 @@ public class DataService {
         return yearDtv;
     }
 
-    private Object getSummary(Connection mysql, HashMap<String, Integer> orgmap, String orgUri, Integer startYear, Integer endYear) {
+    private Object getSummary(Connection mysql, HashMap<String, Integer> orgmap, 
+            String orgUri, Integer startYear, Integer endYear,
+            StoreUtils storeUtils) {
         log.debug("getSummary: " + orgUri);
         String yearDtv = getYearDtv(startYear, endYear);
         String dtvFilter = getDtvFilter(startYear, endYear);
@@ -671,12 +662,12 @@ public class DataService {
                     "        }\n" +
                     "    }\n" +
                     "}";
-        ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
+        ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
         q2.setCommandText(rq);
         q2.setIri("org", orgUri);
         String query = q2.toString();
         log.debug("getSummary query:\n" + query);
-        ArrayList summaryArray = this.storeUtils.getFromStoreJSON(query);
+        ArrayList summaryArray = storeUtils.getFromStoreJSON(query);
         log.debug("done - getSummary sparql");
         if (summaryArray.isEmpty()) {
             log.debug("done - getSummary empty");
@@ -719,15 +710,12 @@ public class DataService {
                 summary.put("orgcint", Float.parseFloat(resultSet.getString("cint")) / n);
             }
         } catch (SQLException e) {
-            log.error("SQL error");
-            log.error("SQLException: " + e.getMessage());
-            log.error("SQLState:     " + e.getSQLState());
-            log.error("VendorError:  " + e.getErrorCode());
-            e.printStackTrace();
+            logSQLException(e);
         } catch (JSONException e) {
-            e.printStackTrace();
+            log.error(e, e);
+        } finally {            
+            sql_close(statement, resultSet);            
         }
-        sql_close(statement, resultSet);
         id = orgmap.get("org-technical-university-of-denmark");
         if (id == null) {
             log.error("Could not get mapping for org: 'org-technical-university-of-denmark'");
@@ -753,15 +741,12 @@ public class DataService {
                 summary.put("dtucint", Float.parseFloat(resultSet.getString("cint")) / n);
             }
         } catch (SQLException e) {
-            log.error("SQL error");
-            log.error("SQLException: " + e.getMessage());
-            log.error("SQLState:     " + e.getSQLState());
-            log.error("VendorError:  " + e.getErrorCode());
-            e.printStackTrace();
+            logSQLException(e);
         } catch (JSONException e) {
-            e.printStackTrace();
+            log.error(e, e);
+        } finally {
+            sql_close(statement, resultSet);
         }
-        sql_close(statement, resultSet);
         log.debug("done - getSummary");
         return summary;
     }
@@ -797,24 +782,21 @@ public class DataService {
                 outRows.add(thisItem);
             }
         } catch (SQLException e) {
-            log.error("SQL error");
-            log.error("SQLException: " + e.getMessage());
-            log.error("SQLState:     " + e.getSQLState());
-            log.error("VendorError:  " + e.getErrorCode());
-            e.printStackTrace();
+            logSQLException(e);
         } catch (JSONException e) {
-            e.printStackTrace();
+            log.error(e, e);
+        } finally {
+            sql_close(statement, resultSet);
         }
-        sql_close(statement, resultSet);
         log.debug("done - getSummaryPubCount");
         return outRows;
     }
     
     private ArrayList getSummaryCopubCount(final String orgUri, 
-            Integer startYear, Integer endYear) {
+            Integer startYear, Integer endYear, StoreUtils storeUtils) {
         log.debug("getSummaryCopubCount - " + orgUri);
         String rq = readQuery("summaryCopubCount/getSummaryCopubCount.rq");
-        ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
+        ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
         q2.setCommandText(rq);
         q2.setIri("collab", orgUri);
         if(startYear == null) {
@@ -829,10 +811,13 @@ public class DataService {
                 XSDDatatype.XSDdateTime);
         String query = q2.toString();
         log.debug("Summary copub count query:\n" + query);
-        return this.storeUtils.getFromStoreJSON(query);
+        return storeUtils.getFromStoreJSON(query);
     }
 
-    private ArrayList getTopCategories(Connection mysql, HashMap<String, Integer> orgmap, String namespace, final String orgID, Integer startYear, Integer endYear) {
+    private ArrayList getTopCategories(Connection mysql, 
+            HashMap<String, Integer> orgmap, String namespace, 
+            final String orgID, Integer startYear, Integer endYear,
+            StoreUtils storeUtils) {
         log.debug("getTopCategories: " + orgID);
         ArrayList<JSONObject> outRows = new ArrayList<JSONObject>();
         HashMap<Integer, HashMap> subs = subjects(mysql);
@@ -865,25 +850,24 @@ public class DataService {
                 thisItem.put("category", catUri);
                 thisItem.put("number", resultSet.getString("c"));
                 thisItem.put("rank", rank++);
-                thisItem.put("copub", getCategoryCopub (catUri, namespace + orgID, startYear, endYear));
+                thisItem.put("copub", getCategoryCopub(
+                        catUri, namespace + orgID, startYear, endYear, storeUtils));
                 outRows.add(thisItem);
             }
         } catch (SQLException e) {
-            log.error("SQL error");
-            log.error("SQLException: " + e.getMessage());
-            log.error("SQLState:     " + e.getSQLState());
-            log.error("VendorError:  " + e.getErrorCode());
-            e.printStackTrace();
+            logSQLException(e);
         } catch (JSONException e) {
-            e.printStackTrace();
+            log.error(e, e);
+        } finally {
+            sql_close(statement, resultSet);
         }
-        sql_close(statement, resultSet);
         AddCategoriesRanks(mysql, orgmap, namespace, null, startYear, endYear, outRows);
         log.debug("done - getTopCategories");
         return outRows;
     }
 
-    private Integer getCategoryCopub(final String catUri, final String orgUri, Integer startYear, Integer endYear) {
+    private Integer getCategoryCopub(final String catUri, final String orgUri, 
+            Integer startYear, Integer endYear, StoreUtils storeUtils) {
         String yearDtv = getYearDtv(startYear, endYear);
         String dtvFilter = getDtvFilter(startYear, endYear);
         String rq = "SELECT (COUNT(DISTINCT ?pub) as ?coPubSub)\n" +
@@ -897,13 +881,13 @@ public class DataService {
                          yearDtv +
                          dtvFilter +
                     "}\n";
-        ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
+        ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
         q2.setCommandText(rq);
         q2.setIri("org", orgUri);
         q2.setIri("cat", catUri);
         String query = q2.toString();
         log.debug("Subject copub query:\n" + query);
-        ArrayList subArray = this.storeUtils.getFromStoreJSON(query);
+        ArrayList subArray = storeUtils.getFromStoreJSON(query);
         log.debug("done - Subject copub sparql");
         if (subArray.isEmpty()) {
             log.debug("done - Subject copub empty");
@@ -954,13 +938,10 @@ public class DataService {
                 DTUnums.put(key, Integer.parseInt(resultSet.getString("c")));
             }
         } catch (SQLException e) {
-            log.error("SQL error");
-            log.error("SQLException: " + e.getMessage());
-            log.error("SQLState:     " + e.getSQLState());
-            log.error("VendorError:  " + e.getErrorCode());
-            e.printStackTrace();
+            logSQLException(e);
+        } finally {
+            sql_close(statement, resultSet);
         }
-        sql_close(statement, resultSet);
         if (orgID != null) {
             id = orgmap.get(orgID);
             if (id == null) {
@@ -981,13 +962,10 @@ public class DataService {
                     ORGranks.put(key, rank++);
                 }
             } catch (SQLException e) {
-                log.error("SQL error");
-                log.error("SQLException: " + e.getMessage());
-                log.error("SQLState:     " + e.getSQLState());
-                log.error("VendorError:  " + e.getErrorCode());
-                e.printStackTrace();
+                logSQLException(e);
+            } finally {
+                sql_close(statement, resultSet);
             }
-            sql_close(statement, resultSet);
         }
         for(JSONObject s:subjects) {
             try {
@@ -1015,7 +993,7 @@ public class DataService {
         return outRows;
     }
 
-    private HashMap organisations(Connection mysql) {
+    private HashMap<String, Integer> organisations(Connection mysql) {
         HashMap<String, Integer> orgmap = new HashMap<String, Integer>();
 
         log.debug("loading orgs");
@@ -1029,13 +1007,10 @@ public class DataService {
                 orgmap.put(name, Integer.parseInt(resultSet.getString("id")));
             }
         } catch (SQLException e) {
-            log.error("SQL error");
-            log.error("SQLException: " + e.getMessage());
-            log.error("SQLState:     " + e.getSQLState());
-            log.error("VendorError:  " + e.getErrorCode());
-            e.printStackTrace();
-        }
-        sql_close(statement, resultSet);
+            logSQLException(e);
+        } finally {
+            sql_close(statement, resultSet);
+        } 
         log.debug("done");
         return orgmap;
     }
@@ -1056,13 +1031,10 @@ public class DataService {
                 subjects.put(id, sub);
             }
         } catch (SQLException e) {
-            log.error("SQL error");
-            log.error("SQLException: " + e.getMessage());
-            log.error("SQLState:     " + e.getSQLState());
-            log.error("VendorError:  " + e.getErrorCode());
-            e.printStackTrace();
+            logSQLException(e);
+        } finally {
+            sql_close(statement, resultSet);
         }
-        sql_close(statement, resultSet);
         return subjects;
     }
 
@@ -1075,13 +1047,9 @@ public class DataService {
             Class.forName("com.mysql.jdbc.Driver");
             connect = DriverManager.getConnection(url + "?user=" + user + "&password=" + pass);
         } catch (SQLException e) {
-            log.error("SQL error");
-            log.error("SQLException: " + e.getMessage());
-            log.error("SQLState:     " + e.getSQLState());
-            log.error("VendorError:  " + e.getErrorCode());
-            e.printStackTrace();
+            logSQLException(e);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            log.error(e, e);
         }
         return connect;
     }
@@ -1095,15 +1063,14 @@ public class DataService {
                 resultSet.close();
             }
         } catch (SQLException e) {
-            log.error("SQL error");
-            log.error("SQLException: " + e.getMessage());
-            log.error("SQLState:     " + e.getSQLState());
-            log.error("VendorError:  " + e.getErrorCode());
-            e.printStackTrace();
+            logSQLException(e);
         }
     }
 
-    private ArrayList getRelatedPubCategories(Connection mysql, HashMap<String, Integer> orgmap, String namespace, final String orgUri, Integer startYear, Integer endYear) {
+    private ArrayList getRelatedPubCategories(Connection mysql, 
+            HashMap<String, Integer> orgmap, String namespace, 
+            final String orgUri, Integer startYear, Integer endYear,
+            StoreUtils storeUtils) {
         log.debug("getRelatedPubCategories - " + orgUri);
         String rq = "" +
                 "SELECT ?category (SAMPLE(?label) as ?name) (COUNT(distinct ?pub) as ?number)\n" +
@@ -1121,17 +1088,18 @@ public class DataService {
                 "}\n" +
                 "GROUP BY ?category ?label\n" +
                 "ORDER BY DESC(?number) ?label";
-        ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
+        ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
         q2.setIri("org", orgUri);
         String query = q2.toString();
         log.debug("getRelatedPubCategories query:\n" + query);
-        ArrayList<JSONObject> outRows = this.storeUtils.getFromStoreJSON(query);
+        ArrayList<JSONObject> outRows = storeUtils.getFromStoreJSON(query);
         AddCategoriesRanks(mysql, orgmap, namespace, orgUri.replaceAll(".*/", ""), startYear, endYear, outRows);
         log.debug("done - getRelatedPubCategories");
         return outRows;
     }
 
-    private ArrayList getCoPubsByDepartment(String orgUri, Integer startYear, Integer endYear) {
+    private ArrayList getCoPubsByDepartment(String orgUri, Integer startYear, 
+            Integer endYear, StoreUtils storeUtils) {
         log.debug("getCoPubsByDepartment - " + orgUri);
         String rq = "" +
                 "SELECT DISTINCT ?dtuSubOrg ?dtuSubOrgName ?otherOrgs (COUNT(DISTINCT ?pub) as ?number)\n" +
@@ -1164,14 +1132,15 @@ public class DataService {
                 "\t}\n" +
                 "\tGROUP BY ?dtuSubOrg ?dtuSubOrgName ?otherOrgs\n" +
                 "\tORDER BY ?dtuSubOrgName ?number\n";
-        ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
+        ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
         q2.setIri("org", orgUri);
         String query = q2.toString();
         log.debug("Related categories query:\n" + query);
-        return this.storeUtils.getFromStoreJSON(query);
+        return storeUtils.getFromStoreJSON(query);
     }
 
-    private ArrayList getWorldwidePubs(String dept, String yearStart, String yearEnd) {
+    private ArrayList getWorldwidePubs(String dept, String yearStart, 
+            String yearEnd, StoreUtils storeUtils) {
         log.debug("Querying for country codes for copublication");
         String rq;
         if (dept == null) {
@@ -1204,13 +1173,14 @@ public class DataService {
                  "GROUP by ?code\n" +
                  "ORDER BY DESC(?publications)\n";
         }
-        ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
+        ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
         String query = q2.toString();
         log.debug("Country pubs query:\n" + query);
-        return this.storeUtils.getFromStoreJSON(query);
+        return storeUtils.getFromStoreJSON(query);
     }
 
-    private ArrayList getCoPubsCountry(String countryCode, String dept, String yearStart, String yearEnd) {
+    private ArrayList getCoPubsCountry(String countryCode, String dept, 
+            String yearStart, String yearEnd, StoreUtils storeUtils) {
         log.debug("Running query to find copubs by country and org");
         String rq;
         if (dept == null) {
@@ -1269,15 +1239,16 @@ public class DataService {
                  "}\n" +
                  "ORDER BY DESC(?publications)\n";
         }
-        ParameterizedSparqlString q2 = this.storeUtils.getQuery(rq);
+        ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
         String query = q2.toString();
         log.debug("Related categories query:\n" + query);
-        return this.storeUtils.getFromStoreJSON(query);
+        return storeUtils.getFromStoreJSON(query);
     }
 
-    private Model deptModel(String externalOrgUri, Integer startYear, Integer endYear) {
+    private Model deptModel(String externalOrgUri, Integer startYear, 
+            Integer endYear, StoreUtils storeUtils) {
         String rq = readQuery("coPubByDept/vds/summaryModel.rq");
-        ParameterizedSparqlString ps = this.storeUtils.getQuery(rq);
+        ParameterizedSparqlString ps = storeUtils.getQuery(rq);
         if(startYear == null) {
             startYear = 1;
         }
@@ -1291,11 +1262,11 @@ public class DataService {
         ps.setIri("externalOrg", externalOrgUri);
         String processedRq =  ps.toString();
         log.debug("Dept model query:\n " + processedRq);
-        return this.storeUtils.getModelFromStore(processedRq);
+        return storeUtils.getModelFromStore(processedRq);
     }
 
-    private String getQuery(String raw) {
-        ParameterizedSparqlString ps = this.storeUtils.getQuery(raw);
+    private String getQuery(String raw, StoreUtils storeUtils) {
+        ParameterizedSparqlString ps = storeUtils.getQuery(raw);
         return ps.toString();
     }
 
@@ -1304,9 +1275,31 @@ public class DataService {
         try {
             return Resources.toString(qurl, Charsets.UTF_8);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e, e);
             return "";
         }
+    }
+    
+    /**
+     * Construct a StoreUtils for executing queries in the current request
+     * @param httpRequest the current request object
+     */
+    private StoreUtils getStoreUtils(HttpServletRequest httpRequest) {
+        VitroRequest vreq = new VitroRequest(httpRequest);
+        StoreUtils storeUtils = new StoreUtils();
+        ConfigurationProperties props = ConfigurationProperties.getBean(
+                httpRequest);
+        String namespace = props.getProperty("Vitro.defaultNamespace");
+        storeUtils.setRdfService(namespace, vreq.getRDFService());
+        return storeUtils;
+    }
+    
+    private void logSQLException(SQLException e) {
+        log.error("SQL error");
+        log.error("SQLException: " + e.getMessage());
+        log.error("SQLState:     " + e.getSQLState());
+        log.error("VendorError:  " + e.getErrorCode());
+        log.error(e, e);
     }
 
 
