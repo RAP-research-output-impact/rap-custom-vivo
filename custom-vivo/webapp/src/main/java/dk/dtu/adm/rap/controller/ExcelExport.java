@@ -226,12 +226,12 @@ public class ExcelExport extends VitroHttpServlet {
         }
         pt.applyBorders(sheet);     
         sheet.setColumnWidth(0, 7500);
-        sheet.setColumnWidth(1, 6000);
-        sheet.setColumnWidth(2, 6000);
-        sheet.setColumnWidth(3, 6000);
-        sheet.setColumnWidth(4, 6000);
-        sheet.setColumnWidth(5, 6000);
-        sheet.setColumnWidth(6, 6000);
+        sheet.setColumnWidth(1, 3750);
+        sheet.setColumnWidth(2, 3750);
+        sheet.setColumnWidth(3, 3750);
+        sheet.setColumnWidth(4, 3750);
+        sheet.setColumnWidth(5, 3750);
+        sheet.setColumnWidth(6, 3750);
         return wb;
     }
     
@@ -291,7 +291,7 @@ public class ExcelExport extends VitroHttpServlet {
         XSSFRow titleRow = rowCreator.createRow();
         titleRow.setHeightInPoints(25);
         sheet.addMergedRegion(new CellRangeAddress(
-                rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 6));
         CellStyle titleStyle = wb.createCellStyle();
         XSSFFont titleFont = wb.createFont();
         titleFont.setBold(true);
