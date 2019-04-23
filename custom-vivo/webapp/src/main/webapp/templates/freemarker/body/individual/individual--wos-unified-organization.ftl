@@ -576,12 +576,13 @@ function createLineChart({data, insertAt, title, svgId, width, maxWidth, height,
     .domain(d3.extent(xDomain))
     .range([0, width - margin.left - margin.right])
   let y = d3.scaleLinear()
-    .domain([0, d3.max(yDomain)])
+    .domain([0, Math.round(d3.max(yDomain)) + 1])
     .range([height - margin.top - margin.bottom, 0])
 
 
   // create x and y axis function
-  let yAxis = (g) => g.call(d3.axisLeft(y))
+  let yTicksTotal = d3.max(yDomain) < 8 ? d3.max(yDomain) : null // avoid having intermittent values with 0.3, 0.6 etc
+  let yAxis = (g) => g.call(d3.axisLeft(y).ticks(yTicksTotal))
   let xAxis = (g) => g.call(d3.axisBottom(x).ticks(xDomain.length))
 
 
@@ -1009,14 +1010,16 @@ function doPubCountTable(totals, DTUtotals, copubsTotal, copubs) {
     tempChartHolder.className += 'chartDrawnButHidden'
     tempChartHolder.setAttribute("style", "position: absolute; top: -1000; left:-1000;")
     document.body.append(tempChartHolder)
-    let myData = copubs.map(x => (
-                              {
-                                value: x.number,
-                                date: new Date(x.year.toString())
-                              }
-                            ))
-                      .sort( (a,b) => (a.date - b.date) )
-
+    
+    let myData = []
+    for(let year in years) {
+        myData.push({
+            value: years[year].copubs,
+            date: new Date(year.toString())
+  	})
+    }
+    myData = myData.sort( (a,b) => (a.date - b.date) )
+    
     let copubsChartOpt = {
       data: myData,
       maxHeight: 500,
