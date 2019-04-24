@@ -55,11 +55,9 @@
                 <p><a href="${relatedSubject.url}" title="${i18n().return_to(relatedSubject.name)}">&larr; ${i18n().return_to(relatedSubject.name)}</a></p>
             <#else>
                 <h1 class="fn" itemprop="name">
+		    Functional Independent Scaling Relation for ORR/OER Catalysts
                     <#-- Label -->
-                    <@p.label individual editable labelCount localesCount languageCount/>
-
-                    <#--  Most-specific types -->
-                    <@p.mostSpecificTypes individual />
+                    <#-- @p.label individual editable labelCount localesCount languageCount/ -->
                 </h1>
             </#if>
         </header>
@@ -80,44 +78,97 @@
 <#assign refs=gdp(refp)!>
 <#assign cites=gdp(citep)!>
 
+<!-- authors -->
+<p>
+<a href="">Christensen, R</a> (Christensen, Rune)<sup>[ 1 ]</sup>; <a href="">Hansen, HA</a> (Hansen, Heine A.)<sup>[ 1 ]</sup>; <a href="">Dickens, CF</a> (Dickens, Colin F.)<sup>[ 2, 3 ]</sup>; <a href="">Norskov, JK</a> (Norskov, Jens K.)<sup>[ 2, 3 ]</sup>; <a href="">Vegge, T</a>(Vegge, Tejs)<sup>[ 1 ]</sup>
+</p>
 
-<div class="pub-ids">
-    <#if doi?has_content>
-        <span class="pub-id-link">Full Text via DOI:&nbsp;<a href="http://doi.org/${doi}"  title="Full Text via DOI" target="external">${doi}</a></span>
-    </#if>
-    <#if pmid?has_content>
-        <span class="pub-id-link">PMID:&nbsp;<a href="http://pubmed.gov/${pmid}"  title="View in PubMed" target="external">${pmid}</a></span>
-    </#if>
-    <#if wosId?has_content>
-        <#-- Change WoS link to match customer code -->
-        <span class="pub-id-link">Web of Science:&nbsp;<a href="http://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVersion=2&SrcApp=VIVO&SrcAuth=TRINTCEL&KeyUT=${wosId}&DestLinkType=FullRecord&DestApp=WOS_CPL"  title="View in Web of Science" target="external">${wosId}</a></span>
-    </#if>
-</div>
-<div class="pub-ids">
-    <span class="counts">
-        <#if refs?has_content>
-            References:&nbsp;<a href="http://apps.webofknowledge.com/InterService.do?product=WOS&toPID=WOS&action=AllCitationService&isLinks=yes&highlighted_tab=WOS&last_prod=WOS&fromPID=WOS&srcDesc=RET2WOS&srcAlt=Back+to+Web+of+Science&UT=${wosId}&search_mode=CitedRefList&SID=D6oIIYbSLV2HqN3nOCS&parentProduct=WOS&recid=${wosId}&fromRightPanel=true&cacheurlFromRightClick=no" title="View references in Web of Science" class="wos-badge" target="external">${refs}</a>
-        </#if>
-        <#if cites?has_content>
-            Citations:&nbsp;<a href="http://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVersion=2&SrcApp=VIVO&SrcAuth=TRINTCEL&KeyUT=${wosId}&DestLinkType=CitingArticles&DestApp=WOS_CPL" class="wos-badge" title="View citations in Web of Science" target="external">${cites}</a>
-        </#if>
-    </span>
-</div>
+<!-- journal -->
+<p>JOURNAL OF PHYSICAL CHEMISTRY C</p>
 
+<!-- publication attributes -->
+<dl>
+  <dt>Volume</dt>
+  <dd>120</dd>
+  <dt>Issue</dt>
+  <dd>43</dd>
+  <dt>Pages</dt>
+  <dd>24910-24916</dd>
+  <dt>ISSN</dt>
+  <dd>1932-7447</dd>
+  <dt>DOI</dt>
+  <dd><a href="">10.1021/acs.jpcc.6b09141</a></dd>
+  <dt>Published</dt>
+  <dd>NOV 3 2016</dd>
+  <dt>Web of Science</dt>
+  <dd>WOS:00038719800043</dd>
+  <dt>References</dt>
+  <dd><a href="">48</a></dd>
+  <dt>Citations</dt>
+  <dd><a href="">7</a></dd>
+</dl>
+
+<!-- abstract -->
+<h4>Abstract</h4>
+<p>A widely used adsorption energy scaling relation between OH* and OOH* intermediates in the oxygen reduction reaction (ORR) and oxygen evolution reaction (OER) has previously been determined using density functional theory and shown to dictate a minimum thermodynamic overpotential for both reactions.  Here, we show that the oxygen-oxygen bond in the OOH* intermediate is, however, not well described with the previosuly used class of exchange-correlation functionals. By quantifying and correctiont the systematic error, an improved description of gaseous peroxide species versus experimental data and a reduction in calculational uncertainty is obtained. For adsorbates, we find that the systematic error largely cancels the vdW interaction missing in the original determination of the scaling relation. An improved scaling relation, which is fully independent of the applied exchange-correlation functional, is obtained and found to differ by 0.1 eV from the original. This largely confirms that, although obtained with a method suffering from systematic errors, the previously obtained scaling relation is applicable for predictions of catalytic activity.</p>
+
+<!-- keywords -->
+<h4>Keywords</h4>
+<ul>
+  <li>OXYGEN REDUCTION REACTION</li>
+  <li>AUGMENTED WAVE METHOD</li>
+  <li>EVOLUTION REACTION</li>
+  <li>OXIDE SURFACES</li>
+  <li>METAL SURFACES</li>
+  <li>ELECTROCATALYSTS</li>
+  <li>DENSITY</li>
+  <li>APPROXIMATION</li>
+  <li>OPPORTUNITIES</li>
+  <li>UNIVERSALITY</li>
+</ul>
+
+<!-- categories/classification -->
+<h4>Categories/Classification</h4>
+<h4>Research Areas</h4>
+  <ul>
+    <li>Chemistry</li>
+    <li>Science &amp; Technology - Other Topics</li>
+    <li>Materials Science</li>
+  </ul>
+<h4>Web of Science Categories</h4>
+  <ul>
+    <li>Chemistry, Physical</li>
+    <li>Nanoscience &amp; Nanotechnology</li>
+    <li>Materials Science, Multidisciplinary</li>
+  </ul>
+
+<!-- Author addresses -->
+<ul>
+  <li>[ 1 ] Tech Univ Denmark, Dept. Energy Convers &amp; Storage. Fyskivej Bld. 309, DK-2800 Lyngby, Denmark</li>
+  <li>[ 2 ] SLAC Natl Accelerator Lab, SUNCAT Ctr Interface Sci &amp; Catalysis, 2575 Sand Hill Rd, Menlo Pk, CA 94025 USA</li>
+  <li>[ 3 ] Stanford Univ. Dept Chem Engn, Stanford, CA 94305 USA</li>
+</ul>
+
+<!-- Other details -->
+
+<dl>
+  <dt>Funding Agency</dt>
+  <dd>VILLUM FONDEN (V-SUSTAIN)</dd>
+  <dt>Grant Number</dt>
+  <dd>9455</dd>
+</dl>
+
+<dl>
+  <dt>Publisher</dt>
+  <dd>AMER CHEMICAL SOC, 1155 16TH ST NW. WASHINGTON, DC 20036 USA</dd>
+  <dt>Document Type</dt>
+  <dd>Article</dd>
+  <dt>Langauge</dt>
+  <dd>English</dd>
+</dl>
 
 <#assign skipThis = propertyGroups.pullProperty (citep)!>
 <#assign skipThis = propertyGroups.pullProperty (refp)!>
-
-<!-- Property group menu or tabs -->
-<#--
-    With release 1.6 there are now two types of property group displays: the original property group
-     menu and the horizontal tab display, which is the default. If you prefer to use the property
-     group menu, simply substitute the include statement below with the one that appears after this
-     comment section.
-     <#include "individual-property-group-menus.ftl">
--->
-
-<#include "individual-property-group-tabs.ftl">
 
 <script>
     var imagesPath = '${urls.images}';
