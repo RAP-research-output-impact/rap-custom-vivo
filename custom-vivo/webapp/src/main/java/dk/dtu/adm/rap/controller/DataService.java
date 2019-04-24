@@ -119,6 +119,13 @@ public class DataService {
             }
             data = jo.toString();
             cache.write(cacheRoot, cachekey, data, (System.currentTimeMillis() - start));
+            if (mysql != null) {
+                try {
+                    mysql.close();
+                } catch (SQLException e) {
+                    /* ignored */
+                }
+            }
         }
         ResponseBuilder builder = Response.ok(data);
         return builder.build();
