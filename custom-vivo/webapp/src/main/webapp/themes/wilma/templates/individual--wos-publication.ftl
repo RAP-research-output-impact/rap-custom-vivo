@@ -37,6 +37,9 @@
 
 <#-- Default individual profile page template -->
 <#--@dumpAll /-->
+<div class="box-individual-publication">
+
+
 <section id="individual-intro" class="vcard" role="region" <@mf.sectionSchema individual/>>
     <section id="share-contact" role="region">
         <#-- No images -->
@@ -54,7 +57,7 @@
                 <h2>${relatedSubject.relatingPredicateDomainPublic} for ${relatedSubject.name}</h2>
                 <p><a href="${relatedSubject.url}" title="${i18n().return_to(relatedSubject.name)}">&larr; ${i18n().return_to(relatedSubject.name)}</a></p>
             <#else>
-                <h1 class="fn" itemprop="name">
+                <h1 itemprop="name">
 		    Functional Independent Scaling Relation for ORR/OER Catalysts
                     <#-- Label -->
                     <#-- @p.label individual editable labelCount localesCount languageCount/ -->
@@ -79,93 +82,165 @@
 <#assign cites=gdp(citep)!>
 
 <!-- authors -->
-<p>
-<a href="">Christensen, R</a> (Christensen, Rune)<sup>[ 1 ]</sup>; <a href="">Hansen, HA</a> (Hansen, Heine A.)<sup>[ 1 ]</sup>; <a href="">Dickens, CF</a> (Dickens, Colin F.)<sup>[ 2, 3 ]</sup>; <a href="">Norskov, JK</a> (Norskov, Jens K.)<sup>[ 2, 3 ]</sup>; <a href="">Vegge, T</a>(Vegge, Tejs)<sup>[ 1 ]</sup>
-</p>
+<div class="pub_authors-box">
+  <div class="pub_author-name">
+    <a href="">Christensen, R</a> (Christensen, Rune)<sup>[ 1 ]</sup>
+  </div>
+  <div class="pub_author-name">
+    <a href="">Hansen, HA</a> (Hansen, Heine A.)<sup>[ 1 ]</sup>
+  </div>
+  <div class="pub_author-name">
+    <a href="">Dickens, CF</a> (Dickens, Colin F.)<sup>[ 2, 3 ]</sup>
+  </div>
+  <div class="pub_author-name">
+    <a href="">Norskov, JK</a> (Norskov, Jens K.)<sup>[ 2, 3 ]</sup>
+  </div>
+  <div class="pub_author-name">
+    <a href="">Vegge, T</a>(Vegge, Tejs)<sup>[ 1 ]</sup>
+  </div>
+</div>
+<!-- end .authors-box -->
 
 <!-- journal -->
-<p>JOURNAL OF PHYSICAL CHEMISTRY C</p>
+<div class="pub_journal">
+
+  <h2>Journal of Physical Chemistry</h2>
 
 <!-- publication attributes -->
-<dl>
-  <dt>Volume</dt>
-  <dd>120</dd>
-  <dt>Issue</dt>
-  <dd>43</dd>
-  <dt>Pages</dt>
-  <dd>24910-24916</dd>
-  <dt>ISSN</dt>
-  <dd>1932-7447</dd>
-  <dt>DOI</dt>
-  <dd><a href="">10.1021/acs.jpcc.6b09141</a></dd>
-  <dt>Published</dt>
-  <dd>NOV 3 2016</dd>
-  <dt>Web of Science</dt>
-  <dd>WOS:00038719800043</dd>
-  <dt>References</dt>
-  <dd><a href="">48</a></dd>
-  <dt>Citations</dt>
-  <dd><a href="">7</a></dd>
-</dl>
+<ul class="pub_meta-list">
+  <li>
+    <span class="pub_meta">Volume:</span>
+    <span class="pub_meta-value">120</span>
+  </li>
+  <li>
+    <span class="pub_meta">Issue:</span>
+    <span class="pub_meta-value">43</span>
+  </li>
+  <li>
+    <span class="pub_meta">Pages:</span>
+    <span class="pub_meta-value">24910-24916</span>
+  </li>
+  <li>
+    <span class="pub_meta">ISSN:</span>
+    <span class="pub_meta-value">1932-7447</span>
+  </li>
+  <li>
+    <span class="pub_meta">DOI:</span>
+    <span class="pub_meta-value"><a href="">10.1021/acs.jpcc.6b09141</a></span>
+  </li>
+  <li>
+    <span class="pub_meta">Published:</span>
+    <span class="pub_meta-value">NOV 3 2016</span>
+  </li>
+  <li>
+    <span class="pub_meta">Web of Science:</span>
+    <span class="pub_meta-value">WOS:00038719800043</span>
+  </li>
+  <li>
+    <span class="pub_meta">References:</span>
+    <a href="" class="pub_meta-value">48</a><
+  </li>
+  <li>
+    <span class="pub_meta">Citations:</span>
+    <a href="" class="pub_meta-value">7</a>
+  </li>
+</ul>
 
 <!-- abstract -->
-<h4>Abstract</h4>
-<p>A widely used adsorption energy scaling relation between OH* and OOH* intermediates in the oxygen reduction reaction (ORR) and oxygen evolution reaction (OER) has previously been determined using density functional theory and shown to dictate a minimum thermodynamic overpotential for both reactions.  Here, we show that the oxygen-oxygen bond in the OOH* intermediate is, however, not well described with the previosuly used class of exchange-correlation functionals. By quantifying and correctiont the systematic error, an improved description of gaseous peroxide species versus experimental data and a reduction in calculational uncertainty is obtained. For adsorbates, we find that the systematic error largely cancels the vdW interaction missing in the original determination of the scaling relation. An improved scaling relation, which is fully independent of the applied exchange-correlation functional, is obtained and found to differ by 0.1 eV from the original. This largely confirms that, although obtained with a method suffering from systematic errors, the previously obtained scaling relation is applicable for predictions of catalytic activity.</p>
+<div class="pub_abstract">
+  <h3>Abstract</h3>
+  <p>A widely used adsorption energy scaling relation between OH* and OOH* intermediates in the oxygen reduction reaction (ORR) and oxygen evolution reaction (OER) has previously been determined using density functional theory and shown to dictate a minimum thermodynamic overpotential for both reactions.  Here, we show that the oxygen-oxygen bond in the OOH* intermediate is, however, not well described with the previosuly used class of exchange-correlation functionals. By quantifying and correctiont the systematic error, an improved description of gaseous peroxide species versus experimental data and a reduction in calculational uncertainty is obtained. For adsorbates, we find that the systematic error largely cancels the vdW interaction missing in the original determination of the scaling relation. An improved scaling relation, which is fully independent of the applied exchange-correlation functional, is obtained and found to differ by 0.1 eV from the original. This largely confirms that, although obtained with a method suffering from systematic errors, the previously obtained scaling relation is applicable for predictions of catalytic activity.</p>
+</div>
 
-<!-- keywords -->
-<h4>Keywords</h4>
-<ul>
-  <li>OXYGEN REDUCTION REACTION</li>
-  <li>AUGMENTED WAVE METHOD</li>
-  <li>EVOLUTION REACTION</li>
-  <li>OXIDE SURFACES</li>
-  <li>METAL SURFACES</li>
-  <li>ELECTROCATALYSTS</li>
-  <li>DENSITY</li>
-  <li>APPROXIMATION</li>
-  <li>OPPORTUNITIES</li>
-  <li>UNIVERSALITY</li>
-</ul>
+<div class="pub_keywords">
+  <!-- keywords -->
+  <h3>Keywords</h3>
+  <ul class="one-line-list">
+    <li>OXYGEN REDUCTION REACTION;</li>
+    <li>AUGMENTED WAVE METHOD;</li>
+    <li>EVOLUTION REACTION;</li>
+    <li>OXIDE SURFACES;</li>
+    <li>METAL SURFACES;</li>
+    <li>ELECTROCATALYSTS;</li>
+    <li>DENSITY;</li>
+    <li>APPROXIMATION;</li>
+    <li>OPPORTUNITIES;</li>
+    <li>UNIVERSALITY;</li>
+  </ul>
+</div>
 
 <!-- categories/classification -->
-<h4>Categories/Classification</h4>
-<h4>Research Areas</h4>
-  <ul>
-    <li>Chemistry</li>
-    <li>Science &amp; Technology - Other Topics</li>
-    <li>Materials Science</li>
-  </ul>
-<h4>Web of Science Categories</h4>
-  <ul>
-    <li>Chemistry, Physical</li>
-    <li>Nanoscience &amp; Nanotechnology</li>
-    <li>Materials Science, Multidisciplinary</li>
-  </ul>
+<div class="pub_categories">
+  <h3>Categories</h3>
+
+  <div class="pub_keywords-enumeration clearfix">
+    <h4>Research Areas</h4>
+    <ul class="one-line-list">
+      <li>Chemistry;</li>
+      <li>Science &amp; Technology - Other Topics;</li>
+      <li>Materials Science;</li>
+    </ul>
+  </div>
+
+  <div class="pub_keywords-enumeration clearfix">
+    <h4>Web of Science Categories</h4>
+    <ul class="one-line-list">
+      <li>Chemistry, Physical;</li>
+      <li>Nanoscience &amp; Nanotechnology;</li>
+      <li>Materials Science, Multidisciplinary;</li>
+    </ul>
+  </div>
+</div>
+<!-- end .pub_categories -->
 
 <!-- Author addresses -->
-<ul>
-  <li>[ 1 ] Tech Univ Denmark, Dept. Energy Convers &amp; Storage. Fyskivej Bld. 309, DK-2800 Lyngby, Denmark</li>
-  <li>[ 2 ] SLAC Natl Accelerator Lab, SUNCAT Ctr Interface Sci &amp; Catalysis, 2575 Sand Hill Rd, Menlo Pk, CA 94025 USA</li>
-  <li>[ 3 ] Stanford Univ. Dept Chem Engn, Stanford, CA 94305 USA</li>
-</ul>
+<div class="pub_author-addresses">
+  <h3>Author Addresses</h3>
+  <ul>
+    <li>[ 1 ] Tech Univ Denmark, Dept. Energy Convers &amp; Storage. Fyskivej Bld. 309, DK-2800 Lyngby, Denmark</li>
+    <li>[ 2 ] SLAC Natl Accelerator Lab, SUNCAT Ctr Interface Sci &amp; Catalysis, 2575 Sand Hill Rd, Menlo Pk, CA 94025 USA</li>
+    <li>[ 3 ] Stanford Univ. Dept Chem Engn, Stanford, CA 94305 USA</li>
+  </ul>
+</div>
 
 <!-- Other details -->
+<div class="pub_other-details">
 
-<dl>
-  <dt>Funding Agency</dt>
-  <dd>VILLUM FONDEN (V-SUSTAIN)</dd>
-  <dt>Grant Number</dt>
-  <dd>9455</dd>
-</dl>
+  <ul class="pub_meta-list">
+    <li>
+      <span class="pub_meta">Funding Agency</span>
+      <span>VILLUM FONDEN (V-SUSTAIN)</span>
+    </li>
+    <li>
+      <span class="pub_meta">Grant Number</span>
+      <span><9455/span>
+    </li>
+  </ul>
 
-<dl>
-  <dt>Publisher</dt>
-  <dd>AMER CHEMICAL SOC, 1155 16TH ST NW. WASHINGTON, DC 20036 USA</dd>
-  <dt>Document Type</dt>
-  <dd>Article</dd>
-  <dt>Langauge</dt>
-  <dd>English</dd>
-</dl>
+  <ul>
+    <li>
+      <span class="pub_meta">Publisher</span>
+      <span class="pub_meta-value">AMER CHEMICAL SOC, 1155 16TH ST NW. WASHINGTON, DC 20036 USA</span>
+    </li>
+    <li>
+      <span class="pub_meta">Document Type</span>
+      <span class="pub_meta-value">Article</span>
+    </li>
+    <li>
+      <span class="pub_meta">Langauge</span>
+      <span class="pub_meta-value">English</span>
+    </li>
+  </ul>
+
+</div>
+<!-- end other-details -->
+
+</div>
+<!-- end pub_journal -->
+
+</div>
+<!-- end .box-individual-publication -->
+
 
 <#assign skipThis = propertyGroups.pullProperty (citep)!>
 <#assign skipThis = propertyGroups.pullProperty (refp)!>

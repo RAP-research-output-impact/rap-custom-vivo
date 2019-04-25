@@ -310,9 +310,6 @@ ul.copubdept {
     font-weight: bold;
     font-size: 12px;
 }
-#individual-info {
-    margin-left: 12px;
-}
 #individual-info h2 {
     color: #5E6363;
     font-size: 16px;
@@ -535,7 +532,7 @@ html, body {
 }
 div#main-content {
     min-height: 100vh;
-    margin-bottom: -60px;
+    padding: 40px 0;
 }
 footer {
     height: 60px;
@@ -567,3 +564,45 @@ table#copub-authors td {
 svg, svg g, svg text {
   font-family: "Lucida Sans Unicode", "Lucida Grande", 'Geneva', helvetica, sans-serif
 }
+
+
+/*** page individual publication (individual--wos-publication.ftl) ***/
+.box-individual-publication {
+  max-width: var(--max-w);
+  margin: auto;
+}
+
+.pub_author-name {
+  display: inline-block;
+  margin-right: 25px;
+}
+.pub_meta-list li {
+    display: inline-block;
+    margin-right: 60px;
+}
+.pub_meta {
+    font-weight: bold;
+    margin-right: 5px;
+}
+.pub_keywords .one-line-list {
+  text-transform: lowercase;
+}
+.one-line-list li {
+  display: inline-block;
+  margin-right: 5px;
+}
+.pub_keywords-enumeration h4 {
+  float: left;
+  padding: 0;
+  margin: 0 20px 0 0;
+}
+.pub_keywords-enumeration h4 + ul {
+  float: left;
+}
+.pub_author-addresses {
+  margin-bottom: 30px;
+}
+.pub_abstract {
+  margin-top: -15px;
+}
+/*** end page individual publication ***/
