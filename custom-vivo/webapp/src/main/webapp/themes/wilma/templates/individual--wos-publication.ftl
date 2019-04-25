@@ -138,7 +138,7 @@
   </li>
   <li>
     <span class="pub_meta">References:</span>
-    <a href="" class="pub_meta-value">48</a><
+    <a href="" class="pub_meta-value">48</a>
   </li>
   <li>
     <span class="pub_meta">Citations:</span>
