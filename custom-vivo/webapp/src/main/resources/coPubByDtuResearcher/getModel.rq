@@ -1,0 +1,64 @@
+CONSTRUCT {
+    ?pub a wos:Publication ;
+        rdfs:label ?title ;
+        tmp:pubDate ?date ;
+        wos:wosId ?wosId ;
+        wos:referenceCount ?refCount ;
+        wos:citationCount ?citeCount ;
+        bibo:doi ?doi ;
+        tmp:relates ?authorship .
+    ?authorship a tmp:Authorship ;
+            tmp:name ?name ;
+            tmp:relates ?collab .
+}
+WHERE {
+  {
+    ?collab a wos:UnifiedOrganization ;
+        vivo:relatedBy ?address .
+    ?address a wos:Address ;
+        vivo:relates ?pub .
+    ?authorship a vivo:Authorship ;
+            wos:fullName ?name ;
+            vivo:relates ?pub, ?address .
+    ?pub a wos:Publication ;
+        rdfs:label ?title ;
+        vivo:dateTimeValue ?dtv ;
+	wos:hasCategory ?category ;
+        vivo:relatedBy ?address .
+    ?dtv vivo:dateTime ?date .
+    FILTER(?startYear <= ?date)
+    FILTER(?endYear >= ?date)
+    ?pub vivo:relatedBy ?dtuAddress .
+    ?dtuAddress a wos:Address .
+    ?dtuAddress vivo:relates d:org-technical-university-of-denmark . 
+    OPTIONAL {
+        ?pub wos:wosId ?wosId ;
+            wos:referenceCount ?refCount ;
+            wos:citationCount ?citeCount .
+    }
+    OPTIONAL { ?pub bibo:doi ?doi }
+  } UNION {
+    ?collab a wos:UnifiedOrganization ;
+        vivo:relatedBy ?address .
+    ?address a wos:Address ;
+        vivo:relates ?pub .
+    ?pub a wos:Publication ;
+        rdfs:label ?title ;
+        vivo:dateTimeValue ?dtv ;
+	wos:hasCategory ?category ;
+        vivo:relatedBy ?address .
+    ?dtv vivo:dateTime ?date .
+    FILTER(?startYear <= ?date)
+    FILTER(?endYear >= ?date)
+    ?pub vivo:relatedBy ?dtuAddress .
+    ?dtuAddress a wos:Address .
+    ?dtuAddress vivo:relates d:org-technical-university-of-denmark . 
+    OPTIONAL {
+        ?pub wos:wosId ?wosId ;
+            wos:referenceCount ?refCount ;
+            wos:citationCount ?citeCount .
+    }
+    OPTIONAL { ?pub bibo:doi ?doi }
+
+  }
+ }

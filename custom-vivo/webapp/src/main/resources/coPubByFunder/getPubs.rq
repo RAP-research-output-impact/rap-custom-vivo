@@ -1,0 +1,13 @@
+SELECT ?p ?title ?date ?doi ?wosId ?refCount ?citeCount ?subOrgs ?authors
+WHERE {
+    ?p a wos:Publication ;
+        rdfs:label ?title ;
+        tmp:pubDate ?date .
+    OPTIONAL { ?p bibo:doi ?doi }
+    OPTIONAL {
+        ?p wos:wosId ?wosId ;
+           wos:referenceCount ?refCount ;
+           wos:citationCount ?citeCount .
+    }
+}
+ORDER BY DESC(?date)

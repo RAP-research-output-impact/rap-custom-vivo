@@ -1496,6 +1496,15 @@
   </servlet-mapping>
  
   <servlet>
+    <servlet-name>CoPubsByFunderController</servlet-name>
+    <servlet-class>dk.dtu.adm.rap.controller.CoPubsByFunder</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CoPubsByFunderController</servlet-name>
+    <url-pattern>/copubs-by-funder/*</url-pattern>
+  </servlet-mapping>
+ 
+  <servlet>
     <servlet-name>CoPubsByCategoryController</servlet-name>
     <servlet-class>dk.dtu.adm.rap.controller.CoPubsByCategory</servlet-class>
   </servlet>
