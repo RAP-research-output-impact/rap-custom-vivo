@@ -182,11 +182,13 @@ public class ExcelExport extends VitroHttpServlet {
         }
         rowCreator.createRow();
         rowCreator.createRow();
+        sheet.setRowBreak(rowCreator.getRowIndex());
         try {
             addTotals(years, json, wb, sheet, rowCreator, pt);
         } catch (JSONException e) {
             log.error(e, e);
         }
+        sheet.setRowBreak(rowCreator.getRowIndex());
         try {
             addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 22, 0, 4);
             for(int i = 0; i < 19; i++) {
@@ -197,6 +199,7 @@ public class ExcelExport extends VitroHttpServlet {
         }
         rowCreator.createRow();
         rowCreator.createRow();
+        sheet.setRowBreak(rowCreator.getRowIndex());
         try {
             addTopCategories(json, wb, sheet, rowCreator, pt);
         } catch (JSONException e) {
@@ -204,11 +207,13 @@ public class ExcelExport extends VitroHttpServlet {
         }
         rowCreator.createRow();
         rowCreator.createRow();
+        sheet.setRowBreak(rowCreator.getRowIndex());
         try {
             addCategories(json, wb, sheet, rowCreator, pt);
         } catch (JSONException e) {
             log.error(e, e);
         }
+        sheet.setRowBreak(rowCreator.getRowIndex());
         try {
             addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 26, 0, 8);
             for(int i = 0; i < 24; i++) {
@@ -219,6 +224,7 @@ public class ExcelExport extends VitroHttpServlet {
         }        
         rowCreator.createRow();
         rowCreator.createRow();
+        sheet.setRowBreak(rowCreator.getRowIndex());
         try {
             addByDepartment(byDeptJson, wb, sheet, rowCreator, pt, details);
         } catch (JSONException e) {
@@ -226,6 +232,7 @@ public class ExcelExport extends VitroHttpServlet {
         }
         rowCreator.createRow();
         rowCreator.createRow();
+        sheet.setRowBreak(rowCreator.getRowIndex());
         try {
             addDtuResearchers(json, wb, sheet, rowCreator, pt);
         } catch (JSONException e) {
@@ -233,6 +240,7 @@ public class ExcelExport extends VitroHttpServlet {
         }
         rowCreator.createRow();
         rowCreator.createRow();
+        sheet.setRowBreak(rowCreator.getRowIndex());
         try {
             addFunders(json, wb, sheet, rowCreator, pt);
         } catch (JSONException e) {
@@ -247,7 +255,7 @@ public class ExcelExport extends VitroHttpServlet {
         sheet.setColumnWidth(5, 4000);
         sheet.setColumnWidth(6, 4000);
         sheet.setFitToPage(true);
-        sheet.setAutobreaks(true);
+        //sheet.setAutobreaks(true);
         sheet.getPrintSetup().setLandscape(true);
         sheet.getPrintSetup().setFitWidth((short) 1);
         sheet.getPrintSetup().setFitHeight((short) 0);
