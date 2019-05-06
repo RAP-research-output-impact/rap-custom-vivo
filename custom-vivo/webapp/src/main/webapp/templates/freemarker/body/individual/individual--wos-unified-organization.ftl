@@ -252,26 +252,6 @@ function collabSummary(response, startYear, endYear) {
 
     loadPubInfoByStartYear(byDeptUrl, startYear, endYear, byDeptReport)
 
-    if ((response.summary.coPubTotal > 0) && (response.funders.length > 0)) {
-        html = `
-	  <hr/>
-	  <div id="top-funders">
-        `;
-        html += doFunderTable(response.funders, startYear, endYear);
-	html += "</div>";
-        $("#collab-summary-container").append(html);
-    }
-
-    if ((response.summary.coPubTotal > 0) && (response.dtu_researchers.length > 0)) {
-        html = `
-	  <hr/>
-	  <div id="top-dtu-researchers">
-        `;
-        html += doDtuResearchersTable(response.dtu_researchers, startYear, endYear);
-	html += "</div>";
-        $("#collab-summary-container").append(html);
-    }
-
 }
 
 function sortArrow(up, used) {
@@ -601,6 +581,27 @@ function doDepartmentTable(totals, name, startYear, endYear) {
     });
     html += closeHtml;
     $("#collab-summary-container").append(html);
+
+   // Tables 6 and 7; need to get appended below the by-department report
+   if ((response.summary.coPubTotal > 0) && (response.dtu_researchers.length > 0)) {
+        html = `
+	  <hr/>
+	  <div id="top-dtu-researchers">
+        `;
+        html += doDtuResearchersTable(response.dtu_researchers, startYear, endYear);
+	html += "</div>";
+        $("#collab-summary-container").append(html);
+    }
+
+    if ((response.summary.coPubTotal > 0) && (response.funders.length > 0)) {
+        html = `
+	  <hr/>
+	  <div id="top-funders">
+        `;
+        html += doFunderTable(response.funders, startYear, endYear);
+	html += "</div>";
+        $("#collab-summary-container").append(html);
+    }
 
     // CALL RESPONSIVE CHARTS FN after elements are in dom
     let responsiveCharts = document.querySelectorAll('.chart-box[minH]')
