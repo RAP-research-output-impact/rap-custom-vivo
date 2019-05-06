@@ -226,12 +226,12 @@ public class ExcelExport extends VitroHttpServlet {
         }
         pt.applyBorders(sheet);     
         sheet.setColumnWidth(0, 7500);
-        sheet.setColumnWidth(1, 6000);
-        sheet.setColumnWidth(2, 6000);
-        sheet.setColumnWidth(3, 6000);
-        sheet.setColumnWidth(4, 6000);
-        sheet.setColumnWidth(5, 6000);
-        sheet.setColumnWidth(6, 6000);
+        sheet.setColumnWidth(1, 4000);
+        sheet.setColumnWidth(2, 4000);
+        sheet.setColumnWidth(3, 4000);
+        sheet.setColumnWidth(4, 4000);
+        sheet.setColumnWidth(5, 4000);
+        sheet.setColumnWidth(6, 4000);
         return wb;
     }
     
@@ -291,7 +291,7 @@ public class ExcelExport extends VitroHttpServlet {
         XSSFRow titleRow = rowCreator.createRow();
         titleRow.setHeightInPoints(25);
         sheet.addMergedRegion(new CellRangeAddress(
-                rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 4));
         CellStyle titleStyle = wb.createCellStyle();
         XSSFFont titleFont = wb.createFont();
         titleFont.setBold(true);
@@ -327,7 +327,7 @@ public class ExcelExport extends VitroHttpServlet {
             RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
         JSONObject summary = data.getJSONObject("summary");
         XSSFRow header = rowCreator.createRow();
-        header.setHeightInPoints(30);
+        header.setHeightInPoints(45);
         int startingIndex = rowCreator.getRowIndex();
         CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
@@ -447,7 +447,7 @@ public class ExcelExport extends VitroHttpServlet {
             dtuDataAvailable = false;
         }
         XSSFRow header = rowCreator.createRow();
-        header.setHeightInPoints(30);
+        header.setHeightInPoints(45);
         int startingIndex = rowCreator.getRowIndex();
         CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
@@ -493,7 +493,7 @@ public class ExcelExport extends VitroHttpServlet {
         }
         drawBorders(4, pt, startingIndex, rowCreator);
         XSSFRow row = rowCreator.createRow();
-        row.setHeightInPoints(30);
+        row.setHeightInPoints(45);
         sheet.addMergedRegion(new CellRangeAddress(
                 rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
         addItalicText(wb, row, 0, LATENCY_FOOTNOTE);
