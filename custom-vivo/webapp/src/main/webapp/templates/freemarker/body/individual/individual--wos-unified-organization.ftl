@@ -540,7 +540,7 @@ function doDtuResearchersTable(totals, startYear, endYear) {
     `;
     $.each( totals.slice(0, 20), function( key, value ) {
         if (value.funder != null) {
-            var href = base + "/copubs-by-dtu-researcher/" + value.funder.split("/")[4] + "?collab=" + individualLocalName;
+            var href = base + "/copubs-by-dtu-researcher/" + value.dtuResearcher.split("/")[4] + "?collab=" + individualLocalName;
             if(startYear > 0) {
                 href += "&startYear=" + startYear;
             }
