@@ -565,14 +565,14 @@ public class ExcelExport extends VitroHttpServlet {
         header5.setCellStyle(headerStyleRemainingColumns);
         XSSFCell header6 = preheader.createCell(6);
         header6.setCellStyle(headerStyleRemainingColumns);
-        JSONArray array = data.getJSONArray("top_categories");
-        addNameNumberArray(array, Arrays.asList(
-                "number", "rank", "DTUnumber", "DTUrank", "copub"),
-                rowCreator, wb, sheet);
         sheet.addMergedRegion(new CellRangeAddress(
                 rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
         sheet.addMergedRegion(new CellRangeAddress(
                 rowCreator.rowIndex - 1, rowCreator.rowIndex, 6, 6));
+        JSONArray array = data.getJSONArray("top_categories");
+        addNameNumberArray(array, Arrays.asList(
+                "number", "rank", "DTUnumber", "DTUrank", "copub"),
+                rowCreator, wb, sheet);
         drawBorders(7, pt, startingIndex, rowCreator);        
     }
     
