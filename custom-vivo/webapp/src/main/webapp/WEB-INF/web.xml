@@ -1505,6 +1505,15 @@
   </servlet-mapping>
  
   <servlet>
+    <servlet-name>CoPubsByDtuResearcherController</servlet-name>
+    <servlet-class>dk.dtu.adm.rap.controller.CoPubsByDtuResearcher</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CoPubsByDtuResearcherController</servlet-name>
+    <url-pattern>/copubs-by-dtu-researcher/*</url-pattern>
+  </servlet-mapping>
+ 
+  <servlet>
     <servlet-name>CoPubsByCategoryController</servlet-name>
     <servlet-class>dk.dtu.adm.rap.controller.CoPubsByCategory</servlet-class>
   </servlet>

@@ -23,14 +23,16 @@ WHERE {
     ?pub a wos:Publication ;
         rdfs:label ?title ;
         vivo:dateTimeValue ?dtv ;
-	wos:hasCategory ?category ;
         vivo:relatedBy ?address .
     ?dtv vivo:dateTime ?date .
     FILTER(?startYear <= ?date)
     FILTER(?endYear >= ?date)
     ?pub vivo:relatedBy ?dtuAddress .
     ?dtuAddress a wos:Address .
-    ?dtuAddress vivo:relates d:org-technical-university-of-denmark . 
+    ?dtuAddress vivo:relates d:org-technical-university-of-denmark .
+    ?dtuAddress vivo:relatedBy ?authorship .
+    ?authorship a vivo:Authorship .
+    ?authorship vivo:relates ?dtuResearcher . 
     OPTIONAL {
         ?pub wos:wosId ?wosId ;
             wos:referenceCount ?refCount ;
@@ -45,7 +47,6 @@ WHERE {
     ?pub a wos:Publication ;
         rdfs:label ?title ;
         vivo:dateTimeValue ?dtv ;
-	wos:hasCategory ?category ;
         vivo:relatedBy ?address .
     ?dtv vivo:dateTime ?date .
     FILTER(?startYear <= ?date)
@@ -53,6 +54,9 @@ WHERE {
     ?pub vivo:relatedBy ?dtuAddress .
     ?dtuAddress a wos:Address .
     ?dtuAddress vivo:relates d:org-technical-university-of-denmark . 
+    ?dtuAddress vivo:relatedBy ?authorship .
+    ?authorship a vivo:Authorship .
+    ?authorship vivo:relates ?dtuResearcher . 
     OPTIONAL {
         ?pub wos:wosId ?wosId ;
             wos:referenceCount ?refCount ;

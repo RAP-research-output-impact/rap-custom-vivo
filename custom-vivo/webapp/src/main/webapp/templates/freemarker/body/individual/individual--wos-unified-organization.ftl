@@ -261,6 +261,17 @@ function collabSummary(response, startYear, endYear) {
 	html += "</div>";
         $("#collab-summary-container").append(html);
     }
+
+    if ((response.summary.coPubTotal > 0) && (response.dtu_researchers.length > 0)) {
+        html = `
+	  <hr/>
+	  <div id="top-dtu-researchers">
+        `;
+        html += doDtuResearchersTable(response.funders, startYear, endYear);
+	html += "</div>";
+        $("#collab-summary-container").append(html);
+    }
+
 }
 
 function sortArrow(up, used) {
@@ -518,6 +529,32 @@ function doFunderTable(totals, startYear, endYear) {
     return html;
 }
 
+function doDtuResearchersTable(totals, startYear, endYear) {
+    var html = `
+    <h2 class="rep">Co-publications by DTU researcher (top 20)</h2>
+    <table id="rep6" class="pub-counts">
+      <tr>
+        <th class="col1">DTU Researcher</th>
+        <th class="col2">Publ.</th>
+      </tr>
+    `;
+    $.each( totals.slice(0, 20), function( key, value ) {
+        if (value.funder != null) {
+            var href = base + "/copubs-by-dtu-researcher/" + value.funder.split("/")[4] + "?collab=" + individualLocalName;
+            if(startYear > 0) {
+                href += "&startYear=" + startYear;
+            }
+            if(endYear > 0) {
+                href += "&endYear=" + endYear;
+            }
+            var coPubLink = "<a href=\"" + href + "\" target=\"_blank\">" +  value.number + "</a>";
+            var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
+            html += row;
+        }
+    });
+    html += "</table>";
+    return html;
+}
 
 function doDepartmentTable(totals, name, startYear, endYear) {
     $("departmentTable").remove();
