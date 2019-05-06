@@ -267,7 +267,7 @@ function collabSummary(response, startYear, endYear) {
 	  <hr/>
 	  <div id="top-dtu-researchers">
         `;
-        html += doDtuResearchersTable(response.funders, startYear, endYear);
+        html += doDtuResearchersTable(response.dtu_researchers, startYear, endYear);
 	html += "</div>";
         $("#collab-summary-container").append(html);
     }
