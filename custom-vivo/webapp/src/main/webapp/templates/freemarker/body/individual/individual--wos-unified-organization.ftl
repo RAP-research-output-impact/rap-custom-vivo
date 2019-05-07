@@ -7,11 +7,11 @@
 <script src="${urls.theme}/js/jquery.corner.js"></script>
 <script src="${urls.theme}/js/jquery.sortElements.js"></script>
 <script src="${urls.theme}/js/d3-v5.min.js"></script>
+<script src="${urls.theme}/js/copub-util.js"></script>
 
 <#assign affiliatedResearchAreas>
     <#include "individual-affiliated-research-areas.ftl">
 </#assign>
-
 
 <#include "individual.ftl">
 <div style="height: 60px;"></div>
@@ -29,8 +29,9 @@ $("span.display-title").html('');
 var uni = $("h1.fn").text();
 $("h1.fn").html("DTU collaboration with " + uni.trim() +
                 "<span id=\"collab-summary-country\" class=\"hidden\"></span>" +
-                " from " + "<select id=\"startYear\" name=\"startYear\"></select>" +
-                " to " + "<select id=\"endYear\" name=\"endYear\"></select>");
+                " - " +
+                "<span id=\"range-container\"></span>");
+range_bc_setup("range-container", range_change); 
 if (individualLocalName != "org-technical-university-of-denmark") {
     var orgLocalName = individualLocalName;
     var base = "${urls.base}";
@@ -51,29 +52,18 @@ if (individualLocalName != "org-technical-university-of-denmark") {
               <input class='export-report export-report_end-year' name='endYear' type='text' hidden value='' />
               <input class='export-report export-report_svg1' type='text' name='svgStr1' hidden value='' />
               <input class='export-report export-report_svg2' type='text' name='svgStr2' hidden value='' />
-              <button type='submit' class="export-report_btn">Export</button>
+              <button type='submit' class="export-report_btn">Download Excel</button>
             </form>
-
         </h2>
         <p><a href="--link--">Show list</a> of all publications since 2007</p>
     `.replace('--link--', searchLink);
     $("#startYear").corner();
     $("#endYear").corner();
     $("#individual-info").append(html);
-    $("#startYear").change(function() {
-        setExportForm();
-        info_message("Updating Co-publication report for start year " + $("#startYear").val());
-        loadPubInfoByStartYear(vds, $("#startYear").val(), $("#endYear").val(), collabSummary);
-    });
-    $("#endYear").change(function() {
-        setExportForm();
-        info_message("Updating Co-publication report for end year " + $("#endYear").val());
-        loadPubInfoByStartYear(vds, $("#startYear").val(), $("#endYear").val(), collabSummary);
-    });
     setExportFormBase();
     setExportForm();
 
-    loadPubInfo(vds, collabSummary);
+    loadPubInfoByStartYear(vds, range_from_val(), range_to_val(), collabSummary);
     document.addEventListener('click', function (e) {
         if (hasClass(e.target, 'view-dept')) {
             $(e.target).parents('tr').nextUntil('.copubdept-head').toggle();
@@ -88,18 +78,10 @@ if (individualLocalName != "org-technical-university-of-denmark") {
     }, false);
 }
 
-function addDateSelector() {
-    $("section#individual-info").append("<p>Start year <select id=\"startYear\" name=\"startYear\"></select></p>");
-    $("#startYear").change(function() {
-        info_message("Updating Co-publication report for start year " + $("#startYear").val());
-        loadPubInfoByStartYear(vds, $("#startYear").val(), $("#endYear").val(), collabSummary);
-    });
-    $("section#individual-info").append("<p>End year <select id=\"endYear\" name=\"endYear\"></select></p>");
-    $("#endYear").change(function() {
-        info_message("Updating Co-publication report for end year " + $("#endYear").val());
-        loadPubInfoByStartYear(vds, $("#startYear").val(), $("#endYear").val(), collabSummary);
-    });
-    $("#startYear").corner();
+function range_change() {
+    setExportForm();
+    info_message("Updating Co-publication report for year range " + range_from_val() + ' - ' + range_to_val());
+    loadPubInfoByStartYear(vds, range_from_val(), range_to_val(), collabSummary);
 }
 
 function info_message_setup() {
@@ -129,14 +111,12 @@ function info_message_reset() {
         $("#" + id.replace("cc-", "tc-")).css("background-color", "#dddddd");
     }, function() {
         var id = $(this).attr("id");
-        $("#" + id.replace("tc-", "cc-")).css("background-color", "#f2f2f2");
-        $("#" + id.replace("cc-", "tc-")).css("background-color", "#f2f2f2");
+        $("#" + id.replace("tc-", "cc-")).css("background-color", "white");
+        $("#" + id.replace("cc-", "tc-")).css("background-color", "white");
     });
     $("ul.propertyTabsList").hide();
     $("section.property-group").hide();
 }
-
-
 
 function collabSummary(response, startYear, endYear) {
     $("#collab-summary-container").remove();
@@ -146,33 +126,20 @@ function collabSummary(response, startYear, endYear) {
         $("#collab-summary-container").append(msg);
         info_message_reset();
         $("#collab-summary-total").html(0);
-	return;
+        return;
     }
-    var yearRange = [];
-    if (response.org_totals != []) {
-        for(var i in response.org_totals) {
-	    if(response.org_totals[i].year >= startYear) {
-	        yearRange.push(response.org_totals[i].year)
-	    }
-	};
-        yearRange.sort()
-    } else {
-        yearRange = [startYear, 2016];
-    }
-    if(startYear < 0) {
-        for(var i in yearRange) {
-            $("#startYear").append("<option value=\"" + yearRange[i] + "\">" + yearRange[i] + "</option>");
-            $("#endYear").append("<option value=\"" + yearRange[i] + "\">" + yearRange[i] + "</option>");
+    if (response.summary.coPubTotal > 0) {
+        $("#collab-summary-total").html(response.summary.coPubTotal);
+        if (response.categories.length > 0) {
+            $("#collab-summary-cat").html(" in " + response.categories.length + " subject categories");
         }
-	$("#endYear").val($("#endYear option:last-child").val());
-    }
-    $("#collab-summary-total").html(response.summary.coPubTotal);
-    if (response.categories.length > 0) {
-        $("#collab-summary-cat").html(" in " + response.categories.length + " subject categories");
+    } else {
+        $("#collab-summary-total").html(0);
+        $("#collab-summary-cat").html("");
     }
     doSummaryTable(response);
     if (response.org_totals.length != 0) {
-        doPubCountTable(response.org_totals, response.dtu_totals, response.copub_totals);
+        doPubCountTable(response.org_totals, response.dtu_totals, response.summary.coPubTotal, response.copub_totals);
     }
     var html = `
     <hr/>
@@ -183,7 +150,7 @@ function collabSummary(response, startYear, endYear) {
         html += doTopCategoryTable(response);
         html += '<hr/>';
     }
-    if (response.categories.length > 0) {
+    if ((response.summary.coPubTotal > 0) && (response.categories.length > 0)) {
         html += doPubCategoryTable(response.categories, startYear, endYear);
 
 
@@ -206,9 +173,9 @@ function collabSummary(response, startYear, endYear) {
           data: myData,
           width: 750,
           maxWidth: 750,
-          height: 570,
+          height: myData.length < 10 ? 300 : 570,
           maxHeight: 600,
-          minHeight: 450,
+          minHeight: myData.length < 10 ? 300 : 450,
           margin: {
             top: 40,
             right: 20,
@@ -221,8 +188,8 @@ function collabSummary(response, startYear, endYear) {
           styleFn: styleHBarchart,
           styleFnOpt: {
             barFillColor: '#030F4F',
-            oyF: '16px',
-            oxF: '16px'
+            oyF: '15px',
+            oxF: '14px'
           }
         }
         hBarchart(pubsByResearchSubjChartOpt)
@@ -230,10 +197,10 @@ function collabSummary(response, startYear, endYear) {
         html += tempChartHolder.innerHTML
 
         // BJL: send client-side-generated SVG markup to the Excel download
-	svgStr1 = tempChartHolder.getElementsByTagName('div')[0].innerHTML;
-    setExportForm(svgStr1, svgStr2);
+        svgStr1 = tempChartHolder.getElementsByTagName('div')[0].innerHTML;
+        setExportForm(svgStr1, svgStr2);
 
-	tempChartHolder.remove()
+        tempChartHolder.remove()
     }
 
 
@@ -284,6 +251,28 @@ function collabSummary(response, startYear, endYear) {
     });
 
     loadPubInfoByStartYear(byDeptUrl, startYear, endYear, byDeptReport)
+
+    if ((response.summary.coPubTotal > 0) && (response.dtu_researchers.length > 0)) {
+        html = `
+	  <hr/>
+	  <div id="top-dtu-researchers">
+        `;
+        html += doDtuResearchersTable(response.dtu_researchers, startYear, endYear);
+	html += "</div>";
+        $("#collab-summary-container").append(html);
+    }
+
+    if ((response.summary.coPubTotal > 0) && (response.funders.length > 0)) {
+        html = `
+	  <hr/>
+	  <div id="top-funders">
+        `;
+        html += doFunderTable(response.funders, startYear, endYear);
+	html += "</div>";
+        $("#collab-summary-container").append(html);
+    }
+
+
 }
 
 function sortArrow(up, used) {
@@ -425,7 +414,7 @@ function doSummaryTableRow(real, percent, label, info, org, dtu) {
         }
     }
     if (info) {
-        info = ' <button id="' + info + '" class="" style="border: 0px;"><span class="ui-icon ui-icon-info"></span></button>';
+        info = ' <button id="' + info + '" class="info-button" style="border: 0px;"><span class="ui-icon ui-icon-info"></span></button>';
     }
     return "<tr><td class=\"rep-label\">" + label + info + "</td><td class=\"rep-num\">" + vo + "</td><td class=\"rep-num\">" + vd + "</td></tr>";
 }
@@ -507,6 +496,60 @@ function doPubCategoryTable(totals, startYear, endYear) {
             var coPubLink = "<a href=\"" + href + "\" target=\"_blank\">" +  value.number + "</a>";
             var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td>" +
                       "<td class=\"rep-num\">" + value.rank + "</td><td class=\"rep-num\">" + value.DTUrank + "</td></tr>";
+            html += row;
+        }
+    });
+    html += "</table>";
+    return html;
+}
+
+function doFunderTable(totals, startYear, endYear) {
+    var html = `
+    <h2 class="rep">Co-publications by funder (top 20)</h2>
+    <table id="rep7" class="pub-counts">
+      <tr>
+        <th class="col1">Funder</th>
+        <th class="col2">Publ.</th>
+      </tr>
+    `;
+    $.each( totals.slice(0, 20), function( key, value ) {
+        if (value.funder != null) {
+            var href = base + "/copubs-by-funder/" + value.funder.split("/")[4] + "?collab=" + individualLocalName;
+            if(startYear > 0) {
+                href += "&startYear=" + startYear;
+            }
+            if(endYear > 0) {
+                href += "&endYear=" + endYear;
+            }
+            var coPubLink = "<a href=\"" + href + "\" target=\"_blank\">" +  value.number + "</a>";
+            var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
+            html += row;
+        }
+    });
+    html += "</table>";
+    return html;
+}
+
+function doDtuResearchersTable(totals, startYear, endYear) {
+    var html = `
+    <h2 class="rep">Co-publications by DTU researcher (top 20)</h2>
+    <table id="rep6" class="pub-counts">
+      <tr>
+        <th class="col1">DTU Researcher</th>
+        <th class="col2">Publ.</th>
+      </tr>
+    `;
+    $.each( totals.slice(0, 20), function( key, value ) {
+        if (value.dtuResearcher != null) {
+            var href = base + "/copubs-by-dtu-researcher/" + value.dtuResearcher.split("/")[4] + "?collab=" + individualLocalName;
+            if(startYear > 0) {
+                href += "&startYear=" + startYear;
+            }
+            if(endYear > 0) {
+                href += "&endYear=" + endYear;
+            }
+            var coPubLink = "<a href=\"" + href + "\" target=\"_blank\">" +  value.number + "</a>";
+            var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
             html += row;
         }
     });
@@ -609,13 +652,14 @@ function createLineChart({data, insertAt, title, svgId, width, maxWidth, height,
     .domain(d3.extent(xDomain))
     .range([0, width - margin.left - margin.right])
   let y = d3.scaleLinear()
-    .domain([0, d3.max(yDomain)])
+    .domain([0, Math.round(d3.max(yDomain)) + 1])
     .range([height - margin.top - margin.bottom, 0])
 
 
   // create x and y axis function
-  let yAxis = (g) => g.call(d3.axisLeft(y))
-  let xAxis = (g) => g.call(d3.axisBottom(x))
+  let yTicksTotal = d3.max(yDomain) < 8 ? d3.max(yDomain) : null // avoid having intermittent values with 0.3, 0.6 etc
+  let yAxis = (g) => g.call(d3.axisLeft(y).ticks(yTicksTotal))
+  let xAxis = (g) => g.call(d3.axisBottom(x).ticks(xDomain.length))
 
 
   // fn to generate line
@@ -792,11 +836,11 @@ function createHBarchart({data, insertAt, svgId, width, maxWidth, height, maxHei
       .padding(0.2) // should be customizable
 
   let x = d3.scaleLinear()
-      .domain( [d3.max(xDomain), 0] ).nice()
+      .domain( [Math.round(d3.max(xDomain))+1, 0] ).nice()
       .range([width-margin.right-margin.left, 0])
 
-
-  let xAxis = (g) => g.call(d3.axisBottom(x))
+  let ticksTotal = d3.max(xDomain) < 7 ? d3.max(xDomain) : null
+  let xAxis = (g) => g.call(d3.axisBottom(x).ticks(ticksTotal))
   let yAxis = (g) => g.call(d3.axisLeft(y))
 
 
@@ -957,35 +1001,41 @@ function lineChart(opt) {
 /*** END LINE CHART GENERAL FUNCTIONS ***/
 
 
-function doPubCountTable(totals, DTUtotals, copubs) {
+function doPubCountTable(totals, DTUtotals, copubsTotal, copubs) {
     var years = {};
     $.each(totals, function(key, value) {
         var year = value.year.toString();
         if (year in years) {
             years[year]["org"] = value.number;
+            years[year]["copubs"] = 0;
         } else {
             years[year] = [];
             years[year]["org"] = value.number;
+            years[year]["copubs"] = 0;
         }
     });
     $.each(DTUtotals, function(key, value) {
         var year = value.year.toString();
         if (year in years) {
             years[year]["dtu"] = value.number;
+            years[year]["copubs"] = 0;
         } else {
             years[year] = [];
             years[year]["dtu"] = value.number;
+            years[year]["copubs"] = 0;
         }
     });
-    $.each(copubs, function(key, value) {
-        var year = value.year.toString();
-        if (year in years) {
-            years[year]["copubs"] = value.number;
-        } else {
-            years[year] = [];
-            years[year]["copubs"] = value.number;
-        }
-    });
+    if (copubsTotal > 0) {
+        $.each(copubs, function(key, value) {
+            var year = value.year.toString();
+            if (year in years) {
+                years[year]["copubs"] = value.number;
+            } else {
+                years[year] = [];
+                years[year]["copubs"] = value.number;
+            }
+        });
+    }
     var html = `
     <div id="pubCountTable">
     <hr/>
@@ -1025,7 +1075,10 @@ function doPubCountTable(totals, DTUtotals, copubs) {
     });
     html += "</table><sup>*</sup> <span class=\"footnote\">The number of publications for a year will not be complete until the middle of the following year due to latency of indexing publications in Web of Science.</span></div>";
 
-
+    if (copubsTotal == 0) {
+        $("#collab-summary-container").append(html);
+        return;
+    }
     // generate linechart for response.categories
     // can't be created directly in a memory container if we want to render its elements positioned correctly
     // so we need to load it in a hidden (temporary) element in DOM, and then replace it to targeted place
@@ -1033,15 +1086,16 @@ function doPubCountTable(totals, DTUtotals, copubs) {
     tempChartHolder.className += 'chartDrawnButHidden'
     tempChartHolder.setAttribute("style", "position: absolute; top: -1000; left:-1000;")
     document.body.append(tempChartHolder)
-
-    let myData = copubs.map(x => (
-                              {
-                                value: x.number,
-                                date: new Date(x.year.toString())
-                              }
-                            ))
-                      .sort( (a,b) => (a.date - b.date) )
-
+    
+    let myData = []
+    for(let year in years) {
+        myData.push({
+            value: years[year].copubs,
+            date: new Date(year.toString())
+  	})
+    }
+    myData = myData.sort( (a,b) => (a.date - b.date) )
+    
     let copubsChartOpt = {
       data: myData,
       maxHeight: 500,
@@ -1079,7 +1133,6 @@ function doPubCountTable(totals, DTUtotals, copubs) {
     tempChartHolder.remove()
 
     $("#collab-summary-container").append(html);
-
 }
 
 function loadPubInfo(url, callback) {
@@ -1153,11 +1206,11 @@ function setExportFormBase() {
 
 function setExportForm(svgStr1, svgStr2) {
 
-  let startYear = document.querySelector('#startYear').value
+  let startYear = range_from_val();
   let input1 = document.querySelector('.export-report_start-year')
   input1.value = startYear
 
-  let endYear = document.querySelector('#endYear').value
+  let endYear = range_to_val();
   let input2 = document.querySelector('.export-report_end-year')
   input2.value = endYear
 

@@ -1496,6 +1496,24 @@
   </servlet-mapping>
  
   <servlet>
+    <servlet-name>CoPubsByFunderController</servlet-name>
+    <servlet-class>dk.dtu.adm.rap.controller.CoPubsByFunder</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CoPubsByFunderController</servlet-name>
+    <url-pattern>/copubs-by-funder/*</url-pattern>
+  </servlet-mapping>
+ 
+  <servlet>
+    <servlet-name>CoPubsByDtuResearcherController</servlet-name>
+    <servlet-class>dk.dtu.adm.rap.controller.CoPubsByDtuResearcher</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CoPubsByDtuResearcherController</servlet-name>
+    <url-pattern>/copubs-by-dtu-researcher/*</url-pattern>
+  </servlet-mapping>
+ 
+  <servlet>
     <servlet-name>CoPubsByCategoryController</servlet-name>
     <servlet-class>dk.dtu.adm.rap.controller.CoPubsByCategory</servlet-class>
   </servlet>
@@ -1515,6 +1533,30 @@
   <servlet-mapping>
     <servlet-name>StaticTemplateController</servlet-name>
     <url-pattern>/copub</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>StaticTemplateController</servlet-name>
+    <url-pattern>/copub-choose</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>StaticTemplateController</servlet-name>
+    <url-pattern>/copub-country</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>StaticTemplateController</servlet-name>
+    <url-pattern>/copub-funder</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>StaticTemplateController</servlet-name>
+    <url-pattern>/copub-partner</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>StaticTemplateController</servlet-name>
+    <url-pattern>/copub-partner-by-funder</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>StaticTemplateController</servlet-name>
+    <url-pattern>/copub-subject</url-pattern>
   </servlet-mapping>
  
   <servlet>

@@ -10,9 +10,18 @@
     margin-bottom: 24px;
 }
 
+#rep2.pub-counts {
+    min-width: 20em;
+    margin-bottom: 4px;
+}
+
 .pub-counts td, .pub-counts th {
     border: 1px solid #ddd;
     padding: 5px;
+}
+
+.info-button {
+    background-color: transparent;
 }
 
 /*
@@ -78,6 +87,18 @@ td.dtu-dept-num {
     padding: 3px;
 }
 #map-org-list th {
+    border: 1px solid #666666;
+    padding: 3px;
+}
+#map-country-list {
+    border: 1px solid #666666;
+    padding: 3px;
+}
+#map-country-list td {
+    border: 1px solid #666666;
+    padding: 3px;
+}
+#map-country-list th {
     border: 1px solid #666666;
     padding: 3px;
 }
@@ -425,6 +446,14 @@ table#rep5 th.col3 {
 #sort-pub {
     cursor: pointer;
 }
+#sort-cty {
+    display: inline-block;
+    height: 100%;
+    cursor: pointer;
+}
+#sort-cty-pub {
+    cursor: pointer;
+}
 #copub-map-title {
     margin: 30px 0px 0px 16px;
     font-size 18px;
@@ -451,6 +480,35 @@ table#rep5 th.col3 {
     width: 200px;
     margin-left: 16px;
 }
+body.copub-choose {
+    background-color: #f3f3f0;
+}
+#DTUdepartment {
+    border-width: 1px;
+    border-color: #666666;
+    margin-right: 20px;
+}
+#copub-choose-list li {
+    font-size: 18px;
+}
+#copub-choose-heading {
+    text-align: center;
+}
+#copub-choose-title {
+    text-align: center;
+    color: #941010;
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 30px;
+}
+#copub-choose-desc {
+    text-align: center;
+    font-size: 18px;
+    margin-top: 20px;
+}
+#copub-choose-graphic {
+    text-align: center;
+}
 .copubs-by-dept h2 {
     margin-left: 10px;
 }
@@ -473,6 +531,7 @@ table#rep5 th.col3 {
 html, body {
     min-height: 100vh;
     margin: 0;
+    background-color: white;
 }
 div#main-content {
     min-height: 100vh;

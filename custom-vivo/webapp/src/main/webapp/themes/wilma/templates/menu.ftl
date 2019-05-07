@@ -7,7 +7,7 @@
             <a href="${urls.base}" title="Home">Home</a>
         </td>
         <td class="dtu-menu" width="15%">
-            <a href="${urls.base}/copub" title="Collaboration">Collaboration</a>
+            <a href="${urls.base}/copub-choose" title="Collaboration">Collaboration</a>
         </td>
         <td class="dtu-menu" width="15%">
             <a href="${urls.base}/search?querytext=&classgroup=http%3A%2F%2Fvivoweb.org%2Fontology%23vitroClassGrouppublications" title="Publications">Publications</a>

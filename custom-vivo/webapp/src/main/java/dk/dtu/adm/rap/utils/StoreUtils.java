@@ -32,7 +32,13 @@ public class StoreUtils {
         this.namespace = namespace;
     }
 
-
+    /**
+     * Return the namespace set via setRdfService(), or null
+     * @return namespace or null
+     */
+    public String getNamespace() {
+        return this.namespace;
+    }
 
     public ArrayList<HashMap> getFromModel(String selectQuery, Model tmpModel) {
         ArrayList<HashMap> outRows = new ArrayList<HashMap>();
