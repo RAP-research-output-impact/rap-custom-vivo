@@ -52,13 +52,22 @@ PREFIX vivo:     <http://vivoweb.org/ontology/core#>
 PREFIX wos:      <http://webofscience.com/ontology/wos#> 
 PREFIX foaf:     <http://purl.org/ontology/bibo/> 
 
-SELECT ?p ?title ?journal WHERE {
+SELECT ?p ?title ?journal ?authorList ?date ?wosId ?referenceCount ?citationCount WHERE {
     ?individualUri rdfs:label ?title 
     BIND(?individualUri as ?p)
     OPTIONAL {
       ?individualUri vivo:hasPublicationVenue ?venue .
       ?venue rdfs:label ?journal .
     }
+    OPTIONAL {
+      ?individualUri vivo:dateTimeValue ?dtv .
+      ?dtv vivo:dateTime ?dateTime .
+      BIND(SUBSTR(STR(?dateTime), 1, 10) AS ?date)
+    }
+    OPTIONAL { ?individualUri wos:wosId ?wosId }
+    OPTIONAL { ?individualUri wos:referenceCount ?referenceCount }
+    OPTIONAL { ?individualUri wos:citationCount ?citationCount }
+
 }
 
 """ .
