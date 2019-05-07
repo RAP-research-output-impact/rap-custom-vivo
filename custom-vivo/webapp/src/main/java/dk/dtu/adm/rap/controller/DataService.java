@@ -106,6 +106,8 @@ public class DataService {
                 log.debug("done - getSummaryCopubCount");
                 jo.put("top_categories", getTopCategories(mysql, orgmap, storeUtils.getNamespace(), vid, startYearInt, endYearInt, storeUtils));
                 jo.put("by_department", getCoPubsByDepartment(uri, startYearInt, endYearInt, storeUtils));
+                jo.put("funders", getFunders(uri, startYearInt, endYearInt, storeUtils));
+                jo.put("dtu_researchers", getDtuResearchers(uri, startYearInt, endYearInt, storeUtils));
                 log.debug("done - getCoPubsByDepartment");
             } catch (JSONException e) {
                 log.error(e, e);
@@ -1138,7 +1140,69 @@ public class DataService {
         log.debug("Related categories query:\n" + query);
         return storeUtils.getFromStoreJSON(query);
     }
+    
+    private ArrayList getFunders(String orgUri, Integer startYear, 
+            Integer endYear, StoreUtils storeUtils) {
+        log.debug("getFunders - " + orgUri);
+        String rq = "" +
+                "SELECT DISTINCT ?funder (MIN(?funderLabel) AS ?name) (COUNT(DISTINCT ?pub) as ?number)\r\n" + 
+                "WHERE {\r\n" + 
+                "    ?org vivo:relatedBy ?address .\r\n" + 
+                "    ?address a wos:Address .\r\n" + 
+                "    ?pub vivo:relatedBy ?address .\r\n" + 
+                "    ?pub a wos:Publication ;\r\n" + 
+                "    vivo:relatedBy ?dtuAddress .\r\n" + 
+                "    ?dtuAddress a wos:Address ;\r\n" + 
+                "    vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> .\r\n" + 
+                "    ?grant vivo:relates ?pub .\r\n" + 
+                "    ?grant a vivo:Grant . \r\n" + 
+                "    ?grant vivo:relates ?funder . \r\n" + 
+                "    ?funder a wos:Funder .\r\n" + 
+                "    ?funder rdfs:label ?funderLabel . \r\n" +
+                getYearDtv(startYear, endYear) +
+                getDtvFilter(startYear, endYear) +
+                "}\r\n" + 
+                "GROUP BY ?funder \r\n" + 
+                "ORDER BY DESC(?number)\r\n" + 
+                "LIMIT 20";
+        ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
+        q2.setIri("org", orgUri);
+        String query = q2.toString();
+        log.debug("Funders query:\n" + query);
+        return storeUtils.getFromStoreJSON(query);
+    }
 
+    private ArrayList getDtuResearchers(String orgUri, Integer startYear, 
+            Integer endYear, StoreUtils storeUtils) {
+        log.debug("getDtuResearchers - " + orgUri);
+        String rq = "" +
+                "SELECT DISTINCT ?dtuResearcher (MIN(?fullName) AS ?name) (COUNT(DISTINCT ?pub) as ?number)\r\n" + 
+                "WHERE {\r\n" + 
+                "    ?org vivo:relatedBy ?address .\r\n" + 
+                "    ?address a wos:Address .\r\n" + 
+                "    ?pub vivo:relatedBy ?address .\r\n" + 
+                "    ?pub a wos:Publication ;\r\n" + 
+                "    vivo:relatedBy ?dtuAddress .\r\n" + 
+                "    ?dtuAddress a wos:Address ;\r\n" + 
+                "    vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> .\r\n" + 
+                "    ?dtuAddress vivo:relatedBy ?authorship .\r\n" + 
+                "    ?authorship a vivo:Authorship .\r\n" + 
+                "    ?authorship wos:fullName ?fullName .\r\n" + 
+                "    ?authorship vivo:relates ?dtuResearcher .  \r\n" + 
+                "    ?dtuResearcher a foaf:Person ." +
+                getYearDtv(startYear, endYear) +
+                getDtvFilter(startYear, endYear) +
+                "}\r\n" + 
+                "GROUP BY ?dtuResearcher \r\n" + 
+                "ORDER BY DESC(?number)\r\n" + 
+                "LIMIT 20";
+        ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
+        q2.setIri("org", orgUri);
+        String query = q2.toString();
+        log.debug("DTU researchers query:\n" + query);
+        return storeUtils.getFromStoreJSON(query);
+    }
+    
     private ArrayList getWorldwidePubs(String dept, String yearStart, 
             String yearEnd, StoreUtils storeUtils) {
         log.debug("Querying for country codes for copublication");

@@ -1,0 +1,83 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix : <http://vitro.mannlib.cornell.edu/ns/vitro/ApplicationConfiguration#> .
+@prefix display: <http://vitro.mannlib.cornell.edu/ontologies/display/1.1#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix datagetter: <java:edu/cornell/mannlib/vitro/webapp/utils/datagetter/> .
+@prefix vitro: <http://vitro.mannlib.cornell.edu/ns/vitro/0.7#> .
+@prefix bibo: <http://purl.org/ontology/bibo/> .
+@prefix role:  <http://vitro.mannlib.cornell.edu/ns/vitro/role#> .
+@prefix local: <http://vitro.mannlib.cornell.edu/ns/vitro/siteConfig/> .
+@prefix vivo: <http://vivoweb.org/ontology/core#> . 
+@prefix obo: <http://purl.obolibrary.org/obo/> .
+@prefix wos: <http://webofscience.com/ontology/wos#> .
+@prefix foaf: <http://purl.org/ontology/bibo/> .
+
+
+@base <http://vitro.mannlib.cornell.edu/ns/vitro/ApplicationConfiguration> .
+
+bibo:Book display:hasCustomView :publicationSearchView .
+wos:Article display:hasCustomView :publicationSearchView .
+wos:BiographicalItem display:hasCustomView :publicationSearchView .
+wos:BookChapter display:hasCustomView :publicationSearchView .
+wos:BookReview display:hasCustomView :publicationSearchView .
+wos:Conference display:hasCustomView :publicationSearchView .
+wos:Correction display:hasCustomView :publicationSearchView .
+wos:EditorialMaterial display:hasCustomView :publicationSearchView .
+wos:Letter display:hasCustomView :publicationSearchView .
+wos:MeetingAbstract display:hasCustomView :publicationSearchView .
+wos:NewsItem display:hasCustomView :publicationSearchView .
+wos:ProceedingsPaper display:hasCustomView :publicationSearchView .
+wos:Publication display:hasCustomView :publicationSearchView .
+wos:Reprint display:hasCustomView :publicationSearchView .
+wos:Review display:hasCustomView :publicationSearchView .
+wos:SoftwareItem display:hasCustomView :publicationSearchView .
+
+:publicationSearchView
+    a display:customViewForIndividual ;
+    display:appliesToContext "SEARCH" ;
+    display:hasTemplate      "view-search-publication.ftl" ;
+    display:hasDataGetter    :publicationSearchDG .
+
+:publicationSearchDG a datagetter:SparqlQueryDataGetter ;
+    display:saveToVar   "publication" ;
+    display:query       """
+PREFIX rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:     <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:      <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:      <http://www.w3.org/2002/07/owl#>
+PREFIX obo:      <http://purl.obolibrary.org/obo/>
+PREFIX vivo:     <http://vivoweb.org/ontology/core#>
+PREFIX wos:      <http://webofscience.com/ontology/wos#> 
+PREFIX foaf:     <http://purl.org/ontology/bibo/> 
+
+SELECT ?p ?title ?journal ?authorList ?date ?wosId ?referenceCount ?citationCount WHERE {
+    ?individualUri rdfs:label ?title 
+    BIND(?individualUri as ?p)
+    OPTIONAL {
+      ?individualUri vivo:hasPublicationVenue ?venue .
+      ?venue rdfs:label ?journal .
+    }
+    OPTIONAL {
+      ?individualUri vivo:dateTimeValue ?dtv .
+      ?dtv vivo:dateTime ?dateTime .
+      BIND(SUBSTR(STR(?dateTime), 1, 10) AS ?date)
+    }
+    OPTIONAL { ?individualUri wos:wosId ?wosId }
+    OPTIONAL { ?individualUri wos:referenceCount ?referenceCount }
+    OPTIONAL { ?individualUri wos:citationCount ?citationCount }
+    {
+        SELECT (group_concat(?authorName; separator = '; ') as ?authorList) WHERE  {                    
+           SELECT ?authorName WHERE {
+             ?individualUri vivo:relatedBy ?authorship .                                           
+             ?authorship a vivo:Authorship .
+             ?authorship wos:standardName ?authorName .
+             ?authorship vivo:rank ?rank .            
+             FILTER (xsd:int(?rank) < 6)
+           } ORDER BY ?rank 
+        }  
+    }
+}
+
+""" .
