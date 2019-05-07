@@ -67,7 +67,17 @@ SELECT ?p ?title ?journal ?authorList ?date ?wosId ?referenceCount ?citationCoun
     OPTIONAL { ?individualUri wos:wosId ?wosId }
     OPTIONAL { ?individualUri wos:referenceCount ?referenceCount }
     OPTIONAL { ?individualUri wos:citationCount ?citationCount }
-
+    {
+        SELECT (group_concat(?authorName; separator = '; ') as ?authorList) WHERE  {                    
+           SELECT ?authorName WHERE {
+             ?individualUri vivo:relatedBy ?authorship .                                           
+             ?authorship a vivo:Authorship .
+             ?authorship wos:standardName ?authorName .
+             ?authorship vivo:rank ?rank .            
+             FILTER (xsd:int(?rank) < 6)
+           } ORDER BY ?rank 
+        }  
+    }
 }
 
 """ .

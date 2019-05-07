@@ -10,6 +10,24 @@
       </a>&nbsp;
     </#if>
     </h6>
+    <#if publication.authorList??>
+       <em>
+       <#assign count = 0>
+       <#assign authors = publication.authorList?split(";")>
+       <#assign authorLength = authors?size>
+       <#list authors as author>
+           <#assign count = count + 1>
+	   <#if (count == 4) && (authorLength gt 4) >
+              [et al.]
+	   <#elseif count == 1>
+               ${author}
+	   <#elseif count lt 5>
+	       , ${author}
+	   </#if>
+       </#list>
+       </em>
+       <br/>
+    </#if>
     ${publication.journal!}
     <span style="margin-left: 3em;">${publication.date!}</style>
     <br/>
