@@ -2,12 +2,6 @@
 <#include "individual-setup.ftl">
 <#import "lib-microformats.ftl" as mf>
 
-<#assign doip = "http://purl.org/ontology/bibo/doi">
-<#assign pmidp = "http://purl.org/ontology/bibo/pmid">
-<#assign pmcidp = "http://vivoweb.org/ontology/core#pmcid">
-<#assign wosp = "http://webofscience.com/ontology/wos#wosId">
-<#assign refp = "http://webofscience.com/ontology/wos#referenceCount">
-<#assign citep = "http://webofscience.com/ontology/wos#citationCount">
 <#global pg=propertyGroups>
 
 <#-- helper to get data properties -->
@@ -20,7 +14,27 @@
     </#if>
 </#function>
 
-
+<#assign bibo = "http://purl.org/ontology/bibo/">
+<#assign vivo = "http://vivoweb.org/ontology/core#">
+<#assign wos = "http://webofscience.com/ontology/wos#">
+<#assign abstractp = bibo + "abstract">
+<#assign abstract = gdp(abstractp)!>
+<#assign volumep = bibo + "volume">
+<#assign volume = gdp(volumep)!>
+<#assign issuep = bibo + "issue">
+<#assign issue = gdp(issuep)!>
+<#assign pageStartp = bibo + "pageStart">
+<#assign pageStart = gdp(pageStartp)!>
+<#assign pageEndp = bibo + "pageEnd">
+<#assign pageEnd = gdp(pageEndp)!>
+<#assign issnp = bibo + "issn">
+<#assign issn = gdp(issnp)!>
+<#assign doip = "http://purl.org/ontology/bibo/doi">
+<#assign pmidp = "http://purl.org/ontology/bibo/pmid">
+<#assign pmcidp = "http://vivoweb.org/ontology/core#pmcid">
+<#assign wosp = "http://webofscience.com/ontology/wos#wosId">
+<#assign refp = "http://webofscience.com/ontology/wos#referenceCount">
+<#assign citep = "http://webofscience.com/ontology/wos#citationCount">
 
 <#--Number of labels present-->
 <#if !labelCount??>
@@ -58,9 +72,8 @@
                 <p><a href="${relatedSubject.url}" title="${i18n().return_to(relatedSubject.name)}">&larr; ${i18n().return_to(relatedSubject.name)}</a></p>
             <#else>
                 <h1 itemprop="name">
-		    Functional Independent Scaling Relation for ORR/OER Catalysts
                     <#-- Label -->
-                    <#-- @p.label individual editable labelCount localesCount languageCount/ -->
+                    <@p.label individual editable labelCount localesCount languageCount/>
                 </h1>
             </#if>
         </header>
@@ -110,23 +123,23 @@
 <ul class="pub_meta-list">
   <li>
     <span class="pub_meta">Volume:</span>
-    <span class="pub_meta-value">120</span>
+    <span class="pub_meta-value">${volume}</span>
   </li>
   <li>
     <span class="pub_meta">Issue:</span>
-    <span class="pub_meta-value">43</span>
+    <span class="pub_meta-value">${issue}</span>
   </li>
   <li>
     <span class="pub_meta">Pages:</span>
-    <span class="pub_meta-value">24910-24916</span>
+    <span class="pub_meta-value">${pageStart}-${pageEnd}</span>
   </li>
   <li>
     <span class="pub_meta">ISSN:</span>
-    <span class="pub_meta-value">1932-7447</span>
+    <span class="pub_meta-value">${issn}</span>
   </li>
   <li>
     <span class="pub_meta">DOI:</span>
-    <span class="pub_meta-value"><a href="">10.1021/acs.jpcc.6b09141</a></span>
+    <span class="pub_meta-value"><a href="http://doi.org/${doi}" title="Full Text via DOI" target="external">${doi}</a></span>
   </li>
   <li>
     <span class="pub_meta">Published:</span>
@@ -134,22 +147,22 @@
   </li>
   <li>
     <span class="pub_meta">Web of Science:</span>
-    <span class="pub_meta-value">WOS:00038719800043</span>
+    <span class="pub_meta-value"><a href="http://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVersion=2&SrcApp=VIVO&SrcAuth=TRINTCEL&KeyUT=${wosId}&DestLinkType=FullRecord&DestApp=WOS_CPL" title="View in Web of Science" target="external">${wosId}</a></span>
   </li>
   <li>
     <span class="pub_meta">References:</span>
-    <a href="" class="pub_meta-value">48</a>
+    <a href="" class="pub_meta-value"><a href="http://apps.webofknowledge.com/InterService.do?product=WOS&toPID=WOS&action=AllCitationService&isLinks=yes&highlighted_tab=WOS&last_prod=WOS&fromPID=WOS&srcDesc=RET2WOS&srcAlt=Back+to+Web+of+Science&UT=${wosId}&search_mode=CitedRefList&SID=D6oIIYbSLV2HqN3nOCS&parentProduct=WOS&recid=${wosId}&fromRightPanel=true&cacheurlFromRightClick=no" title="View references in Web of Science" target="external">${refs}</a></a>
   </li>
   <li>
     <span class="pub_meta">Citations:</span>
-    <a href="" class="pub_meta-value">7</a>
+    <a href="" class="pub_meta-value"><a href="http://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVersion=2&SrcApp=VIVO&SrcAuth=TRINTCEL&KeyUT=${wosId}&DestLinkType=CitingArticles&DestApp=WOS_CPL" title="View citations in Web of Science" target="external">${cites}</a></a>
   </li>
 </ul>
 
 <!-- abstract -->
 <div class="pub_abstract">
   <h3>Abstract</h3>
-  <p>A widely used adsorption energy scaling relation between OH* and OOH* intermediates in the oxygen reduction reaction (ORR) and oxygen evolution reaction (OER) has previously been determined using density functional theory and shown to dictate a minimum thermodynamic overpotential for both reactions.  Here, we show that the oxygen-oxygen bond in the OOH* intermediate is, however, not well described with the previosuly used class of exchange-correlation functionals. By quantifying and correctiont the systematic error, an improved description of gaseous peroxide species versus experimental data and a reduction in calculational uncertainty is obtained. For adsorbates, we find that the systematic error largely cancels the vdW interaction missing in the original determination of the scaling relation. An improved scaling relation, which is fully independent of the applied exchange-correlation functional, is obtained and found to differ by 0.1 eV from the original. This largely confirms that, although obtained with a method suffering from systematic errors, the previously obtained scaling relation is applicable for predictions of catalytic activity.</p>
+  <p>${abstract}</p>
 </div>
 
 <div class="pub_keywords">
