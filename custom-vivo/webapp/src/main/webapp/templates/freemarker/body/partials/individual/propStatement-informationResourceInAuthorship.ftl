@@ -20,7 +20,7 @@
     <#elseif statement.authorship??>
         	<#-- <a href="${profileUrl(statement.uri("authorship"))}" title="${i18n().author_name}">${statement.name}</a> -->
             ${statement.standardName} (${statement.name})
-            <#if statement.addressNumber??>[ <sup>${statement.addressNumber} ]</sup></#if>
+            <#if statement.addressNumber??><sup>[ ${statement.addressNumber} ]</sup></#if>
             <#-- ${statement.name}</a><#if statement.address??>, ${statement.address}</#if> -->
     <#else>
         <#-- This shouldn't happen, but we must provide for it -->

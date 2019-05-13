@@ -164,15 +164,16 @@ name will be used as the label. -->
     <#else>
         <#local rangeUri = "" /> 
     </#if>
-    <#if rangeUri?contains("Authorship")>
-        <#-- RAP modification: don't use the enclosing li for authors; delegate to list view template -->
+    <#if rangeUri?contains("Authorship") || property.localName?contains("dateTimeValue")>
+        <#-- RAP modification: don't use the enclosing li for authors or dates; delegate to list view template -->
         <#nested>       
         <@editingLinks "${property.localName}" "${property.name}" statement editable rangeUri/>
     <#else>
-      <li role="listitem">    
-        <#nested>       
-        <@editingLinks "${property.localName}" "${property.name}" statement editable rangeUri/>
-      </li>
+
+     <@compress single_line=true>
+      <li role="listitem"><#nested><@editingLinks "${property.localName}" "${property.name}" statement editable rangeUri/></li>
+     </@compress>
+
     </#if>
 </#macro>
 

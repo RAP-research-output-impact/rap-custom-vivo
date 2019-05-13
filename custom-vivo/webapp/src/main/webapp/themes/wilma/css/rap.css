@@ -567,9 +567,27 @@ svg, svg g, svg text {
 
 
 /*** page individual publication (individual--wos-publication.ftl) ***/
+
+.pub_journal {
+  margin-top: 3ex;
+}
+
 .box-individual-publication {
   max-width: var(--max-w);
   margin: auto;
+}
+.box-individual-publication h1 {
+  margin-bottom: 1ex; 
+  line-height: normal;
+}
+.box-individual-publication h3 {
+  font-size: 100%;
+  font-weight: bold;
+  margin-bottom:3px;
+}
+.box-individual-publication h4 {
+  font-size: 100%;
+  font-weight: bold;
 }
 
 .pub_author-name {
@@ -585,7 +603,17 @@ svg, svg g, svg text {
     margin-right: 5px;
 }
 .pub_keywords .one-line-list {
-  text-transform: lowercase;
+  text-transform: uppercase;
+}
+.pub_keywords li:after {
+  content: ";"
+}
+.pub_categories li:after {
+  content: ";"
+}
+.pub_categories a {
+  color: inherit;
+  text-decoration: none;
 }
 .one-line-list li {
   display: inline-block;

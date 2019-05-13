@@ -88,7 +88,6 @@
 
 <#assign nameForOtherGroup = "${i18n().other}">
 
-
 <#assign doi=gdp(doip)!>
 <#assign pmid=gdp(pmidp)!>
 <#assign wosId=gdp(wosp)!>
@@ -104,28 +103,39 @@
 <!-- end .authors-box -->
 
 <!-- journal -->
+<#assign publishedIn = pg.getProperty(vivo + "hasPublicationVenue")!>
+<#if publishedIn?? && publishedIn.statements?? && publishedIn.statements[0]??>
 <div class="pub_journal">
-
-  <h2>Journal of Physical Chemistry</h2>
+  <span class="pub_meta">${publishedIn.statements[0].label?upper_case}</span>
+</div>
+</#if>
 
 <!-- publication attributes -->
 <ul class="pub_meta-list">
+  <#if volume?has_content>
   <li>
     <span class="pub_meta">Volume:</span>
     <span class="pub_meta-value">${volume}</span>
   </li>
+  </#if>
+  <#if issue?has_content>
   <li>
     <span class="pub_meta">Issue:</span>
     <span class="pub_meta-value">${issue}</span>
   </li>
+  </#if>
+  <#if pageStart?has_content && pageEnd?has_content>
   <li>
     <span class="pub_meta">Pages:</span>
     <span class="pub_meta-value">${pageStart}-${pageEnd}</span>
   </li>
+  </#if>
+  <#if publishedIn?? && publishedIn.statements?? && publishedIn.statements[0]?? && publishedIn.statements[0].issn??>
   <li>
     <span class="pub_meta">ISSN:</span>
-    <span class="pub_meta-value">${issn}</span>
+    <span class="pub_meta-value">${publishedIn.statements[0].issn}</span>
   </li>
+  </#if>
   <li>
     <span class="pub_meta">DOI:</span>
     <span class="pub_meta-value"><a href="http://doi.org/${doi}" title="Full Text via DOI" target="external">${doi}</a></span>
@@ -176,7 +186,7 @@
 <#-- Research areas do not appear to be present in the RDF data 2019-05-13 -->
  <#if pg.getProperty(wos + "hasSubjectArea")??>
   <div class="pub_keywords-enumeration clearfix">
-    <h4>Research Areas</h4>
+    <h4>Research Areas:</h4>
     <ul class="one-line-list">
       <@p.objectProperty pg.getProperty(wos + "hasSubjectArea") false />
     </ul>
@@ -185,7 +195,7 @@
 
  <#if pg.getProperty(wos + "hasCategory")??>
   <div class="pub_keywords-enumeration clearfix">
-    <h4>Web of Science Categories</h4>
+    <h4>Web of Science Categories:</h4>
     <ul class="one-line-list">
       <@p.objectProperty pg.getProperty(wos + "hasCategory") false />
     </ul>
@@ -221,7 +231,7 @@
     </li>
     -->
     <li>
-      <span class="pub_meta">Document Type</span>
+      <span class="pub_meta">Document Type:</span>
       <span class="pub_meta-value"><@p.mostSpecificTypes individual /></span>
     </li>
     <#-- Language not yet available? 2019-05-13
