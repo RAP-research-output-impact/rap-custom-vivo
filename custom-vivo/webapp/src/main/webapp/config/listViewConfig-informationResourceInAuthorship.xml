@@ -11,18 +11,22 @@
         PREFIX vitro: &lt;http://vitro.mannlib.cornell.edu/ns/vitro/0.7#&gt;
         PREFIX vcard:  &lt;http://www.w3.org/2006/vcard/ns#&gt;
         PREFIX fn:   &lt;http://www.w3.org/2005/xpath-functions#&gt;
+        PREFIX wos: &lt;http://webofscience.com/ontology/wos#&gt;
         PREFIX tmp: &lt;http://localhost/display#&gt;
 
         SELECT DISTINCT
             ?authorship
             ?name
+	    ?standardName 
             ?addressNumber
             ?person
         WHERE {
             ?subject ?property ?authorship .
             ?authorship rdfs:label ?name .
-             OPTIONAL { ?authorship core:rank ?rank }
+	    OPTIONAL { ?authorship wos:standardName ?standardName }
+            OPTIONAL { ?authorship core:rank ?rank }
             OPTIONAL { ?authorship tmp:addr ?addressNumber }
+	    OPTIONAL { ?authorship tmp:relatesPerson ?person }
         <critical-data-required>
             FILTER ( bound(?authorship) )
         </critical-data-required>
@@ -42,9 +46,11 @@
             ?subject ?property ?authorship .
 
             ?authorship a core:Authorship .
+	    ?authorship wos:standardName ?standardName .
             ?authorship core:rank ?rank .
             ?authorship rdfs:label ?name .
             ?authorship tmp:addr ?addrs .
+	    ?authorship tmp:relatesPerson ?person .
 
         } WHERE {
             {
@@ -55,6 +61,15 @@
                 ?authorship a core:Authorship .
                 ?authorship core:rank ?rank .
                 ?authorship rdfs:label ?name .
+            } UNION {
+                ?subject ?property ?authorship .
+                ?authorship a core:Authorship .
+                ?authorship wos:standardName ?standardName .
+            } UNION {
+                ?subject ?property ?authorship .
+                ?authorship a core:Authorship .
+	        ?authorship core:relates ?person .
+		?person a foaf:Person .
             } UNION {
                 ?subject ?property ?authorship .
                 ?authorship a core:Authorship .

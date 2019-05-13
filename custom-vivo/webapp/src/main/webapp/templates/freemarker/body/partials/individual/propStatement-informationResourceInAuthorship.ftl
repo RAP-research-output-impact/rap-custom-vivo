@@ -14,15 +14,17 @@
 <#-- Use a macro to keep variable assignments local; otherwise the values carry over to the
      next statement --->
 <#macro showAuthorship statement>
+    <div class="pub_author-name">
     <#if statement.person??>
-            <a href="${profileUrl(statement.uri("person"))}">${statement.name}</a><#if statement.addressNumber??><sup>${statement.addressNumber}</sup></#if>
+            <a href="${profileUrl(statement.uri("person"))}">${statement.standardName}</a> (${statement.name})<#if statement.addressNumber??><sup>[ ${statement.addressNumber} ]</sup></#if>
     <#elseif statement.authorship??>
         	<#-- <a href="${profileUrl(statement.uri("authorship"))}" title="${i18n().author_name}">${statement.name}</a> -->
-            ${statement.name}
-            <#if statement.addressNumber??><sup>${statement.addressNumber}</sup></#if>
+            ${statement.standardName} (${statement.name})
+            <#if statement.addressNumber??>[ <sup>${statement.addressNumber} ]</sup></#if>
             <#-- ${statement.name}</a><#if statement.address??>, ${statement.address}</#if> -->
     <#else>
         <#-- This shouldn't happen, but we must provide for it -->
         <a href="${profileUrl(statement.uri("authorship"))}" title="${i18n().missing_author}">${i18n().missing_author}</a>
     </#if>
+    </div>
 </#macro>

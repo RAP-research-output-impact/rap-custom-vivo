@@ -1,6 +1,7 @@
 <#-- Publication pages -->
 <#include "individual-setup.ftl">
 <#import "lib-microformats.ftl" as mf>
+<#import "lib-properties.ftl" as p>
 
 <#global pg=propertyGroups>
 
@@ -96,21 +97,9 @@
 
 <!-- authors -->
 <div class="pub_authors-box">
-  <div class="pub_author-name">
-    <a href="">Christensen, R</a> (Christensen, Rune)<sup>[ 1 ]</sup>
-  </div>
-  <div class="pub_author-name">
-    <a href="">Hansen, HA</a> (Hansen, Heine A.)<sup>[ 1 ]</sup>
-  </div>
-  <div class="pub_author-name">
-    <a href="">Dickens, CF</a> (Dickens, Colin F.)<sup>[ 2, 3 ]</sup>
-  </div>
-  <div class="pub_author-name">
-    <a href="">Norskov, JK</a> (Norskov, Jens K.)<sup>[ 2, 3 ]</sup>
-  </div>
-  <div class="pub_author-name">
-    <a href="">Vegge, T</a>(Vegge, Tejs)<sup>[ 1 ]</sup>
-  </div>
+  <#if pg.getProperty(vivo + "relatedBy", vivo + "Authorship")??>
+    <@p.objectProperty pg.getProperty(vivo + "relatedBy", vivo + "Authorship") false />
+  </#if>
 </div>
 <!-- end .authors-box -->
 
@@ -141,10 +130,12 @@
     <span class="pub_meta">DOI:</span>
     <span class="pub_meta-value"><a href="http://doi.org/${doi}" title="Full Text via DOI" target="external">${doi}</a></span>
   </li>
+  <#if pg.getProperty(vivo + "dateTimeValue")??>
   <li>
     <span class="pub_meta">Published:</span>
-    <span class="pub_meta-value">NOV 3 2016</span>
+    <span class="pub_meta-value"><@p.objectProperty pg.getProperty(vivo + "dateTimeValue") false/></span>
   </li>
+  </#if>
   <li>
     <span class="pub_meta">Web of Science:</span>
     <span class="pub_meta-value"><a href="http://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVersion=2&SrcApp=VIVO&SrcAuth=TRINTCEL&KeyUT=${wosId}&DestLinkType=FullRecord&DestApp=WOS_CPL" title="View in Web of Science" target="external">${wosId}</a></span>
@@ -169,80 +160,76 @@
   <!-- keywords -->
   <h3>Keywords</h3>
   <ul class="one-line-list">
-    <li>OXYGEN REDUCTION REACTION;</li>
-    <li>AUGMENTED WAVE METHOD;</li>
-    <li>EVOLUTION REACTION;</li>
-    <li>OXIDE SURFACES;</li>
-    <li>METAL SURFACES;</li>
-    <li>ELECTROCATALYSTS;</li>
-    <li>DENSITY;</li>
-    <li>APPROXIMATION;</li>
-    <li>OPPORTUNITIES;</li>
-    <li>UNIVERSALITY;</li>
+    <#if pg.getProperty(wos + "authorKeyword")??>
+      <@p.dataPropertyListing pg.getProperty(wos + "authorKeyword") false />
+    </#if>
+    <#if pg.getProperty(wos + "keywordPlus")??>
+      <@p.dataPropertyListing pg.getProperty(wos + "keywordPlus") false />
+    </#if>
   </ul>
 </div>
 
 <!-- categories/classification -->
 <div class="pub_categories">
-  <h3>Categories</h3>
+  <h3>Categories/Classification</h3>
 
+<#-- Research areas do not appear to be present in the RDF data 2019-05-13 -->
+ <#if pg.getProperty(wos + "hasSubjectArea")??>
   <div class="pub_keywords-enumeration clearfix">
     <h4>Research Areas</h4>
     <ul class="one-line-list">
-      <li>Chemistry;</li>
-      <li>Science &amp; Technology - Other Topics;</li>
-      <li>Materials Science;</li>
+      <@p.objectProperty pg.getProperty(wos + "hasSubjectArea") false />
     </ul>
   </div>
+ </#if>
 
+ <#if pg.getProperty(wos + "hasCategory")??>
   <div class="pub_keywords-enumeration clearfix">
     <h4>Web of Science Categories</h4>
     <ul class="one-line-list">
-      <li>Chemistry, Physical;</li>
-      <li>Nanoscience &amp; Nanotechnology;</li>
-      <li>Materials Science, Multidisciplinary;</li>
+      <@p.objectProperty pg.getProperty(wos + "hasCategory") false />
     </ul>
   </div>
+ </#if>
 </div>
 <!-- end .pub_categories -->
 
 <!-- Author addresses -->
+<#if pg.getProperty(vivo + "relatedBy", wos + "Address")??>
 <div class="pub_author-addresses">
   <h3>Author Addresses</h3>
   <ul>
-    <li>[ 1 ] Tech Univ Denmark, Dept. Energy Convers &amp; Storage. Fyskivej Bld. 309, DK-2800 Lyngby, Denmark</li>
-    <li>[ 2 ] SLAC Natl Accelerator Lab, SUNCAT Ctr Interface Sci &amp; Catalysis, 2575 Sand Hill Rd, Menlo Pk, CA 94025 USA</li>
-    <li>[ 3 ] Stanford Univ. Dept Chem Engn, Stanford, CA 94305 USA</li>
+    <@p.objectProperty pg.getProperty(vivo + "relatedBy", wos + "Address") false />
   </ul>
 </div>
+</#if>
 
 <!-- Other details -->
 <div class="pub_other-details">
 
   <ul class="pub_meta-list">
-    <li>
-      <span class="pub_meta">Funding Agency</span>
-      <span>VILLUM FONDEN (V-SUSTAIN)</span>
-    </li>
-    <li>
-      <span class="pub_meta">Grant Number</span>
-      <span><9455/span>
-    </li>
+    <#if pg.getProperty(vivo + "relatedBy", wos + "Grant")??>
+      <@p.objectProperty pg.getProperty(vivo + "relatedBy", wos + "Grant") false />
+    </#if>
   </ul>
 
   <ul>
+    <#-- Not included in RDF 2019-05-13 ? 
     <li>
       <span class="pub_meta">Publisher</span>
       <span class="pub_meta-value">AMER CHEMICAL SOC, 1155 16TH ST NW. WASHINGTON, DC 20036 USA</span>
     </li>
+    -->
     <li>
       <span class="pub_meta">Document Type</span>
-      <span class="pub_meta-value">Article</span>
+      <span class="pub_meta-value"><@p.mostSpecificTypes individual /></span>
     </li>
+    <#-- Language not yet available? 2019-05-13
     <li>
       <span class="pub_meta">Langauge</span>
       <span class="pub_meta-value">English</span>
     </li>
+    -->
   </ul>
 
 </div>
