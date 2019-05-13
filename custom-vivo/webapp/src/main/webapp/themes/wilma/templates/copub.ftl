@@ -80,8 +80,8 @@
     const urls_base = "${urls.base}";
 
     $(document).ready(function() {
-        dept_bc_setup("bc-dept-container", fetchMapData);
-        range_bc_setup("bc-range-container", fetchMapData);
+        bc_dept_setup("bc-dept-container", fetchMapData);
+        bc_range_setup("bc-range-container", fetchMapData);
         $("#copub-map-info").hide();
         $("#bc-world-map-link").hide();
         $("#bc-world-map-link-anchor").click(function() {
@@ -91,8 +91,8 @@
             $("#copub-map-heading").show();
             $('#copub-map').show();
             $('#copub-map-info').hide();
-            dept_bc_edit();
-            range_bc_edit();
+            bc_dept_edit();
+            bc_range_edit();
         });
         $("#copub-filter").keyup(function() {
             $(".map-org-org").each(function() {
@@ -169,8 +169,8 @@
 
             $("#bc-world-map-link").show();
             $("#bc-world-map").hide();
-            dept_bc_view();
-            range_bc_view();
+            bc_dept_view();
+            bc_range_view();
 
             if (countryKey[bubble.centered]) {
                 $("#bc-country").html(countryKey[bubble.centered] + " &gt; ");

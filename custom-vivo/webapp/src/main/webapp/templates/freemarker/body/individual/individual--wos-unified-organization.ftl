@@ -31,7 +31,7 @@ $("h1.fn").html("DTU collaboration with " + uni.trim() +
                 "<span id=\"collab-summary-country\" class=\"hidden\"></span>" +
                 " - " +
                 "<span id=\"range-container\"></span>");
-range_bc_setup("range-container", range_change); 
+bc_range_setup("range-container", range_change); 
 if (individualLocalName != "org-technical-university-of-denmark") {
     var orgLocalName = individualLocalName;
     var base = "${urls.base}";

@@ -69,46 +69,53 @@ td.dtu-dept-num {
 
 /*Copub map*/
 
-#copub-map-container {
+#copub-breadcrumbs {
+    margin-top: 20px;
+}
+
+#copub-container {
     margin-top: 20px;
     position: relative;
 }
-
-#copub-map-info {
-    padding: 1em;
+#copub-org-list {
+    border: 1px solid #666666;
+    padding: 3px;
+    margin-bottom: 60px;
 }
-
-#map-org-list {
+#copub-org-list td {
+    border: 1px solid #666666;
+    padding: 3px;
+    vertical-align: middle;
+}
+#copub-org-list th {
+    background-color: #3d423d;
+    color: white;
+    border: 1px solid #666666;
+    padding: 3px;
+    vertical-align: middle;
+}
+#copub-main-list {
+    border: 1px solid #666666;
+    padding: 3px;
+    margin-bottom: 60px;
+    margin-left: 10px;
+    min-width: 800px;
+    max-width: 1100px;
+}
+#copub-main-list td {
     border: 1px solid #666666;
     padding: 3px;
 }
-#map-org-list td {
+#copub-main-list th {
     border: 1px solid #666666;
     padding: 3px;
-}
-#map-org-list th {
-    border: 1px solid #666666;
-    padding: 3px;
-}
-#map-country-list {
-    border: 1px solid #666666;
-    padding: 3px;
-}
-#map-country-list td {
-    border: 1px solid #666666;
-    padding: 3px;
-}
-#map-country-list th {
-    border: 1px solid #666666;
-    padding: 3px;
+    vertical-align: middle;
+    background-color: #3d423d;
+    color: white;
 }
 #copub-form form {
     margin-left: auto;
     margin-right: auto;
-}
-
-#copub-filter {
-    border-color: black;
 }
 
 #copub-map {
@@ -133,6 +140,22 @@ td.dtu-dept-num {
   position: absolute;
   top: 25%;
   left: 50%;
+  width: 10em;
+  height: 10em;
+  margin-top: -10px;
+  margin-left: -10px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  border-top-color: #333;
+  animation: spinner .6s linear infinite;
+}
+
+.tab-spinner:before {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  top: 60px;
+  left: 380px;
   width: 10em;
   height: 10em;
   margin-top: -10px;
@@ -419,6 +442,7 @@ table#rep5 th.col3 {
 }
 .sort-dir {
     display: inline-block;
+    height: 23px;
 }
 .sort-dir-button {
     display: inline-block;
@@ -442,17 +466,34 @@ table#rep5 th.col3 {
     display: inline-block;
     height: 100%;
     cursor: pointer;
+    color: white;
 }
-#sort-pub {
+#sort-org-pub {
     cursor: pointer;
+    text-align: right;
+    vertical-align: middle;
+    min-width: 200px;
+    background-color: #3d423d;
+    color: white;
 }
-#sort-cty {
+.sort-org-pub {
+    text-align: right;
+}
+#sort-main {
     display: inline-block;
     height: 100%;
     cursor: pointer;
+    color: white;
+    min-width: 600px;
+    max-width: 900px;
 }
-#sort-cty-pub {
+#sort-main-pub {
     cursor: pointer;
+    text-align: right;
+    width: 200px;
+}
+.sort-main-pub {
+    text-align: right;
 }
 #copub-map-title {
     margin: 30px 0px 0px 16px;
@@ -479,6 +520,17 @@ table#rep5 th.col3 {
     border: #aaaaaa solid 1px;
     width: 200px;
     margin-left: 16px;
+}
+.copub-filter-form {
+    display: inline-block;
+    float: right;
+}
+#copub-main-filter {
+    margin: 0px;
+}
+#copub-org-filter {
+    margin: 0px;
+    border-color: black;
 }
 body.copub-choose {
     background-color: #f3f3f0;

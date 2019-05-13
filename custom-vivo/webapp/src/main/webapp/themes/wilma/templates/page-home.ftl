@@ -51,7 +51,6 @@
                                     <button class="go-button" onClick="window.location.href='${urls.base}/copub-choose'">Go</button>
                                 </div>
                                 <div class="page-home-test">
-                                    &beta; test
                                 <div>
                             </div>
                         </td>
@@ -68,7 +67,7 @@
                                     <button class="go-button" onClick="window.location.href='${urls.base}/search?querytext=&classgroup=http%3A%2F%2Fvivoweb.org%2Fontology%23vitroClassGrouppublications'">Go</button>
                                 </div>
                                 <div class="page-home-test">
-                                    &alpha; test
+                                    &beta; test
                                 <div>
                             </div>
                         </td>

@@ -1,7 +1,7 @@
 /*
     DTU Departments
 */
-function dept_bc_dropdown(id) {
+function bc_dept_dropdown(id) {
     var html = "<span id=\"bc-dept\">" + 
                "    <select id=\"dtu-dept\" name=\"dtu-dept\">" +
                "    </select>" +
@@ -14,29 +14,29 @@ function dept_bc_dropdown(id) {
     $("#" + id).html(html);
 }
 
-function dept_bc_width() {
+function bc_dept_width() {
     $("#dtu-dept-tmp-opt").text($("#dtu-dept option:selected").text());
     $("#dtu-dept").width($("#dtu-dept-tmp").width() * 1.02);
 }
 
-function dept_bc_setup(id, callback) {
-    dept_bc_dropdown(id);
+function bc_dept_setup(id, callback) {
+    bc_dept_dropdown(id);
     dept_options("dtu-dept");
     var urlParams = new URLSearchParams(window.location.search);
     $("#dtu-dept").val(urlParams.get('dept'));
-    dept_bc_width();
+    bc_dept_width();
     $("#dtu-dept").change(function() {
-        dept_bc_width();
+        bc_dept_width();
         callback();
     });
 }
 
-function dept_bc_edit() {
+function bc_dept_edit() {
     $("#bc-dept-view").hide();
     $("#bc-dept").show();
 }
 
-function dept_bc_view() {
+function bc_dept_view() {
     $("#bc-dept").hide();
     $("#bc-dept-view").html($("#dtu-dept option:selected").text());
     $("#bc-dept-view").show();
@@ -59,7 +59,6 @@ function dept_options(id) {
         {"uri":"dtusuborg-dtu-chemistry",              "name":"DTU Chemistry"},
         {"uri":"dtusuborg-dtu-civil-engineering",      "name":"DTU Civil Engineering"},
         {"uri":"dtusuborg-dtu-compute",                "name":"DTU Compute"},
-        {"uri":"dtusuborg-dtu-danchip",                "name":"DTU Danchip"},
         {"uri":"dtusuborg-dtu-diplom",                 "name":"DTU Diplom"},
         {"uri":"dtusuborg-dtu-electrical-engineering", "name":"DTU Electrical Engineering"},
         {"uri":"dtusuborg-dtu-energy",                 "name":"DTU Energy"},
@@ -67,8 +66,9 @@ function dept_options(id) {
         {"uri":"dtusuborg-dtu-food",                   "name":"DTU Food"},
         {"uri":"dtusuborg-dtu-fotonik",                "name":"DTU Fotonik"},
         {"uri":"dtusuborg-dtu-health-tech",            "name":"DTU Health Tech"},
-        {"uri":"dtusuborg-dtu-management-engineering", "name":"DTU Management Engineering"},
+        {"uri":"dtusuborg-dtu-management",             "name":"DTU Management"},
         {"uri":"dtusuborg-dtu-mechanical-engineering", "name":"DTU Mechanical Engineering"},
+        {"uri":"dtusuborg-dtu-nanolab",                "name":"DTU Nanolab"},
         {"uri":"dtusuborg-dtu-nanotech",               "name":"DTU Nanotech"},
         {"uri":"dtusuborg-dtu-nutech",                 "name":"DTU Nutech"},
         {"uri":"dtusuborg-dtu-physics",                "name":"DTU Physics"},
@@ -76,8 +76,8 @@ function dept_options(id) {
         {"uri":"dtusuborg-dtu-systems-biology",        "name":"DTU Systems Biology"},
         {"uri":"dtusuborg-dtu-vet",                    "name":"DTU Vet"},
         {"uri":"dtusuborg-dtu-wind-energy",            "name":"DTU Wind Energy"},
-        {"uri":"dtusuborg-dtu-department-unknown",     "name":"DTU department unknown"},
-        {"uri":"dtusuborg-ris-dtu",                    "name":"Risø DTU"}
+        {"uri":"dtusuborg-ris-dtu",                    "name":"Risø DTU"},
+        {"uri":"dtusuborg-dtu-department-unknown",     "name":"DTU department unknown"}
     ];
     $("#" + id).val(null);
     dept.forEach(function(e) {
@@ -88,7 +88,7 @@ function dept_options(id) {
 /*
     Year ranges
 */
-function range_bc_dropdown(id) {
+function bc_range_dropdown(id) {
     var html = "<span id=\"bc-range\">" + 
                "    From" +
                "    <select id=\"year-from\" name=\"year-from\">" +
@@ -102,7 +102,7 @@ function range_bc_dropdown(id) {
     $("#" + id).html(html);
 }
 
-function range_bc_options() {
+function bc_range_options() {
     var last = new Date().getFullYear();
     var year;
     for(year = 2007; year <= last; year++) {
@@ -111,9 +111,9 @@ function range_bc_options() {
     }
 }
 
-function range_bc_setup(id, callback) {
-    range_bc_dropdown(id);
-    range_bc_options();
+function bc_range_setup(id, callback) {
+    bc_range_dropdown(id);
+    bc_range_options();
     var urlParams = new URLSearchParams(window.location.search);
     var last = new Date().getFullYear();
     var year;
@@ -143,12 +143,12 @@ function range_bc_setup(id, callback) {
     });
 }
 
-function range_bc_edit() {
+function bc_range_edit() {
     $("#bc-range-view").hide();
     $("#bc-range").show();
 }
 
-function range_bc_view() {
+function bc_range_view() {
     $("#bc-range").hide();
     $("#bc-range-view").html("From " + $('#year-from').val() + " - " + $('#year-to').val());
     $("#bc-range-view").show();
@@ -160,6 +160,19 @@ function range_from_val() {
 
 function range_to_val() {
     return $("#year-to").val();
+}
+
+
+function filter_setup(type) {
+    $("#copub-" + type + "-filter").keyup(function() {
+        $(".copub-" + type + "-row").each(function() {
+            if ($(this).text().search(new RegExp($("#copub-" + type + "-filter").val(), "i")) != -1) {
+                $(this).parent().show();
+            } else {
+                $(this).parent().hide();
+            }
+        });
+    });
 }
 
 /*
@@ -202,53 +215,98 @@ function loadData(url, callback) {
     xhr.send();
 }
 
+function fetchOrgList(service, field, code, name) {
+    $("#copub-org-filter").val("");
+    $("#copub-org-list tbody").html("<tr><td colspan=\"2\" style=\"font-size: 24px;\">Loading...</td></tr>");
+    var dataURL = "";
+    if (field) {
+        dataURL = urls_base + "/vds/report/" + service + "?" + field + '=' + code + "&dept=" + dept_val() +
+                  "&startYear=" + range_from_val() + "&endYear=" + range_to_val();
+    } else {
+        dataURL = urls_base + "/vds/report/" + service + "/" + code + "?dept=" + dept_val() +
+                  "&startYear=" + range_from_val() + "&endYear=" + range_to_val();
+    }
+    console.log ("calling loadData: " + dataURL);
+    loadData(dataURL, orgList);
+
+    $("#bc-copub-type-link").show();
+    $("#bc-copub-type").hide();
+    bc_dept_view();
+    bc_range_view();
+
+    $("#bc-main").html(name + " &gt; ");
+    $("#bc-main").show();
+    $('#copub-main-list').hide();
+    $('#copub-org-list').show();
+}
+
 function orgList(data) {
+    console.log ("orgList - building tbody");
     var tbody = "";
     var range = "&year-from=" + range_from_val() + "&year-to=" + range_to_val();
+    var n = 0;
     for (var i = 0, j = data.orgs.length; i < j; i++){
-        tbody += "<tr><td class=\"map-org-org sort-org\"><a href=\"" + urls_base + "/individual?uri=" + data.orgs[i].org + range + "\">" + data.orgs[i].name +
-                 "</a></td><td class=\"sort-pub\" style=\"text-align: right;\">" + data.orgs[i].publications + "</td></tr>";
+        tbody += "<tr><td class=\"copub-org-row sort-org\"><a href=\"" + urls_base + "/individual?uri=" + data.orgs[i].org + range + "\">" + data.orgs[i].name +
+                 "</a></td><td class=\"sort-org-pub\" style=\"text-align: right;\">" + data.orgs[i].publications + "</td></tr>";
+        n++;
     }
-    $("#map-org-list tbody").html(tbody);
-    $("#sort-pub .sort-dir").html (sortArrow (1, 1));
-    $("#sort-org .sort-dir").html (sortArrow (0, 0));
-    $('#sort-org').each(function() {
-        var inverse = false;
+    console.log ("orgList - " + n + "rows");
+    console.log ("orgList - writing tbody");
+    $("#copub-org-list tbody").html(tbody);
+    console.log ("orgList - adding sort");
+    setSort("sort-org");
+    $('#copub-container').removeClass('tab-spinner');
+}
+
+function setSort(name) {
+    $("#" + name + "-pub .sort-dir").html (sortArrow (1, 1));
+    $("#" + name + " .sort-dir").html (sortArrow (0, 0));
+    var inverse1 = false;
+    var inverse2 = false;
+    $('#' + name).each(function() {
         $(this).click(function() {
-            $("td.sort-org").sortElements(function(a, b) {
+            console.log("adding spinner");
+            $('#copub-container').addClass('tab-spinner');
+            $("td." + name).sortElements(function(a, b) {
                 return $.text([a]) > $.text([b]) ?
-                       inverse ? -1 : 1
-                     : inverse ? 1 : -1;
+                       inverse1 ? -1 : 1
+                     : inverse1 ? 1 : -1;
             }, function() {
                 return this.parentNode;
             });
-            if (inverse) {
-                $("#sort-org .sort-dir").html (sortArrow (1, 1));
+            if (inverse1) {
+                $("#" + name + " .sort-dir").html (sortArrow (1, 1));
             } else {
-                $("#sort-org .sort-dir").html (sortArrow (0, 1));
+                $("#" + name + " .sort-dir").html (sortArrow (0, 1));
             }
-            $("#sort-pub .sort-dir").html (sortArrow (0, 0));
-            inverse = !inverse;
+            $("#" + name + "-pub .sort-dir").html (sortArrow (0, 0));
+            inverse1 = !inverse1;
+            inverse2 = false;
+            console.log("remove spinner");
+            $('#copub-container').removeClass('tab-spinner');
         });
     });
-    $('#sort-pub').each(function() {
-        var inverse = false;
+    $('#' + name + '-pub').each(function() {
         $(this).click(function() {
-            $("td.sort-pub").sortElements(function(a, b) {
+            console.log("adding spinner");
+            $('#copub-container').addClass('tab-spinner');
+            $("td." + name + "-pub").sortElements(function(a, b) {
                 return Number($.text([a])) > Number($.text([b])) ?
-                       inverse ? -1 : 1
-                     : inverse ? 1 : -1;
+                       inverse2 ? -1 : 1
+                     : inverse2 ? 1 : -1;
             }, function() {
                 return this.parentNode;
             });
-            if (inverse) {
-                $("#sort-pub .sort-dir").html (sortArrow (1, 1));
+            if (inverse2) {
+                $("#" + name + "-pub .sort-dir").html (sortArrow (1, 1));
             } else {
-                $("#sort-pub .sort-dir").html (sortArrow (0, 1));
+                $("#" + name + "-pub .sort-dir").html (sortArrow (0, 1));
             }
-            $("#sort-org .sort-dir").html (sortArrow (0, 0));
-            inverse = !inverse;
+            $("#" + name + " .sort-dir").html (sortArrow (0, 0));
+            inverse2 = !inverse2;
+            inverse1 = false;
+            console.log("remove spinner");
+            $('#copub-container').removeClass('tab-spinner');
         });
     });
 }
-
