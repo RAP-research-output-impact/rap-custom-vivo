@@ -19,6 +19,7 @@
 
 # Additional listViewConfigs
 
+vivo:hasPublicationVenue display:listViewConfigFile "listViewConfig-hasPublicationVenue.xml" .
 
 # Search prohibited
 
