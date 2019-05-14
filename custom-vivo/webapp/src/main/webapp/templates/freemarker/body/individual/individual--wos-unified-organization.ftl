@@ -251,6 +251,28 @@ function collabSummary(response, startYear, endYear) {
     });
 
     loadPubInfoByStartYear(byDeptUrl, startYear, endYear, byDeptReport)
+
+    if ((response.summary.coPubTotal > 0) && (response.dtu_researchers.length > 0)) {
+        html = `
+	  <hr/>
+	  <div id="top-dtu-researchers">
+        `;
+        html += doDtuResearchersTable(response.dtu_researchers, startYear, endYear);
+	html += "</div>";
+        $("#collab-summary-container").append(html);
+    }
+
+    if ((response.summary.coPubTotal > 0) && (response.funders.length > 0)) {
+        html = `
+	  <hr/>
+	  <div id="top-funders">
+        `;
+        html += doFunderTable(response.funders, startYear, endYear);
+	html += "</div>";
+        $("#collab-summary-container").append(html);
+    }
+
+
 }
 
 function sortArrow(up, used) {
@@ -481,6 +503,60 @@ function doPubCategoryTable(totals, startYear, endYear) {
     return html;
 }
 
+function doFunderTable(totals, startYear, endYear) {
+    var html = `
+    <h2 class="rep">Co-publications by funder (top 20)</h2>
+    <table id="rep7" class="pub-counts">
+      <tr>
+        <th class="col1">Funder</th>
+        <th class="col2">Publ.</th>
+      </tr>
+    `;
+    $.each( totals.slice(0, 20), function( key, value ) {
+        if (value.funder != null) {
+            var href = base + "/copubs-by-funder/" + value.funder.split("/")[4] + "?collab=" + individualLocalName;
+            if(startYear > 0) {
+                href += "&startYear=" + startYear;
+            }
+            if(endYear > 0) {
+                href += "&endYear=" + endYear;
+            }
+            var coPubLink = "<a href=\"" + href + "\" target=\"_blank\">" +  value.number + "</a>";
+            var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
+            html += row;
+        }
+    });
+    html += "</table>";
+    return html;
+}
+
+function doDtuResearchersTable(totals, startYear, endYear) {
+    var html = `
+    <h2 class="rep">Co-publications by DTU researcher (top 20)</h2>
+    <table id="rep6" class="pub-counts">
+      <tr>
+        <th class="col1">DTU Researcher</th>
+        <th class="col2">Publ.</th>
+      </tr>
+    `;
+    $.each( totals.slice(0, 20), function( key, value ) {
+        if (value.dtuResearcher != null) {
+            var href = base + "/copubs-by-dtu-researcher/" + value.dtuResearcher.split("/")[4] + "?collab=" + individualLocalName;
+            if(startYear > 0) {
+                href += "&startYear=" + startYear;
+            }
+            if(endYear > 0) {
+                href += "&endYear=" + endYear;
+            }
+            var coPubLink = "<a href=\"" + href + "\" target=\"_blank\">" +  value.number + "</a>";
+            var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
+            html += row;
+        }
+    });
+    html += "</table>";
+    return html;
+}
+
 function doDepartmentTable(totals, name, startYear, endYear) {
     $("departmentTable").remove();
     var html = `
@@ -576,12 +652,13 @@ function createLineChart({data, insertAt, title, svgId, width, maxWidth, height,
     .domain(d3.extent(xDomain))
     .range([0, width - margin.left - margin.right])
   let y = d3.scaleLinear()
-    .domain([0, d3.max(yDomain)])
+    .domain([0, Math.round(d3.max(yDomain)) + 1])
     .range([height - margin.top - margin.bottom, 0])
 
 
   // create x and y axis function
-  let yAxis = (g) => g.call(d3.axisLeft(y))
+  let yTicksTotal = d3.max(yDomain) < 8 ? d3.max(yDomain) : null // avoid having intermittent values with 0.3, 0.6 etc
+  let yAxis = (g) => g.call(d3.axisLeft(y).ticks(yTicksTotal))
   let xAxis = (g) => g.call(d3.axisBottom(x).ticks(xDomain.length))
 
 
@@ -1009,14 +1086,16 @@ function doPubCountTable(totals, DTUtotals, copubsTotal, copubs) {
     tempChartHolder.className += 'chartDrawnButHidden'
     tempChartHolder.setAttribute("style", "position: absolute; top: -1000; left:-1000;")
     document.body.append(tempChartHolder)
-    let myData = copubs.map(x => (
-                              {
-                                value: x.number,
-                                date: new Date(x.year.toString())
-                              }
-                            ))
-                      .sort( (a,b) => (a.date - b.date) )
-
+    
+    let myData = []
+    for(let year in years) {
+        myData.push({
+            value: years[year].copubs,
+            date: new Date(year.toString())
+  	})
+    }
+    myData = myData.sort( (a,b) => (a.date - b.date) )
+    
     let copubsChartOpt = {
       data: myData,
       maxHeight: 500,

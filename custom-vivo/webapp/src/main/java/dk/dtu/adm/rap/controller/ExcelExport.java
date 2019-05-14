@@ -182,11 +182,13 @@ public class ExcelExport extends VitroHttpServlet {
         }
         rowCreator.createRow();
         rowCreator.createRow();
+        sheet.setRowBreak(rowCreator.getRowIndex());
         try {
             addTotals(years, json, wb, sheet, rowCreator, pt);
         } catch (JSONException e) {
             log.error(e, e);
         }
+        sheet.setRowBreak(rowCreator.getRowIndex());
         try {
             addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 22, 0, 4);
             for(int i = 0; i < 19; i++) {
@@ -197,6 +199,7 @@ public class ExcelExport extends VitroHttpServlet {
         }
         rowCreator.createRow();
         rowCreator.createRow();
+        sheet.setRowBreak(rowCreator.getRowIndex());
         try {
             addTopCategories(json, wb, sheet, rowCreator, pt);
         } catch (JSONException e) {
@@ -204,11 +207,13 @@ public class ExcelExport extends VitroHttpServlet {
         }
         rowCreator.createRow();
         rowCreator.createRow();
+        sheet.setRowBreak(rowCreator.getRowIndex());
         try {
             addCategories(json, wb, sheet, rowCreator, pt);
         } catch (JSONException e) {
             log.error(e, e);
         }
+        sheet.setRowBreak(rowCreator.getRowIndex());
         try {
             addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 26, 0, 8);
             for(int i = 0; i < 24; i++) {
@@ -219,19 +224,41 @@ public class ExcelExport extends VitroHttpServlet {
         }        
         rowCreator.createRow();
         rowCreator.createRow();
+        sheet.setRowBreak(rowCreator.getRowIndex());
         try {
             addByDepartment(byDeptJson, wb, sheet, rowCreator, pt, details);
         } catch (JSONException e) {
             log.error(e, e);
         }
+        rowCreator.createRow();
+        rowCreator.createRow();
+        sheet.setRowBreak(rowCreator.getRowIndex());
+        try {
+            addDtuResearchers(json, wb, sheet, rowCreator, pt);
+        } catch (JSONException e) {
+            log.error(e, e);
+        }
+        rowCreator.createRow();
+        rowCreator.createRow();
+        sheet.setRowBreak(rowCreator.getRowIndex());
+        try {
+            addFunders(json, wb, sheet, rowCreator, pt);
+        } catch (JSONException e) {
+            log.error(e, e);
+        }
         pt.applyBorders(sheet);     
         sheet.setColumnWidth(0, 7500);
-        sheet.setColumnWidth(1, 6000);
-        sheet.setColumnWidth(2, 6000);
-        sheet.setColumnWidth(3, 6000);
-        sheet.setColumnWidth(4, 6000);
-        sheet.setColumnWidth(5, 6000);
-        sheet.setColumnWidth(6, 6000);
+        sheet.setColumnWidth(1, 4000);
+        sheet.setColumnWidth(2, 4000);
+        sheet.setColumnWidth(3, 4000);
+        sheet.setColumnWidth(4, 4000);
+        sheet.setColumnWidth(5, 4000);
+        sheet.setColumnWidth(6, 4000);
+        sheet.setFitToPage(true);
+        //sheet.setAutobreaks(true);
+        sheet.getPrintSetup().setLandscape(true);
+        sheet.getPrintSetup().setFitWidth((short) 1);
+        sheet.getPrintSetup().setFitHeight((short) 0);
         return wb;
     }
     
@@ -291,7 +318,7 @@ public class ExcelExport extends VitroHttpServlet {
         XSSFRow titleRow = rowCreator.createRow();
         titleRow.setHeightInPoints(25);
         sheet.addMergedRegion(new CellRangeAddress(
-                rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 4));
         CellStyle titleStyle = wb.createCellStyle();
         XSSFFont titleFont = wb.createFont();
         titleFont.setBold(true);
@@ -327,7 +354,7 @@ public class ExcelExport extends VitroHttpServlet {
             RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
         JSONObject summary = data.getJSONObject("summary");
         XSSFRow header = rowCreator.createRow();
-        header.setHeightInPoints(30);
+        header.setHeightInPoints(45);
         int startingIndex = rowCreator.getRowIndex();
         CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
@@ -447,7 +474,7 @@ public class ExcelExport extends VitroHttpServlet {
             dtuDataAvailable = false;
         }
         XSSFRow header = rowCreator.createRow();
-        header.setHeightInPoints(30);
+        header.setHeightInPoints(45);
         int startingIndex = rowCreator.getRowIndex();
         CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
@@ -495,7 +522,7 @@ public class ExcelExport extends VitroHttpServlet {
         XSSFRow row = rowCreator.createRow();
         row.setHeightInPoints(30);
         sheet.addMergedRegion(new CellRangeAddress(
-                rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 3));
         addItalicText(wb, row, 0, LATENCY_FOOTNOTE);
         CellStyle style = wb.createCellStyle();
         style.setWrapText(true);
@@ -576,6 +603,44 @@ public class ExcelExport extends VitroHttpServlet {
         addNameNumberArray(array, Arrays.asList("number", "rank", "DTUrank"), 
                 rowCreator, wb, sheet);
         drawBorders(5, pt, startingIndex, rowCreator);        
+    }
+    
+    private void addFunders(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
+            RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
+        XSSFRow header = rowCreator.createRow();
+        header.setHeight((short) (header.getHeight() * 2));
+        int startingIndex = rowCreator.getRowIndex();
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
+        CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
+        CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
+        XSSFCell header0 = addBoldText(wb, header, 0, "Funder");
+        header0.setCellStyle(headerStyleFirstColumn);
+        XSSFCell header2 = addBoldText(wb, header, 2, "Publ.");
+        header2.setCellStyle(headerStyleRemainingColumns);
+        JSONArray array = data.getJSONArray("funders");
+        addNameNumberArray(array, Arrays.asList("number"), 
+                rowCreator, wb, sheet);
+        drawBorders(3, pt, startingIndex, rowCreator);        
+    }
+    
+    private void addDtuResearchers(JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
+            RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
+        XSSFRow header = rowCreator.createRow();
+        header.setHeight((short) (header.getHeight() * 2));
+        int startingIndex = rowCreator.getRowIndex();
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
+        CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
+        CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
+        XSSFCell header0 = addBoldText(wb, header, 0, "DTU Researcher");
+        header0.setCellStyle(headerStyleFirstColumn);
+        XSSFCell header2 = addBoldText(wb, header, 2, "Publ.");
+        header2.setCellStyle(headerStyleRemainingColumns);
+        JSONArray array = data.getJSONArray("dtu_researchers");
+        addNameNumberArray(array, Arrays.asList("number"), 
+                rowCreator, wb, sheet);
+        drawBorders(3, pt, startingIndex, rowCreator);        
     }
     
     private void addNameNumberArray(JSONArray array, List<String> dataColumns, 
