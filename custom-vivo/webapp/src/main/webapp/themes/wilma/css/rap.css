@@ -584,7 +584,6 @@ html, body {
 }
 div#main-content {
     min-height: 100vh;
-    padding: 40px 0;
 }
 footer {
     height: 60px;

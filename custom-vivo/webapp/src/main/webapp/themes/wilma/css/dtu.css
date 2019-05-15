@@ -14,9 +14,10 @@ h1.vivo-logo {
     position: absolute;
     width: 254px;
     height: 66px;
-    top: 28px;
+    top: 0px;
     left: 10px;
     background: url(../images/VIVO-logo.png) 0 0 no-repeat;
+    margin-top:28px;
 }
 h1.vivo-logo a {
     display: block;
