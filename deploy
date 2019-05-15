@@ -1,18 +1,77 @@
 #!/bin/sh
 
+EXT=""
+COPY=false
+TYPE=false
+while [ ! -z "$1" ]
+do
+    case "$1" in
+        prod)
+            TYPE=true
+            shift
+            ;;
+        dev)
+            TYPE=true
+            EXT="-dev"
+            shift
+            ;;
+        update|upd)
+            TYPE=true
+            EXT="-update"
+            shift
+            ;;
+        --copy|-c)
+            COPY=true
+            shift
+            ;;
+        *)
+            echo "\nunknown argument: $1\n" >&2
+            echo "usage: sudo ./deploy prod" >&2
+            echo "       sudo ./deploy [--copy] <dev | update>" >&2
+            exit 1
+            ;;
+    esac
+done
+if [ $TYPE = false ]
+then
+    echo "usage: sudo ./deploy prod" >&2
+    echo "       sudo ./deploy [--copy] <dev | update>" >&2
+    exit 1
+fi
+if [ $COPY = true -a  -z "$EXT" ]
+then
+    echo "\nfatal: cannot use COPY mode for PROD\n" >&2
+    echo "usage: sudo ./deploy prod" >&2
+    echo "       sudo ./deploy [--copy] <dev | update>" >&2
+    exit 1
+fi
 if [ `id -u` -gt 0 ]
-then
-     echo "please use: sudo ./deploy" >&2
-     exit 1
+then 
+    echo "\nfatal: please use: sudo ./deploy\n" >&2
+    echo "usage: sudo ./deploy prod" >&2
+    echo "       sudo ./deploy [--copy] <dev | update>" >&2
+    exit 1
 fi
-export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
-/etc/init.d/tomcat8 stop
-cd custom-vivo
-if [ ! -d webapp/src/main/webapp/WEB-INF/resources ]
+if [ $COPY = true ]
 then
-    mkdir --parents webapp/src/main/webapp/WEB-INF/resources
+    ROOT="/var/lib/tomcat8/webapps/vivo$EXT"
+    cp custom-vivo/webapp/src/main/webapp/themes/wilma/templates/*.ftl                        $ROOT/themes/wilma/templates/
+    cp custom-vivo/webapp/src/main/webapp/templates/freemarker/body/individual/*.ftl          $ROOT/templates/freemarker/body/individual/
+    cp custom-vivo/webapp/src/main/webapp/templates/freemarker/body/partials/individual/*.ftl $ROOT/templates/freemarker/body/partials/individual/
+    cp custom-vivo/webapp/src/main/webapp/templates/freemarker/body/search/*.ftl              $ROOT/templates/freemarker/body/search/
+    cp custom-vivo/webapp/src/main/webapp/themes/wilma/css/*.css                              $ROOT/themes/wilma/css/
+    cp custom-vivo/webapp/src/main/webapp/themes/wilma/js/*.js                                $ROOT/themes/wilma/js/
+else
+    export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+    /etc/init.d/tomcat8 stop
+    cd custom-vivo
+    if [ ! -d webapp/src/main/webapp/WEB-INF/resources ]
+    then
+        mkdir --parents webapp/src/main/webapp/WEB-INF/resources
+    fi
+    cp build${EXT}.properties webapp/src/main/webapp/WEB-INF/resources/build.properties
+    mvn $* -Dhttps.protocols=TLSv1.2 clean install -s settings${EXT}.xml
+    /etc/init.d/tomcat8 start
 fi
-cp build.properties webapp/src/main/webapp/WEB-INF/resources/build.properties
-mvn $* -Dhttps.protocols=TLSv1.2 clean install -s settings.xml
-/etc/init.d/tomcat8 start
 exit 0
+
