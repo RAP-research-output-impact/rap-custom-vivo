@@ -272,7 +272,7 @@ public class DataService {
         String yearEnd = vreq.getParameter("endYear");
         ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
         String cacheRoot = props.getProperty("DataCache.root");
-        String cachekey = "worldmap." + dep + "." + yearStart + "." + yearEnd;
+        String cachekey = "worldmap/worldmap." + dep + "." + yearStart + "." + yearEnd;
         String data = cache.read(cacheRoot, cachekey);
         if (data == null) {
             long start = System.currentTimeMillis();
