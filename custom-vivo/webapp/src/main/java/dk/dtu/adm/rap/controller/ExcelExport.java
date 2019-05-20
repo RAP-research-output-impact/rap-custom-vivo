@@ -580,7 +580,7 @@ public class ExcelExport extends VitroHttpServlet {
         int width = 7;        
         pt.drawBorders(new CellRangeAddress(
                 rowCreator.getRowIndex(), rowCreator.getRowIndex(), 0,(width - 1)),
-                BorderStyle.MEDIUM, IndexedColors.BLACK.getIndex(), BorderExtent.BOTTOM);
+                BorderStyle.THIN, IndexedColors.BLACK.getIndex(), BorderExtent.BOTTOM);
         JSONArray array = data.getJSONArray("top_categories");
         addNameNumberArray(array, Arrays.asList(
                 "number", "rank", "DTUnumber", "DTUrank", "copub"),
