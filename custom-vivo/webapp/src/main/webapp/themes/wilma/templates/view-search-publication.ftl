@@ -1,4 +1,5 @@
-    <h6>
+  <div class="publication-short-view"> 
+    <h5>
     <#assign publication = publication[0]>
     <#if publication.p??>
     <a href="${individual.profileUrl}"">
@@ -38,4 +39,4 @@
     <#if publication.citationCount??>
         <span style="margin-left: 3em;">Citations: ${publication.citationCount!}</style>
     </#if>
-
+</div>
