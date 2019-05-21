@@ -8,22 +8,21 @@
 <script src="${urls.theme}/js/copub-util.js"></script>
 <script src="${urls.theme}/js/jquery.sortElements.js"></script>
 
-<!-- worldmap -->
-<section class="home-sections" id="worldmap">
-    <div id="copub-breadcrumbs" style="margin-top: 20px;">
+<section class="home-sections" id="copub">
+    <div id="copub-breadcrumbs">
         <a href="../copub-choose">Ext. collaboration</a>
         &gt;
         <span id="bc-dept-container">
         </span>
         &gt;
-        <span id="bc-world-map">
+        <span id="bc-copub-type">
             World map
         </span>
-        <span id="bc-world-map-link">
-            <a id="bc-world-map-link-anchor">World map</a>
+        <span id="bc-copub-type-link">
+            <a id="bc-copub-type-link-anchor">World map</a>
         </span>
         &gt;
-        <span id="bc-country">
+        <span id="bc-main">
         </span>
         <span id="bc-range-container">
         </span>
@@ -33,76 +32,55 @@
             Zoom using your mouse scroll wheel, or the controls top right, and select a country.
         </div>
     </div>
-    <div id="copub-map-container">
+    <div id="copub-container">
         <div id="copub-map" style="margin-bottom: 60px;">
         </div>
-        <div id="copub-map-info" style="display: inline-block; float: left;">
-            <table>
+        <table id="copub-org-list">
+            <thead>
                 <tr>
-                    <td>
-                        <table id="map-org-list">
-                            <thead>
-                                <tr>
-                                    <th style="text-align: left; vertical-align: middle; min-width: 600px; background-color: #3d423d; color: white;">
-                                        <div id="sort-org" style="color: white;">
-                                            Collaboration partners
-                                            <div class="sort-dir" style="height: 23px;"></div>
-                                        </div>
-                                        <form style="display: inline-block; float: right;" onSubmit="return (false);">
-                                            <input id="copub-filter" type="text" size="30" placeholder="Type here to shorten list" style="margin: 0px;"/>
-                                        </form>
-                                    </th>
-                                    <th id="sort-pub" style="text-align: right; vertical-align: middle; min-width: 200px; background-color: #3d423d; color: white;">
-                                        Co-publications
-                                        <div class="sort-dir"></div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                    </td>
+                    <th style="text-align: left; min-width: 600px;">
+                        <div id="sort-org">
+                            Collaboration partners
+                            <div class="sort-dir"></div>
+                        </div>
+                        <form class="copub-filter-form" onSubmit="return (false);">
+                            <input id="copub-org-filter" type="text" size="30" placeholder="Type here to shorten list"/>
+                        </form>
+                    </th>
+                    <th id="sort-org-pub">
+                        Co-publications
+                        <div class="sort-dir"></div>
+                    </th>
                 </tr>
-            </table>
-        </div>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </div>
 </section>
-
-<#-- builds a json object that is used by js to render the academic departments section -->
-<@lh.listAcademicDepartments/>
-
 <script>
-    // See: https://bost.ocks.org/mike/bubble-map/
-    // Create radius for bubbles.
+    const urls_base = "${urls.base}";
+    // Create radius for bubbles (see: https://bost.ocks.org/mike/bubble-map/).
     var radius = d3.scale.sqrt()
         .domain([1, 5000])
         .range([5, 20]);
-    const urls_base = "${urls.base}";
 
     $(document).ready(function() {
         bc_dept_setup("bc-dept-container", fetchMapData);
         bc_range_setup("bc-range-container", fetchMapData);
-        $("#copub-map-info").hide();
-        $("#bc-world-map-link").hide();
-        $("#bc-world-map-link-anchor").click(function() {
-            $("#bc-world-map-link").hide();
-            $("#bc-world-map").show();
-            $("#bc-country").hide();
+        $("#copub-org-list").hide();
+        $("#bc-copub-type-link").hide();
+        $("#bc-copub-type-link-anchor").click(function() {
+            $("#bc-copub-type-link").hide();
+            $("#bc-copub-type").show();
+            $("#bc-main").hide();
             $("#copub-map-heading").show();
             $('#copub-map').show();
-            $('#copub-map-info').hide();
+            $('#copub-org-list').hide();
             bc_dept_edit();
             bc_range_edit();
         });
-        $("#copub-filter").keyup(function() {
-            $(".map-org-org").each(function() {
-                if ($(this).text().search(new RegExp($("#copub-filter").val(), "i")) != -1) {
-                    $(this).parent().show();
-                } else {
-                    $(this).parent().hide();
-                }
-            });
-        });
+        filter_setup("org");
         fetchMapData();
     });
 
@@ -118,7 +96,7 @@
     function fetchMapData() {
         var mapData = "${urls.base}/vds/report/worldmap?dept=" + dept_val() + "&startYear=" + range_from_val() + "&endYear=" + range_to_val();
         console.log ("loading: " + mapData);
-        $('#copub-map-container').addClass('spinner');
+        $('#copub-container').addClass('spinner');
         addZoom();
         loadData(mapData, prepMapData);
     }
@@ -155,38 +133,24 @@
                 }
         });
         d3.selectAll(".datamaps-bubble").on('click', function(bubble) {
-            $("#copub-filter").val("");
-            $("#map-org-list tbody").html("<tr><td colspan=\"2\">Loading...</td></tr>");
+            $("#copub-org-filter").val("");
+            $("#copub-org-list tbody").html("<tr><td colspan=\"2\">Loading...</td></tr>");
 
 
-            var countryDataURL = "${urls.base}/vds/report/country/" + bubble.centered + "?dept=" + dept_val() + "&startYear=" + range_from_val() +
-                                 "&endYear=" + range_to_val();
-            loadData(countryDataURL, orgList);
-            var irec = $('#copub-map-info').get(0).getBoundingClientRect();
-            var view = Math.max(document.documentElement.clientHeight, window.innerHeight);
-            console.log (irec);
-            console.log (view);
-
-            $("#bc-world-map-link").show();
-            $("#bc-world-map").hide();
-            bc_dept_view();
-            bc_range_view();
-
+            var name = '';
             if (countryKey[bubble.centered]) {
-                $("#bc-country").html(countryKey[bubble.centered] + " &gt; ");
+                name = countryKey[bubble.centered];
             } else {
-                $("#bc-country").html(bubble.centered + " &gt; ");
+                name = bubble.centered;
             }
-            $("#bc-country").show();
+            fetchOrgList("country", "", bubble.centered, name);
             $("#copub-map-heading").hide();
             $('#copub-map').hide();
-            $('#copub-map-info').show();
         });
         map.instance.svg.selectAll('.datamaps-bubble')
             .each(function (d) {
                 d3.select(this).attr('ro', d3.select(this).attr('r'))
         });
-        $('#copub-map-container').removeClass('spinner');
+        $('#copub-container').removeClass('spinner');
     }
-
 </script>
