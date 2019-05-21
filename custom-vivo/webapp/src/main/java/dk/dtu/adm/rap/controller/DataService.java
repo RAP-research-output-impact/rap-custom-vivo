@@ -1267,9 +1267,12 @@ public class DataService {
                 "    vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> .\r\n" +
                 "    ?dtuAddress vivo:relatedBy ?authorship .\r\n" +
                 "    ?authorship a vivo:Authorship .\r\n" +
-                "    ?authorship wos:fullName ?fullName .\r\n" +
+                "    # Better to use label rather than fullName in order \r\n" +
+                "    # to distinguish people who differ only by middle initial. \r\n" +
+                "    #?authorship wos:fullName ?fullName .\r\n" +
                 "    ?authorship vivo:relates ?dtuResearcher .  \r\n" +
                 "    ?dtuResearcher a foaf:Person ." +
+                "    ?dtuResearcher rdfs:label ?fullName ." +
                 getYearDtv(startYear, endYear) +
                 getDtvFilter(startYear, endYear) +
                 "}\r\n" +

@@ -620,6 +620,14 @@ svg, svg g, svg text {
   font-family: "Lucida Sans Unicode", "Lucida Grande", 'Geneva', helvetica, sans-serif
 }
 
+/*** publication short view (view-search-publication.ftl) ***/
+.publication-short-view {
+  font-size:85%;
+}
+.publication-short-view h5 {
+  margin-bottom:0;
+}
+
 
 /*** page individual publication (individual--wos-publication.ftl) ***/
 
