@@ -250,6 +250,8 @@ function collabSummary(response, startYear, endYear) {
         });
     });
 
+    $("#collab-summary-container").append('<div id="departmentTable"></div>');
+    
     loadPubInfoByStartYear(byDeptUrl, startYear, endYear, byDeptReport)
 
     if ((response.summary.coPubTotal > 0) && (response.dtu_researchers.length > 0)) {
@@ -558,9 +560,8 @@ function doDtuResearchersTable(totals, startYear, endYear) {
 }
 
 function doDepartmentTable(totals, name, startYear, endYear) {
-    $("departmentTable").remove();
+    $("#departmentTable").html('');
     var html = `
-    <div id="departmentTable">
     <hr/>
     <h2 class="rep">Co-publications by department</h2>
     <table id="rep5" class="pub-counts">
@@ -579,7 +580,7 @@ function doDepartmentTable(totals, name, startYear, endYear) {
         yearParams += "&endYear=" + endYear;
     }
 
-    var closeHtml = "</table></div>";
+    var closeHtml = "</table>";
     var last = null;
     $.each( totals, function( key, value ) {
         var orgKey = value.org.split("/")[4];
@@ -601,7 +602,7 @@ function doDepartmentTable(totals, name, startYear, endYear) {
         last = value.name;
     });
     html += closeHtml;
-    $("#collab-summary-container").append(html);
+    $("#departmentTable").html(html);
 
     // CALL RESPONSIVE CHARTS FN after elements are in dom
     let responsiveCharts = document.querySelectorAll('.chart-box[minH]')
