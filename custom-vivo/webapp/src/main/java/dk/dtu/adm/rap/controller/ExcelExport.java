@@ -358,8 +358,10 @@ public class ExcelExport extends VitroHttpServlet {
         int startingIndex = rowCreator.getRowIndex();
         CellStyle headerStyleFirstColumn = getHeaderStyleFirstColumn(wb);
         CellStyle headerStyleRemainingColumns = getHeaderStyleRemainingColumns(wb);
-        XSSFCell blankHeader = addBoldText(wb, header, 0, " ");
-        blankHeader.setCellStyle(headerStyleFirstColumn);
+        XSSFCell blank0 = header.createCell(0);
+        blank0.setCellStyle(headerStyleFirstColumn);
+        XSSFCell blank1 = header.createCell(1);
+        blank1.setCellStyle(headerStyleFirstColumn);
         sheet.addMergedRegion(new CellRangeAddress(
                 rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
         XSSFCell orgHeader = addBoldText(wb, header, 2, getOrgName(data));
