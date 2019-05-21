@@ -31,7 +31,7 @@
         <table id="copub-main-list">
             <thead>
                 <tr>
-                    <th style="text-align: left; min-width: 600px;">
+                    <th style="text-align: left; width: 600px;">
                         <div id="sort-main">
                             Countries
                             <div class="sort-dir"></div>

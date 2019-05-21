@@ -69,6 +69,10 @@ td.dtu-dept-num {
 
 /*Copub map*/
 
+#copub {
+    margin-left: 10px;
+}
+
 #copub-breadcrumbs {
     margin-top: 20px;
 }
@@ -98,7 +102,6 @@ td.dtu-dept-num {
     border: 1px solid #666666;
     padding: 3px;
     margin-bottom: 60px;
-    margin-left: 10px;
     min-width: 800px;
     max-width: 1100px;
 }
@@ -127,6 +130,11 @@ td.dtu-dept-num {
     border-color: black;
     margin-left: auto;
     margin-right: auto;
+    margin-bottom: 5px;
+    overflow: hidden;
+    border: 2px solid silver;
+    border-radius: 6px;
+    background: white;
 }
 
 /*https://stephanwagner.me/only-css-loading-spinner*/
@@ -221,13 +229,6 @@ ul.copubdept {
   list-style-type: square;
 }
 
-#copub-map {
-    margin-bottom: 5px;
-    overflow: hidden;
-    border: 2px solid silver;
-    border-radius: 6px;
-    background: white;
-}
 .zoom-button {
     width: 30px;
     height: 30px;
@@ -332,6 +333,9 @@ ul.copubdept {
 .qr-x {
     font-weight: bold;
     font-size: 12px;
+}
+#individual-info {
+    margin-left: 10px;
 }
 #individual-info h2 {
     color: #5E6363;
