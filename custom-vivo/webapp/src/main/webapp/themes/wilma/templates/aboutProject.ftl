@@ -6,6 +6,9 @@
         margin-left: 10px;
         margin-bottom: 1200px;
     }
+    body {
+        font-size: 14px;
+    }
 </style>
 <h2>About DTU RAP – Research Analytics Platform</h2>
 <div id="about">
@@ -25,6 +28,9 @@
     <p>
         DTU RAP version 1 was launched in May 2018 with a collaboration analytics module based on co-publication analyses.
         The vision is to further develop this module based on user feedback and to launch new modules addressing the analytical requirements in connection with the reporting and assessment cycles of the university.
+    </p>
+    <p>
+        DTU RAP version 2 was launched in May 2019 with an updated collaboration analytics module including a number of new features, tables, graphs and indicators.
     </p>
     <a name="data"></a>
     <h3>Data and its enhancements</h3>

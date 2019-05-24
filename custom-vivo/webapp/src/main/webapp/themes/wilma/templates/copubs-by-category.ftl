@@ -1,6 +1,5 @@
-<h2>Co-publications by category ${name} - DTU and ${collabOrg}</h2>
-
-<div>${pubs?size} total co-publications</div>
+<h2 class="copubdept-title">Co-publications by category ${name} - DTU and ${collabOrg}</h2>
+<div class="copubdept-sub">${pubs?size} total co-publications</div>
 <hr/>
 
  <#list pubs as pub>

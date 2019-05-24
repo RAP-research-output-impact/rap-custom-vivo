@@ -1,8 +1,8 @@
-<h2>Collaboration by department - DTU and ${collabOrg}</h2>
+<h2 class="copubdept-title">Collaboration by department - DTU and ${collabOrg}</h2>
 <#if collabSubName?has_content>
-    <h3>${pubs?size} co-publications for ${mainOrg} and ${collabSubName}, [${collabOrg}]</h3>
+    <h3 class="copubdept-sub">${pubs?size} co-publications for ${mainOrg} and ${collabSubName}, [${collabOrg}]</h3>
 <#else>
-    <h3>${pubs?size} co-publications for ${mainOrg} and ${collabOrg}</h3>
+    <h3 class="copubdept-sub">${pubs?size} co-publications for ${mainOrg} and ${collabOrg}</h3>
 </#if>
 <hr/>
 <#list pubs as pub>

@@ -212,6 +212,13 @@ span.org-enhanced {
   margin-left: 2em;
 }
 
+h2.copubdept-title {
+  margin-left: 10px;
+}
+
+div.copubdept-sub {
+  margin-left: 10px;
+}
 
 tr.copubdept-child {
     display: none;
@@ -220,6 +227,7 @@ tr.copubdept-child {
 
 div.copubdept-pubmeta {
   margin-bottom: 1.5em;
+  margin-left: 10px;
 }
 
 ul.copubdept {
@@ -354,6 +362,7 @@ ul.copubdept {
 #individual-info h2.rep {
     font-size: 18px;
     font-weight: bold;
+    margin-bottom: 6px;
 }
 table#rep1 th.col1 {
     width: 420px;
