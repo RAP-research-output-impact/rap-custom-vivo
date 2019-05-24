@@ -508,6 +508,12 @@ function doPubCategoryTable(totals, startYear, endYear) {
 function doFunderTable(totals, startYear, endYear) {
     var html = `
     <h2 class="rep">Co-publications by funder (top 20)</h2>
+    <div style="margin-bottom: 5px;">
+        <i>
+            <b>Note:</b>
+            The imported funder data is not (yet) fully normalized – the same funder may occur under different name variants.
+        </i>
+    </div>
     <table id="rep7" class="pub-counts">
       <tr>
         <th class="col1">Funder</th>
