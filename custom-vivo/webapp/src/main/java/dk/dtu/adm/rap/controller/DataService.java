@@ -311,7 +311,7 @@ public class DataService {
         String yearEnd = vreq.getParameter("endYear");
         ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
         String cacheRoot = props.getProperty("DataCache.root");
-        String cachekey = "country-" + cCode + "/country-" + cCode + "." + dep + "." + yearStart + "." + yearEnd;
+        String cachekey = "country/" + cCode + "/country-" + cCode + "." + dep + "." + yearStart + "." + yearEnd;
         String data = cache.read(cacheRoot, cachekey);
         if (data == null) {
             long start = System.currentTimeMillis();
@@ -1344,7 +1344,6 @@ public class DataService {
                  "            ?org a wos:UnifiedOrganization ;\n" +
                  "                rdfs:label ?name ;\n" +
                  "                vivo:relatedBy ?orgAddress .\n" +
-                 "                ?orgAddress vivo:relates ?pub .\n" +
                  "            ?pub vivo:dateTimeValue ?dtv .\n" +
                  "            ?dtv vivo:dateTime ?dateTime .\n" +
                  "            FILTER(xsd:dateTime(\"" + yearStart + "-01-01T00:00:00\") <= ?dateTime)\n" +
@@ -1373,7 +1372,6 @@ public class DataService {
                  "            ?org a wos:UnifiedOrganization ;\n" +
                  "                rdfs:label ?name ;\n" +
                  "                vivo:relatedBy ?orgAddress .\n" +
-                 "                ?orgAddress vivo:relates ?pub .\n" +
                  "            ?pub vivo:dateTimeValue ?dtv .\n" +
                  "            ?dtv vivo:dateTime ?dateTime .\n" +
                  "            FILTER(xsd:dateTime(\"" + yearStart + "-01-01T00:00:00\") <= ?dateTime)\n" +
