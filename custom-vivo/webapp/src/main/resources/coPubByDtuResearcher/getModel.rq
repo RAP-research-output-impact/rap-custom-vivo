@@ -8,61 +8,33 @@ CONSTRUCT {
         bibo:doi ?doi ;
         tmp:relates ?authorship .
     ?authorship a tmp:Authorship ;
-            tmp:name ?name ;
-            tmp:relates ?collab .
-}
-WHERE {
-  {
+        tmp:name ?name ;
+        tmp:relates ?collab .
+} WHERE {  
     ?collab a wos:UnifiedOrganization ;
         vivo:relatedBy ?address .
     ?address a wos:Address ;
         vivo:relates ?pub .
-    ?authorship a vivo:Authorship ;
-            wos:fullName ?name ;
-            vivo:relates ?pub, ?address .
     ?pub a wos:Publication ;
         rdfs:label ?title ;
         vivo:dateTimeValue ?dtv ;
         vivo:relatedBy ?address .
     ?dtv vivo:dateTime ?date .
-    FILTER(?startYear <= ?date)
-    FILTER(?endYear >= ?date)
+    FILTER("2014-01-01T00:00:00"^^xsd:dateTime <= ?date)
+    FILTER("2019-12-31T23:59:59"^^xsd:dateTime >= ?date)
     ?pub vivo:relatedBy ?dtuAddress .
     ?dtuAddress a wos:Address .
     ?dtuAddress vivo:relates d:org-technical-university-of-denmark .
-    ?dtuAddress vivo:relatedBy ?authorship .
+    ?pub vivo:relatedBy ?authorship .
     ?authorship a vivo:Authorship .
-    ?authorship vivo:relates ?dtuResearcher . 
+    ?authorship vivo:relates ?dtuAddress .
+    ?authorship vivo:relates ?dtuResearcher .
     OPTIONAL {
         ?pub wos:wosId ?wosId ;
             wos:referenceCount ?refCount ;
             wos:citationCount ?citeCount .
     }
-    OPTIONAL { ?pub bibo:doi ?doi }
-  } UNION {
-    ?collab a wos:UnifiedOrganization ;
-        vivo:relatedBy ?address .
-    ?address a wos:Address ;
-        vivo:relates ?pub .
-    ?pub a wos:Publication ;
-        rdfs:label ?title ;
-        vivo:dateTimeValue ?dtv ;
-        vivo:relatedBy ?address .
-    ?dtv vivo:dateTime ?date .
-    FILTER(?startYear <= ?date)
-    FILTER(?endYear >= ?date)
-    ?pub vivo:relatedBy ?dtuAddress .
-    ?dtuAddress a wos:Address .
-    ?dtuAddress vivo:relates d:org-technical-university-of-denmark . 
-    ?dtuAddress vivo:relatedBy ?authorship .
-    ?authorship a vivo:Authorship .
-    ?authorship vivo:relates ?dtuResearcher . 
     OPTIONAL {
-        ?pub wos:wosId ?wosId ;
-            wos:referenceCount ?refCount ;
-            wos:citationCount ?citeCount .
+        ?pub bibo:doi ?doi
     }
-    OPTIONAL { ?pub bibo:doi ?doi }
-
-  }
- }
+}

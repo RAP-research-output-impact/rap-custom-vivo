@@ -1262,10 +1262,11 @@ public class DataService {
                 "    ?address a wos:Address .\r\n" +
                 "    ?pub vivo:relatedBy ?address .\r\n" +
                 "    ?pub a wos:Publication ;\r\n" +
-                "    vivo:relatedBy ?dtuAddress .\r\n" +
+                "        vivo:relatedBy ?dtuAddress .\r\n" +
                 "    ?dtuAddress a wos:Address ;\r\n" +
-                "    vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> .\r\n" +
+                "        vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> .\r\n" +
                 "    ?dtuAddress vivo:relatedBy ?authorship .\r\n" +
+                "    ?pub vivo:relatedBy ?authorship .\r\n" +
                 "    ?authorship a vivo:Authorship .\r\n" +
                 "    # Better to use label rather than fullName in order \r\n" +
                 "    # to distinguish people who differ only by middle initial. \r\n" +
