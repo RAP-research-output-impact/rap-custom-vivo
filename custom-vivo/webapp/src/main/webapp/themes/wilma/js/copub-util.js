@@ -89,16 +89,18 @@ function dept_options(id) {
     Year ranges
 */
 function bc_range_dropdown(id) {
-    var html = "<span id=\"bc-range\">" + 
-               "    From" +
-               "    <select id=\"year-from\" name=\"year-from\">" +
-               "    </select>" +
-               "    -" +
-               "    <select id=\"year-to\" name=\"year-to\">" +
-               "    </select>" +
-               "</span>" +
-               "<span id=\"bc-range-view\">" +
-               "</span>";
+    var html  = "<span id=\"bc-range\">";
+    if (!window.location.pathname.match(/individual$/)) {
+        html += "    From";
+    }
+    html +=     "    <select id=\"year-from\" name=\"year-from\">" +
+                "    </select>" +
+                "    -" +
+                "    <select id=\"year-to\" name=\"year-to\">" +
+                "    </select>" +
+                "</span>" +
+                "<span id=\"bc-range-view\">" +
+                "</span>";
     $("#" + id).html(html);
 }
 

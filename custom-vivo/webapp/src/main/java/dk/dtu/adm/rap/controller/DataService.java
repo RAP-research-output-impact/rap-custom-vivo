@@ -164,32 +164,23 @@ public class DataService {
             @PathParam("endYear") String endYear,
             @Context Request request, @Context HttpServletRequest httpRequest) {
         VitroRequest vreq = new VitroRequest(httpRequest);
-
         Integer startYearInt = parseInt(startYear);
         Integer endYearInt = parseInt(endYear);
-
-        if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
+        if (!authorized(vreq)) {
             notAuthorizedResponse();
         }
-
         ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
+        String cacheRoot = props.getProperty("DataCache.root");
         String namespace = props.getProperty("Vitro.defaultNamespace");
-        String wosDataVersion = props.getProperty("wos.dataVersion");
-        Boolean cacheActive = Boolean.parseBoolean(props.getProperty("wos.cacheActive"));
         String uri = namespace + vid;
-
-        ResponseBuilder builder = null;
-        EntityTag etag = new EntityTag(wosDataVersion + uri);
-        if (cacheActive.equals(true) && wosDataVersion != null) {
-            log.info("Etag caching active");
-            builder = request.evaluatePreconditions(etag);
-        }
         StoreUtils storeUtils = getStoreUtils(httpRequest);
-        String orgName = storeUtils.getFromStore(getQuery(
-                "SELECT ?name where { <" + uri + "> rdfs:label ?name }", storeUtils)).get(0).get(
-                        "name").toString();
-        // cached resource did change -> serve updated content
-        if (builder == null) {
+        String cachekey = "dept/" + vid + "." + Integer.toString(startYearInt) + "." + Integer.toString(endYearInt);
+        String data = cache.read(cacheRoot, cachekey);
+        if (data == null) {
+            long start = System.currentTimeMillis();
+            String orgName = storeUtils.getFromStore(getQuery(
+                    "SELECT ?name where { <" + uri + "> rdfs:label ?name }", storeUtils)).get(0).get(
+                            "name").toString();
             Model tmpModel = deptModel(uri, startYearInt, endYearInt, storeUtils);
             String rq = readQuery("coPubByDept/vds/dtuSubOrgCount.rq");
             log.debug("Dept query:\n" + rq);
@@ -215,17 +206,15 @@ public class DataService {
             }
             JSONObject jo = new JSONObject();
             try {
-                //jo.put("summary", getSummary(uri));
                 jo.put("name", orgName);
                 jo.put("departments", out);
             } catch (JSONException e) {
                 log.error(e, e);
             }
-            String outJson = jo.toString();
-            builder = Response.ok(outJson);
+            data = jo.toString();
+            cache.write(cacheRoot, cachekey, data, (System.currentTimeMillis() - start));
         }
-
-        builder.tag(etag);
+        ResponseBuilder builder = Response.ok(data);
         return builder.build();
     }
 
@@ -1262,10 +1251,11 @@ public class DataService {
                 "    ?address a wos:Address .\r\n" +
                 "    ?pub vivo:relatedBy ?address .\r\n" +
                 "    ?pub a wos:Publication ;\r\n" +
-                "    vivo:relatedBy ?dtuAddress .\r\n" +
+                "        vivo:relatedBy ?dtuAddress .\r\n" +
                 "    ?dtuAddress a wos:Address ;\r\n" +
-                "    vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> .\r\n" +
+                "        vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> .\r\n" +
                 "    ?dtuAddress vivo:relatedBy ?authorship .\r\n" +
+                "    ?pub vivo:relatedBy ?authorship .\r\n" +
                 "    ?authorship a vivo:Authorship .\r\n" +
                 "    # Better to use label rather than fullName in order \r\n" +
                 "    # to distinguish people who differ only by middle initial. \r\n" +
