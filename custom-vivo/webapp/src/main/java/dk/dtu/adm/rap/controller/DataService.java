@@ -1278,7 +1278,7 @@ public class DataService {
             try {
                 String dtuResearcher = row.getString("dtuResearcher");                
                 String partnerResearcherQueryStr = getPartnerResearcherQueryStr(
-                        dtuResearcher, orgUri, startYear, endYear);                        
+                        dtuResearcher, orgUri, startYear, endYear, storeUtils);                        
                 log.debug("Partner researcher query:\n" + partnerResearcherQueryStr);
                 ArrayList<JSONObject> partnerResearchers = storeUtils.getFromStoreJSON(
                         partnerResearcherQueryStr);
@@ -1292,8 +1292,8 @@ public class DataService {
     }
     
     private String getPartnerResearcherQueryStr(String dtuResearcher, 
-            String org, Integer startYear, Integer endYear) {
-        ParameterizedSparqlString queryStr = new ParameterizedSparqlString(
+            String org, Integer startYear, Integer endYear, StoreUtils storeUtils) {
+        ParameterizedSparqlString queryStr = storeUtils.getQuery(
                 "SELECT DISTINCT " 
                 + "?partnerResearcher (MIN(?partnerResearcherFullName) AS ?name)"
                 + " (COUNT(DISTINCT ?pub) as ?number) " 
