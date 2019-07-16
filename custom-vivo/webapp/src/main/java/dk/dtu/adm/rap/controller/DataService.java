@@ -1280,9 +1280,10 @@ public class DataService {
                 String partnerResearcherQueryStr = getPartnerResearcherQueryStr(
                         dtuResearcher, orgUri, startYear, endYear);                        
                 log.debug("Partner researcher query:\n" + partnerResearcherQueryStr);
-                ArrayList<HashMap> partnerResearchers = storeUtils.getFromStore(
+                ArrayList<JSONObject> partnerResearchers = storeUtils.getFromStoreJSON(
                         partnerResearcherQueryStr);
-                row.put("partner_researchers", partnerResearchers);                
+                log.debug(partnerResearchers.size() + " partner researchers");
+                row.put("partner_researchers", new JSONArray(partnerResearchers));                
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
