@@ -20,8 +20,8 @@ CONSTRUCT {
         vivo:dateTimeValue ?dtv ;
         vivo:relatedBy ?address .
     ?dtv vivo:dateTime ?date .
-    FILTER("2014-01-01T00:00:00"^^xsd:dateTime <= ?date)
-    FILTER("2019-12-31T23:59:59"^^xsd:dateTime >= ?date)
+    FILTER(?startYear <= ?date)
+    FILTER(?endYear >= ?date)
     ?pub vivo:relatedBy ?dtuAddress .
     ?dtuAddress a wos:Address .
     ?dtuAddress vivo:relates d:org-technical-university-of-denmark .
