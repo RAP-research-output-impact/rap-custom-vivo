@@ -1318,7 +1318,7 @@ public class DataService {
                 + "  ?partnerAuthorship vivo:relates ?partnerResearcher . \n"  
                 + "  ?partnerResearcher a foaf:Person . \n"
                 + "  ?partnerResearcher rdfs:label ?partnerResearcherFullName . \n"
-                + "  FILTER(?partnerResearcher != <http://rap.adm.dtu.dk/individual/person-17096>) \n"
+                + "  FILTER(?partnerResearcher != ?dtuResearcher) \n"
                 + getYearDtv(startYear, endYear) 
                 + getDtvFilter(startYear, endYear) 
                 + "} \n"
