@@ -385,7 +385,7 @@ function doDtuResearchersTable(totals, startYear, endYear) {
             var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
             html += row;
             $.each( value.partner_researchers, function( key2, partnerRes ) {
-                var row = "<tr class=\"copubdept-child\"><td>";
+                var row = "<tr class=\"rep-row\"><td>";
                 var clink = "<a href=\"" + href + "?&partnerResearcherUri=" + encodeURIComponent(partnerRes.partnerResearcher) + "\" target=\"_blank\">" +  partnerRes.number + "</a>";
                 row +=  "</td><td class=\"rep-num\">" + clink + "</td><td>" + partnerRes.name + "</td></tr>";
                 html += row;
