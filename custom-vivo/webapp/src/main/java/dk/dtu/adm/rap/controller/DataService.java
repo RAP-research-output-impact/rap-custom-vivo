@@ -1241,7 +1241,7 @@ public class DataService {
         return storeUtils.getFromStoreJSON(query);
     }
 
-    private ArrayList getDtuResearchers(String orgUri, Integer startYear,
+    private ArrayList<JSONObject> getDtuResearchers(String orgUri, Integer startYear,
             Integer endYear, StoreUtils storeUtils) {
         log.debug("getDtuResearchers - " + orgUri);
         String rq = "" +
@@ -1273,7 +1273,60 @@ public class DataService {
         q2.setIri("org", orgUri);
         String query = q2.toString();
         log.debug("DTU researchers query:\n" + query);
-        return storeUtils.getFromStoreJSON(query);
+        ArrayList<JSONObject> json = storeUtils.getFromStoreJSON(query);
+        for(JSONObject row : json) {
+            try {
+                String dtuResearcher = row.getString("dtuResearcher");                
+                String partnerResearcherQueryStr = getPartnerResearcherQueryStr(
+                        dtuResearcher, orgUri, startYear, endYear);                        
+                log.debug("Partner researcher query:\n" + partnerResearcherQueryStr);
+                ArrayList<JSONObject> partnerResearchers = storeUtils.getFromStoreJSON(
+                        partnerResearcherQueryStr);
+                row.put("partner_researchers", partnerResearchers);                
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+         }
+        return json;        
+    }
+    
+    private String getPartnerResearcherQueryStr(String dtuResearcher, 
+            String org, Integer startYear, Integer endYear) {
+        ParameterizedSparqlString queryStr = new ParameterizedSparqlString(
+                "SELECT DISTINCT " 
+                + "?partnerResearcher (MIN(?partnerResearcherFullName) AS ?name)"
+                + " (COUNT(DISTINCT ?pub) as ?number) " 
+                + "WHERE { \n"
+                + "  ?org vivo:relatedBy ?address . \n" 
+                + "  ?address a wos:Address . \n" 
+                + "  ?pub vivo:relatedBy ?address . \n"
+                + "  ?pub a wos:Publication ; \n"
+                + "      vivo:relatedBy ?dtuAddress . \n"
+                + "  ?dtuAddress a wos:Address ; \n"
+                + "      vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> . \n"
+                + "  ?dtuAddress vivo:relatedBy ?authorship . \n"
+                + "  ?pub vivo:relatedBy ?authorship . \n"
+                + "  ?authorship a vivo:Authorship . \n"
+                + "  # Better to use label rather than fullName in order \n" 
+                + "  # to distinguish people who differ only by middle initial. \n" 
+                + "  #?authorship wos:fullName ?fullName .\n" 
+                + "  ?authorship vivo:relates ?dtuResearcher . \n"   
+                + "  ?address vivo:relatedBy ?partnerAuthorship . \n"
+                + "  ?pub vivo:relatedBy ?partnerAuthorship . \n"
+                + "  ?partnerAuthorship a vivo:Authorship . \n"
+                + "  ?partnerAuthorship vivo:relates ?partnerResearcher . \n"  
+                + "  ?partnerResearcher a foaf:Person . \n"
+                + "  ?partnerResearcher rdfs:label ?partnerResearcherFullName . \n"
+                + "  FILTER(?partnerResearcher != <http://rap.adm.dtu.dk/individual/person-17096>) \n"
+                + getYearDtv(startYear, endYear) 
+                + getDtvFilter(startYear, endYear) 
+                + "} \n"
+                + "GROUP BY ?partnerResearcher \n" 
+                + "ORDER BY DESC(?number) \n"
+                + "LIMIT 20 \n");
+        queryStr.setIri("dtuResearcher", dtuResearcher);
+        queryStr.setIri("org", org);
+        return queryStr.toString();
     }
 
     private ArrayList getWorldwidePubs(String dept, String yearStart,
