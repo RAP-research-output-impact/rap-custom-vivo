@@ -431,7 +431,7 @@ public class ExcelExport extends VitroHttpServlet {
             sheet.addMergedRegion(new CellRangeAddress(
                     startOfToc + index, startOfToc + index, 0, 2));
             XSSFCell tocCell = tocRow.createCell(0);
-            tocCell.setCellValue(index + ". " + tocItems.get(index));
+            tocCell.setCellValue(index + ". " + tocItems.get(index - 1));
             tocCell.setCellStyle(getHyperlinkStyle(wb));
             int target = rowCreator.getRowIndex() + 25;
             tocCell.setCellFormula
