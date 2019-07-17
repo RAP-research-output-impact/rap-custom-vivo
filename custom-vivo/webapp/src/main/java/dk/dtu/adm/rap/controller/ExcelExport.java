@@ -408,7 +408,7 @@ public class ExcelExport extends VitroHttpServlet {
         anchor.setCol1( col1 );
         anchor.setCol2( col2 );
         Picture pict = drawing.createPicture( anchor, pictureIndex );
-        //pict.resize();        
+        pict.resize();        
     }
     
     private static final boolean DETAILS = true;
