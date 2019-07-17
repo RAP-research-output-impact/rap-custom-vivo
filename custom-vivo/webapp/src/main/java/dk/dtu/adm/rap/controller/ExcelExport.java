@@ -208,7 +208,7 @@ public class ExcelExport extends VitroHttpServlet {
         addHeaderRow("Number of co-publications per year", wbs.getSubtitleStyle(), wb, sheet, rowCreator);
         try {
             addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex() - 1, rowCreator.getRowIndex() - 1 + 18, 0, 5);
-            for(int i = 0; i < 15; i++) {
+            for(int i = 0; i < 11; i++) {
                 rowCreator.createRow();
             }
         } catch (Exception e) {
