@@ -221,7 +221,7 @@ public class ExcelExport extends VitroHttpServlet {
         sheet.setRowBreak(rowCreator.getRowIndex());
         addHeaderRow("Number of co-publications by top research subjects", wbs.getSubtitleStyle(), wb, sheet, rowCreator);
         try {
-            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 30, 0, 30);
+            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 30, 0, 7);
             for(int i = 0; i < 28; i++) {
                 rowCreator.createRow();
             }
@@ -397,7 +397,7 @@ public class ExcelExport extends VitroHttpServlet {
         TranscoderInput input = new TranscoderInput(new StringReader(svgStr));
         TranscoderOutput output = new TranscoderOutput(png);        
         try {
-            transcoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, new Float(1000));
+            transcoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, new Float(500));
             transcoder.transcode(input, output);
         } catch (TranscoderException e) {
             throw new RuntimeException(e);
