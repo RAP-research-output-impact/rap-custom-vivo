@@ -829,6 +829,8 @@ public class ExcelExport extends VitroHttpServlet {
                             rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
                     cell = row.createCell(0);
                     cell.setCellValue(" ");
+                    cell = row.createCell(1);
+                    cell.setCellValue(" ");
                     cell.setCellStyle(wbs.getDataStyleText());
                     cell = row.createCell(2);
                     cell.setCellValue(total);
