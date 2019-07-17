@@ -426,18 +426,18 @@ public class ExcelExport extends VitroHttpServlet {
     }
     
     private void addTocRow(int startOfToc, int index, XSSFWorkbook wb, 
-            XSSFSheet sheet, RowCreator rowCreator) {
-            XSSFRow tocRow = sheet.getRow(startOfToc + index);
-            sheet.addMergedRegion(new CellRangeAddress(
-                    startOfToc + index, startOfToc + index, 0, 2));
-            XSSFCell tocCell = tocRow.createCell(0);
-            tocCell.setCellValue(index + ". " + tocItems.get(index - 1));
-            tocCell.setCellStyle(getHyperlinkStyle(wb));
-            int target = rowCreator.getRowIndex() + 25;
-            tocCell.setCellFormula
-                    ("HYPERLINK(\"#" + sheet.getSheetName() + "!A" 
-                            + target + "\", \"" + rowCreator.getRowIndex()
-                            + ". " + tocItems.get(index) + "\")");        
+        XSSFSheet sheet, RowCreator rowCreator) {
+        int rowNum = startOfToc + index;
+        XSSFRow tocRow = sheet.getRow(rowNum);
+        sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, 0, 2));
+        XSSFCell tocCell = tocRow.createCell(0);
+        tocCell.setCellValue(index + ". " + tocItems.get(index - 1));
+        tocCell.setCellStyle(getHyperlinkStyle(wb));
+        int target = rowCreator.getRowIndex() + 25;
+        tocCell.setCellFormula
+                ("HYPERLINK(\"#" + sheet.getSheetName() + "!A" 
+                        + target + "\", \"" + rowCreator.getRowIndex()
+                        + ". " + tocItems.get(index - 1) + "\")");        
     }
     
     private void addSummary(List<Integer> years, JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
