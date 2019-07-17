@@ -220,7 +220,7 @@ public class ExcelExport extends VitroHttpServlet {
         rowCreator.createRow();
         addHeaderRow("Number of co-publications by top research subjects", wbs.getSubtitleStyle(), wb, sheet, rowCreator);
         try {
-            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 42, 0, 20);
+            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 42, 0, 12);
             for(int i = 0; i < 30; i++) {
                 rowCreator.createRow();
             }
@@ -819,11 +819,11 @@ public class ExcelExport extends VitroHttpServlet {
                 cell.setCellStyle(wbs.getDataStyle());
                 cell = row.createCell(4);
                 cell.setCellStyle(wbs.getDataStyle());
-                JSONArray partnerRes = object.getJSONArray("partner_researchers");
-                for(int j = 0; j < partnerRes.length(); j++) {
-                    JSONObject dept = partnerRes.getJSONObject(j);
-                    int total = dept.getInt("number");
-                    String researcherName = dept.getString("name");
+                JSONArray partnerResrs = object.getJSONArray("partner_researchers");
+                for(int j = 0; j < partnerResrs.length(); j++) {
+                    JSONObject partnerRes = partnerResrs.getJSONObject(j);
+                    int total = partnerRes.getInt("number");
+                    String researcherName = partnerRes.getString("name");
                     row = rowCreator.createRow();
                     sheet.addMergedRegion(new CellRangeAddress(
                             rowCreator.rowIndex, rowCreator.rowIndex, 0, 1));
