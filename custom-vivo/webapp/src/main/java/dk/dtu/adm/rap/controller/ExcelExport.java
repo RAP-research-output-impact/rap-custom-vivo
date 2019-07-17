@@ -202,13 +202,13 @@ public class ExcelExport extends VitroHttpServlet {
         addHeaderRow("1. Collaboration overview", wbs.getTitleStyleThin(), wb, sheet, rowCreator);
         addTocRow(firstRowOfToc, 1, wbs, sheet, rowCreator);
         rowCreator.createRow();
-        addContentRow(getTotalPubs(json) + " co-publications in " 
+        addContentRow("In total: " + getTotalPubs(json) + " co-publications in " 
                 + getTotalCategories(json) + " subject categories", wb, sheet, rowCreator);
         rowCreator.createRow();
         addHeaderRow("Number of co-publications per year", wbs.getSubtitleStyle(), wb, sheet, rowCreator);
         try {
             addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 18, 0, 5);
-            for(int i = 0; i < 16; i++) {
+            for(int i = 0; i < 15; i++) {
                 rowCreator.createRow();
             }
         } catch (Exception e) {
@@ -220,8 +220,8 @@ public class ExcelExport extends VitroHttpServlet {
         rowCreator.createRow();
         addHeaderRow("Number of co-publications by top research subjects", wbs.getSubtitleStyle(), wb, sheet, rowCreator);
         try {
-            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 40, 0, 16);
-            for(int i = 0; i < 38; i++) {
+            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 42, 0, 20);
+            for(int i = 0; i < 30; i++) {
                 rowCreator.createRow();
             }
         } catch (Exception e) {
@@ -819,9 +819,9 @@ public class ExcelExport extends VitroHttpServlet {
                 cell.setCellStyle(wbs.getDataStyle());
                 cell = row.createCell(4);
                 cell.setCellStyle(wbs.getDataStyle());
-                JSONArray depts = object.getJSONArray("partner_researchers");
-                for(int j = 0; j < depts.length(); j++) {
-                    JSONObject dept = depts.getJSONObject(j);
+                JSONArray partnerRes = object.getJSONArray("partner_researchers");
+                for(int j = 0; j < partnerRes.length(); j++) {
+                    JSONObject dept = partnerRes.getJSONObject(j);
                     int total = dept.getInt("number");
                     String researcherName = dept.getString("name");
                     row = rowCreator.createRow();

@@ -1283,7 +1283,16 @@ public class DataService {
                 ArrayList<JSONObject> partnerResearchers = storeUtils.getFromStoreJSON(
                         partnerResearcherQueryStr);
                 log.debug(partnerResearchers.size() + " partner researchers");
-                row.put("partner_researchers", new JSONArray(partnerResearchers));                
+                JSONArray partnerResearchersJson = new JSONArray(partnerResearchers);
+                if(partnerResearchersJson.length() == 1 
+                        && !partnerResearchersJson.getJSONObject(0).has("name")) {
+                    // Because the SPARQL has a GROUP BY, a lack of any results
+                    // will return a single row with a 0 count but no name value.
+                    // We don't want this, so we will return an empty array instead.
+                    row.put("partner_researchers", new JSONArray());
+                } else {
+                    row.put("partner_researchers", partnerResearchersJson);
+                }
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
