@@ -220,7 +220,7 @@ public class ExcelExport extends VitroHttpServlet {
         rowCreator.createRow();
         addHeaderRow("Number of co-publications by top research subjects", wbs.getSubtitleStyle(), wb, sheet, rowCreator);
         try {
-            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 30, 0, 7);
+            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 30, 0, 11);
             for(int i = 0; i < 28; i++) {
                 rowCreator.createRow();
             }
@@ -386,7 +386,7 @@ public class ExcelExport extends VitroHttpServlet {
         CreationHelper helper = workbook.getCreationHelper();
         final XSSFDrawing drawing = sheet.createDrawingPatriarch();
         final ClientAnchor anchor = helper.createClientAnchor();
-        anchor.setAnchorType( ClientAnchor.AnchorType.MOVE_AND_RESIZE );
+        anchor.setAnchorType( ClientAnchor.AnchorType.MOVE_DONT_RESIZE );
         // add namespace because without it, Batik will balk
         if(!svgStr.contains("xmlns")) {
             svgStr = svgStr.replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"");
@@ -396,6 +396,7 @@ public class ExcelExport extends VitroHttpServlet {
         TranscoderInput input = new TranscoderInput(new StringReader(svgStr));
         TranscoderOutput output = new TranscoderOutput(png);        
         try {
+            transcoder.addTranscodingHint(PNGTranscoder.arg0, arg1);
             transcoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, new Float(1500));
             transcoder.transcode(input, output);
         } catch (TranscoderException e) {
