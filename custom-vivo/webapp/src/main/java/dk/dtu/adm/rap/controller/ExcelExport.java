@@ -476,7 +476,7 @@ public class ExcelExport extends VitroHttpServlet {
         XSSFCell tocCell = tocRow.createCell(0);
         tocCell.setCellValue(index + ". " + tocItems.get(index - 1));
         tocCell.setCellStyle(wbs.getHyperlinkStyle());
-        int target = rowCreator.getRowIndex() + 1;
+        int target = rowCreator.getRowIndex() + 10;
         tocCell.setCellFormula
                 ("HYPERLINK(\"#" + sheet.getSheetName() + "!A" 
                         + target + "\", \"" + index + ". " 
