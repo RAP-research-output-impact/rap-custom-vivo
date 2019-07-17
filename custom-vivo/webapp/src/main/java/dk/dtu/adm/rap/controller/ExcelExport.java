@@ -107,6 +107,16 @@ public class ExcelExport extends VitroHttpServlet {
             "% of publications in top 1% most cited\r\n" +  
             "Proportion of the publications belonging to the top 1% most cited "
             + "in a given subject category, year, and publication type.";
+    private static final List<String> tocItems = Arrays.asList(
+            "Collaboration overview",
+            "Compare key output and impact indicators",
+            "Compare annual publication and co-publication output",
+            "Compare partner's top subjects with DTU and co-publications",
+            "Compare top collaboration subjects with partner and DTU subjects",
+            "Collaboration by DTU department",
+            "Collaboration bu DTU researcher (top 20)",
+            "Collaboration by funder (top 20)",
+            "Notes and hints");
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -180,10 +190,15 @@ public class ExcelExport extends VitroHttpServlet {
         } catch (Exception e) {
             log.error(e, e);
         }
+        int firstRowOfToc = rowCreator.getRowIndex();
+        for(int i = 0; i < tocItems.size(); i++) {
+            rowCreator.createRow();
+        }
         rowCreator.createRow();
         addHeaderRow("1. Collaboration overview", getTitleStyleThin(wb), wb, sheet, rowCreator);
-        addHeaderRow(getTotalPubs(json) + " co-publications in " 
-                + getTotalCategories(json) + " subject categories", getDataStyleText(wb), wb, sheet, rowCreator);
+        addTocRow(firstRowOfToc, 1, wb, sheet, rowCreator);
+        addContentRow(getTotalPubs(json) + " co-publications in " 
+                + getTotalCategories(json) + " subject categories", wb, sheet, rowCreator);
         addHeaderRow("Number of co-publications per year", getSubtitleStyle(wb), wb, sheet, rowCreator);
         try {
             addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex() + 2, rowCreator.getRowIndex() + 22, 0, 4);
@@ -208,6 +223,7 @@ public class ExcelExport extends VitroHttpServlet {
         rowCreator.createRow();
         sheet.setRowBreak(rowCreator.getRowIndex());
         addHeaderRow("2. Compare key output and impact indicators", getTitleStyleThin(wb), wb, sheet, rowCreator);
+        addTocRow(firstRowOfToc, 2, wb, sheet, rowCreator);
         try {
             addSummary(years, json, wb, sheet, rowCreator, pt);
         } catch (Exception e) {
@@ -216,6 +232,7 @@ public class ExcelExport extends VitroHttpServlet {
         rowCreator.createRow();
         rowCreator.createRow();
         addHeaderRow("3. Compare the annual publication and co-publication output", getTitleStyleThin(wb), wb, sheet, rowCreator);
+        addTocRow(firstRowOfToc, 3, wb, sheet, rowCreator);
         try {
             addTotals(years, json, wb, sheet, rowCreator, pt);
         } catch (Exception e) {
@@ -223,6 +240,7 @@ public class ExcelExport extends VitroHttpServlet {
         }
         sheet.setRowBreak(rowCreator.getRowIndex());
         addHeaderRow("4. Compare partner’s top subjects with DTU and co-publications", getTitleStyleThin(wb), wb, sheet, rowCreator);
+        addTocRow(firstRowOfToc, 4, wb, sheet, rowCreator);
         try {
             addTopCategories(json, wb, sheet, rowCreator, pt);
         } catch (Exception e) {
@@ -232,6 +250,7 @@ public class ExcelExport extends VitroHttpServlet {
         rowCreator.createRow();
         sheet.setRowBreak(rowCreator.getRowIndex());
         addHeaderRow("5. Compare top collaboration subjects with partner and DTU subjects", getTitleStyleThin(wb), wb, sheet, rowCreator);
+        addTocRow(firstRowOfToc, 5, wb, sheet, rowCreator);
         try {
             addCategories(json, wb, sheet, rowCreator, pt);
         } catch (Exception e) {
@@ -240,6 +259,7 @@ public class ExcelExport extends VitroHttpServlet {
         sheet.setRowBreak(rowCreator.getRowIndex());
         sheet.setRowBreak(rowCreator.getRowIndex());
         addHeaderRow("6. Collaboration by DTU department", getTitleStyleThin(wb), wb, sheet, rowCreator);
+        addTocRow(firstRowOfToc, 6, wb, sheet, rowCreator);
         try {
             addByDepartment(byDeptJson, wb, sheet, rowCreator, pt, details);
         } catch (Exception e) {
@@ -249,6 +269,7 @@ public class ExcelExport extends VitroHttpServlet {
         rowCreator.createRow();
         sheet.setRowBreak(rowCreator.getRowIndex());
         addHeaderRow("7. Collaboration by DTU researcher (top 20)", getTitleStyleThin(wb), wb, sheet, rowCreator);
+        addTocRow(firstRowOfToc, 7, wb, sheet, rowCreator);
         try {
             addDtuResearchers(json, wb, sheet, rowCreator, pt);
         } catch (Exception e) {
@@ -258,6 +279,7 @@ public class ExcelExport extends VitroHttpServlet {
         rowCreator.createRow();
         sheet.setRowBreak(rowCreator.getRowIndex());
         addHeaderRow("8. Collaboration by funder (top 20)", getTitleStyleThin(wb), wb, sheet, rowCreator);
+        addTocRow(firstRowOfToc, 8, wb, sheet, rowCreator);
         try {
             addFunders(json, wb, sheet, rowCreator, pt);
         } catch (Exception e) {
@@ -265,6 +287,7 @@ public class ExcelExport extends VitroHttpServlet {
         }
         sheet.setRowBreak(rowCreator.getRowIndex());
         addHeaderRow("9. Notes and hints", getTitleStyleThin(wb), wb, sheet, rowCreator);
+        addTocRow(firstRowOfToc, 9, wb, sheet, rowCreator);
         addNotesAndHints(wb, sheet, rowCreator, pt);
         pt.applyBorders(sheet);     
         sheet.setColumnWidth(0, 7500);
@@ -290,6 +313,27 @@ public class ExcelExport extends VitroHttpServlet {
         XSSFCell header = headerRow.createCell(0);
         header.setCellValue(content);
         header.setCellStyle(cellStyle);
+    }
+    
+    private void addContentRow(String content, 
+            XSSFWorkbook wb, XSSFSheet sheet, RowCreator rowCreator) {
+        addContentRow(content, null, null, wb, sheet, rowCreator);
+    }
+    
+    private void addContentRow(String content, Integer boldStart, Integer boldEnd, 
+            XSSFWorkbook wb, XSSFSheet sheet, RowCreator rowCreator) {
+        XSSFRow headerRow = rowCreator.createRow();
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, HEADER_WIDTH - 1));
+        XSSFCell header = headerRow.createCell(0);        
+        if(boldStart != null && boldEnd != null) {
+            XSSFFont boldFont = wb.createFont();
+            boldFont.setBold(true);
+            XSSFRichTextString rtf = new XSSFRichTextString(content);
+            rtf.applyFont(boldStart, boldEnd, boldFont);
+        } else {
+            header.setCellValue(content);
+        }
     }
     
     private void addSvg(String svgStr, XSSFSheet sheet, XSSFWorkbook workbook, 
@@ -378,37 +422,22 @@ public class ExcelExport extends VitroHttpServlet {
         XSSFCell contentsHeader = contentsHeaderRow.createCell(0);
         contentsHeader.setCellValue("Contents:");
         contentsHeader.setCellStyle(getTitleStyleThin(wb));
-        rowCreator.createRow();
-        List<String> tocItems = Arrays.asList(
-                "Collaboration overview",
-                "Compare key output and impact indicators",
-                "Compare annual publication and co-publication output",
-                "Compare partner's top subjects with DTU and co-publications",
-                "Compare top collaboration subjects with partner and DTU subjects",
-                "Collaboration by DTU department",
-                "Collaboration bu DTU researcher (top 20)",
-                "Collaboration by funder (top 20)",
-                "Notes and hints");
-        addToc(tocItems, wb, sheet, rowCreator);
-        rowCreator.createRow();
+        rowCreator.createRow();      
     }
     
-    private void addToc(List<String> tocItems, XSSFWorkbook wb, 
+    private void addTocRow(int startOfToc, int index, XSSFWorkbook wb, 
             XSSFSheet sheet, RowCreator rowCreator) {
-        int index = 0;
-        for(String tocItem : tocItems) {
-            index++;
-            XSSFRow tocRow = rowCreator.createRow();
+            XSSFRow tocRow = sheet.getRow(startOfToc + index);
             sheet.addMergedRegion(new CellRangeAddress(
                     rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
             XSSFCell tocCell = tocRow.createCell(0);
-            tocCell.setCellValue(index + ". " + tocItem);
+            tocCell.setCellValue(index + ". " + tocItems.get(index));
             tocCell.setCellStyle(getHyperlinkStyle(wb));
             int target = rowCreator.getRowIndex() + 25;
             tocCell.setCellFormula
                     ("HYPERLINK(\"#" + sheet.getSheetName() + "!A" 
-                            + target + "\", \"" + tocItem + "\")");        
-        }
+                            + target + "\", \"" + rowCreator.getRowIndex()
+                            + ". " + tocItems.get(index) + "\")");        
     }
     
     private void addSummary(List<Integer> years, JSONObject data, XSSFWorkbook wb, XSSFSheet sheet, 
@@ -720,8 +749,62 @@ public class ExcelExport extends VitroHttpServlet {
     
     private void addNotesAndHints(XSSFWorkbook wb, XSSFSheet sheet, 
             RowCreator rowCreator, PropertyTemplate pt) {
-        addHeaderRow("Source: All data is retrieved from Web of Science and InCites of Clarivate Analytics.", getDataStyleText(wb), wb, sheet, rowCreator);
-        addHeaderRow("Hints: How to use the eight sections of the collaboration report.", getDataStyleText(wb), wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addContentRow("Source: All data is retrieved from Web of Science and InCites of Clarivate Analytics.", 0, 6, wb, sheet, rowCreator);
+        addContentRow("Hints: How to use the eight sections of the collaboration report.", 0, 5, wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addHeaderRow("1. Collaboration overview", getRedStyle(wb), wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addContentRow("    Quick overview of the collaboration", wb, sheet, rowCreator);
+        addContentRow("      - How many co-publications (in the selected timespan)?", wb, sheet, rowCreator); 
+        addContentRow("      - How many subject categories (out of 250 in total)?", wb, sheet, rowCreator); 
+        addContentRow("      - What are the most popular subject categories?", wb, sheet, rowCreator);
+        addContentRow("    Remember that you may change the timespan and generate a new report.", 0, 8, wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addHeaderRow("2. Compare key output and impact indicators", getRedStyle(wb), wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addContentRow("    Compare DTU and the chosen partner in the chosen timespan:", wb, sheet, rowCreator);
+        addContentRow("      - How many publications and citations?", wb, sheet, rowCreator);
+        addContentRow("      - How are they doing wrt. citation impact – simple and normalized?", wb, sheet, rowCreator);
+        addContentRow("      - How are they doing wrt. excellence – proportion of publications in top 10% and top 1% most cited?", wb, sheet, rowCreator);
+        addContentRow("      - How much are they collaborating – internationally and with industry?", wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addHeaderRow("3. Compare annual publication and co-publication output", getRedStyle(wb), wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addContentRow("    Year by year: How many publications from the two universities and how many co-publications?", wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addHeaderRow("4. Compare partner’s top subjects with DTU and co-publications", getRedStyle(wb), wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addContentRow("    Top subjects of the partner, of DTU and of the resulting co-publications:", wb, sheet, rowCreator);
+        addContentRow("      - Sort by partner to see the partner’s top 20 subjects.", wb, sheet, rowCreator);
+        addContentRow("      - And how they rank on the DTU side?", wb, sheet, rowCreator);
+        addContentRow("      - Are we collaborating in the partner’s top 20 subjects, or outside?", wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addHeaderRow("5. Compare top collaboration subjects with partner and DTU subjects", getRedStyle(wb), wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addContentRow("    Looking at the top 20 subjects of the co-publications:", wb, sheet, rowCreator);
+        addContentRow("      - How do they match the top 20 of the partner?", wb, sheet, rowCreator);
+        addContentRow("      - How do they match the top 20 of DTU?", wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addHeaderRow("6. Collaboration by DTU department", getRedStyle(wb), wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addContentRow("    Listing all the DTU departments involved in the collaboration:", wb, sheet, rowCreator);
+        addContentRow("      - How many co-publications for each department?", wb, sheet, rowCreator);
+        addContentRow("      - Follow link to see a list of a particular department’s co-publications:", wb, sheet, rowCreator);
+        addContentRow("          - Title of publications, involved researchers on DTU side as well as partner side.", wb, sheet, rowCreator);
+        addContentRow("          - Link to all details about a single publication and its citations.", wb, sheet, rowCreator);
+        addContentRow("          - Expand to see the departments involved on the partner side.", wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addHeaderRow("7. Collaboration by DTU researcher (top 20)", getRedStyle(wb), wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addContentRow("    Listing the 20 most active DTU researchers in this collaboration in this timespan:", wb, sheet, rowCreator);
+        addContentRow("      - Follow link to all the co-publications of a particular researcher.", wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addHeaderRow("8. Collaboration by funder (top 20)", getRedStyle(wb), wb, sheet, rowCreator);
+        rowCreator.createRow();
+        addContentRow("    Listing the 20 most used funders in this collaboration in this timespan. NB:", wb, sheet, rowCreator);
+        addContentRow("      - Not all publications provide funding details.", wb, sheet, rowCreator);
+        addContentRow("      - Funder names are not (yet) normalized, but Clarivate is working to achieve this soon.", wb, sheet, rowCreator);
     }
     
     private void addNameNumberArray(JSONArray array, List<String> dataColumns, 
@@ -836,6 +919,21 @@ public class ExcelExport extends VitroHttpServlet {
                 BorderStyle.MEDIUM, IndexedColors.BLACK.getIndex(), BorderExtent.BOTTOM);
     }
     
+    private CellStyle redStyle;
+    
+    private CellStyle getRedStyle(XSSFWorkbook wb) {
+        if(this.redStyle != null) {
+            return this.redStyle;
+        } else {
+            CellStyle redStyle = wb.createCellStyle();
+            XSSFFont redFont = wb.createFont();
+            redFont.setColor(IndexedColors.DARK_RED.index);
+            redStyle.setFont(redFont);
+            this.redStyle = redStyle;
+            return redStyle;
+        }
+    }
+    
     private CellStyle hyperlinkStyle;
     
     private CellStyle getHyperlinkStyle(XSSFWorkbook wb) {
@@ -876,7 +974,7 @@ public class ExcelExport extends VitroHttpServlet {
         } else {
             CellStyle titleStyle = wb.createCellStyle();
             XSSFFont titleFont = wb.createFont();
-            titleFont.setBold(true);
+            titleFont.setBold(false);
             titleFont.setFontHeightInPoints((short) 15);
             titleStyle.setFont(titleFont);
             this.titleStyleThin = titleStyle;
