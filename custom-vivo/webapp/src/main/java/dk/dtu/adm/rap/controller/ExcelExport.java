@@ -207,7 +207,7 @@ public class ExcelExport extends VitroHttpServlet {
         rowCreator.createRow();
         addHeaderRow("Number of co-publications per year", wbs.getSubtitleStyle(), wb, sheet, rowCreator);
         try {
-            addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 18, 0, 7);
+            addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex() - 1, rowCreator.getRowIndex() - 1 + 18, 0, 7);
             for(int i = 0; i < 15; i++) {
                 rowCreator.createRow();
             }
@@ -218,9 +218,10 @@ public class ExcelExport extends VitroHttpServlet {
         start = System.currentTimeMillis();
         rowCreator.createRow();
         rowCreator.createRow();
+        sheet.setRowBreak(rowCreator.getRowIndex());
         addHeaderRow("Number of co-publications by top research subjects", wbs.getSubtitleStyle(), wb, sheet, rowCreator);
         try {
-            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 30, 0, 11);
+            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 30, 0, 30);
             for(int i = 0; i < 28; i++) {
                 rowCreator.createRow();
             }
