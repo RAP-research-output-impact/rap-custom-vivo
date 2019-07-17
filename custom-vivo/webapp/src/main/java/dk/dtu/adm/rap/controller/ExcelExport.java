@@ -31,15 +31,18 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.BorderExtent;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.ss.usermodel.Comment;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.FontUnderline;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Picture;
@@ -49,6 +52,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.PropertyTemplate;
 import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
@@ -382,7 +386,7 @@ public class ExcelExport extends VitroHttpServlet {
                 "Compare partner's top subjects with DTU and co-publications",
                 "Compare top collaboration subjects with partner and DTU subjects",
                 "Collaboration by DTU department",
-                "Collaboration bu DTU reserarcher (top 20)",
+                "Collaboration bu DTU researcher (top 20)",
                 "Collaboration by funder (top 20)",
                 "Notes and hints");
         addToc(tocItems, wb, sheet, rowCreator);
@@ -391,16 +395,19 @@ public class ExcelExport extends VitroHttpServlet {
     
     private void addToc(List<String> tocItems, XSSFWorkbook wb, 
             XSSFSheet sheet, RowCreator rowCreator) {
+        int index = 0;
         for(String tocItem : tocItems) {
+            index++;
             XSSFRow tocRow = rowCreator.createRow();
             sheet.addMergedRegion(new CellRangeAddress(
                     rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
             XSSFCell tocCell = tocRow.createCell(0);
-            tocCell.setCellValue(tocItem);
+            tocCell.setCellValue(index + ". " + tocItem);
+            tocCell.setCellStyle(getHyperlinkStyle(wb));
+            int target = rowCreator.getRowIndex() + 25;
             tocCell.setCellFormula
                     ("HYPERLINK(\"#" + sheet.getSheetName() + "!A" 
-                            + rowCreator.getRowIndex() + 25 
-                            + "\", \"" + tocItem + "\")");        
+                            + target + "\", \"" + tocItem + "\")");        
         }
     }
     
@@ -827,6 +834,22 @@ public class ExcelExport extends VitroHttpServlet {
         pt.drawBorders(new CellRangeAddress(
                 rowCreator.getRowIndex(), rowCreator.getRowIndex(), 0, width - 1),
                 BorderStyle.MEDIUM, IndexedColors.BLACK.getIndex(), BorderExtent.BOTTOM);
+    }
+    
+    private CellStyle hyperlinkStyle;
+    
+    private CellStyle getHyperlinkStyle(XSSFWorkbook wb) {
+        if(hyperlinkStyle != null) {
+            return hyperlinkStyle;
+        } else {
+            CellStyle hyperlinkStyle = wb.createCellStyle();
+            XSSFFont hyperlinkFont = wb.createFont();
+            hyperlinkFont.setUnderline(FontUnderline.SINGLE);
+            hyperlinkFont.setColor(IndexedColors.BLUE.getIndex());
+            hyperlinkStyle.setFont(hyperlinkFont);
+            this.titleStyleBold = hyperlinkStyle;
+            return hyperlinkStyle;
+        }
     }
     
     private CellStyle titleStyleBold;
