@@ -429,7 +429,7 @@ public class ExcelExport extends VitroHttpServlet {
             XSSFSheet sheet, RowCreator rowCreator) {
             XSSFRow tocRow = sheet.getRow(startOfToc + index);
             sheet.addMergedRegion(new CellRangeAddress(
-                    rowCreator.rowIndex, rowCreator.rowIndex, 0, 2));
+                    startOfToc + index, startOfToc + index, 0, 2));
             XSSFCell tocCell = tocRow.createCell(0);
             tocCell.setCellValue(index + ". " + tocItems.get(index));
             tocCell.setCellStyle(getHyperlinkStyle(wb));
