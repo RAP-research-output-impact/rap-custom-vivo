@@ -207,8 +207,8 @@ public class ExcelExport extends VitroHttpServlet {
         rowCreator.createRow();
         addHeaderRow("Number of co-publications per year", wbs.getSubtitleStyle(), wb, sheet, rowCreator);
         try {
-            addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 20, 0, 4);
-            for(int i = 0; i < 19; i++) {
+            addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 18, 0, 5);
+            for(int i = 0; i < 17; i++) {
                 rowCreator.createRow();
             }
         } catch (Exception e) {
@@ -220,8 +220,8 @@ public class ExcelExport extends VitroHttpServlet {
         rowCreator.createRow();
         addHeaderRow("Number of co-publications by top research subjects", wbs.getSubtitleStyle(), wb, sheet, rowCreator);
         try {
-            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 30, 0, 10);
-            for(int i = 0; i < 28; i++) {
+            addSvg(svgStr1, sheet, wb, rowCreator.getRowIndex(), rowCreator.getRowIndex() + 40, 0, 12);
+            for(int i = 0; i < 38; i++) {
                 rowCreator.createRow();
             }
         } catch (Exception e) {
@@ -475,7 +475,7 @@ public class ExcelExport extends VitroHttpServlet {
         XSSFCell tocCell = tocRow.createCell(0);
         tocCell.setCellValue(index + ". " + tocItems.get(index - 1));
         tocCell.setCellStyle(wbs.getHyperlinkStyle());
-        int target = rowCreator.getRowIndex();
+        int target = rowCreator.getRowIndex() + 1;
         tocCell.setCellFormula
                 ("HYPERLINK(\"#" + sheet.getSheetName() + "!A" 
                         + target + "\", \"" + index + ". " 
