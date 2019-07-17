@@ -396,7 +396,6 @@ public class ExcelExport extends VitroHttpServlet {
         TranscoderInput input = new TranscoderInput(new StringReader(svgStr));
         TranscoderOutput output = new TranscoderOutput(png);        
         try {
-            transcoder.addTranscodingHint(PNGTranscoder.arg0, arg1);
             transcoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, new Float(1500));
             transcoder.transcode(input, output);
         } catch (TranscoderException e) {
