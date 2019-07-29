@@ -146,14 +146,14 @@ public class StoreUtils {
         return results;
     }
 
-    public ArrayList getFromStoreJSON(String selectQuery) {
+    public ArrayList<JSONObject> getFromStoreJSON(String selectQuery) {
         final ArrayList<JSONObject> outRows = new ArrayList<JSONObject>();
         try {
             ResultSet result = RDFServiceUtils.sparqlSelectQuery(selectQuery, this.rdfService);
             while(result.hasNext()) {
                 JSONObject thisItem = new JSONObject();
                 QuerySolution soln = result.nextSolution();
-                Iterator iter = soln.varNames();
+                Iterator<String> iter = soln.varNames();
                 while(iter.hasNext()) {
                     String name = (String)iter.next();
                     RDFNode val = soln.get(name);

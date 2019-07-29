@@ -29,6 +29,13 @@ CONSTRUCT {
     ?authorship a vivo:Authorship .
     ?authorship vivo:relates ?dtuAddress .
     ?authorship vivo:relates ?dtuResearcher .
+    ?address vivo:relatedBy ?partnerAuthorship .
+    ?pub vivo:relatedBy ?partnerAuthorship .
+    ?partnerAuthorship a vivo:Authorship .
+    ?partnerAuthorship vivo:relates ?partnerResearcher .  
+    ?partnerResearcher a foaf:Person .
+    ?partnerResearcher rdfs:label ?partnerResearcherFullName .
+    FILTER(?partnerResearcher != ?dtuResearcher)
     OPTIONAL {
         ?pub wos:wosId ?wosId ;
             wos:referenceCount ?refCount ;
