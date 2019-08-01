@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -1268,23 +1270,32 @@ public class DataService {
                 "}\r\n" +
                 "GROUP BY ?dtuResearcher \r\n" +
                 "ORDER BY DESC(?number)\r\n" +
-                "LIMIT 20";
+                "LIMIT 40";
         ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
         q2.setIri("org", orgUri);
         String query = q2.toString();
         log.debug("DTU researchers query:\n" + query);
         ArrayList<JSONObject> json = storeUtils.getFromStoreJSON(query);
+        Set<String> done = new HashSet<String>();
+        int researcherCount = 0;
+        ArrayList<JSONObject> deadRows = new ArrayList<JSONObject>();
         for(JSONObject row : json) {
             try {
-                String dtuResearcher = row.getString("dtuResearcher");                
+                String name = row.getString("name");
+                if (done.contains(name)) {
+                    deadRows.add(row);
+                    continue;
+                }
+                done.add(name);
+                String dtuResearcher = row.getString("dtuResearcher");
                 String partnerResearcherQueryStr = getPartnerResearcherQueryStr(
-                        dtuResearcher, orgUri, startYear, endYear, storeUtils);                        
+                        dtuResearcher, orgUri, startYear, endYear, storeUtils);
                 log.debug("Partner researcher query:\n" + partnerResearcherQueryStr);
                 ArrayList<JSONObject> partnerResearchers = storeUtils.getFromStoreJSON(
                         partnerResearcherQueryStr);
                 log.debug(partnerResearchers.size() + " partner researchers");
                 JSONArray partnerResearchersJson = new JSONArray(partnerResearchers);
-                if(partnerResearchersJson.length() == 1 
+                if(partnerResearchersJson.length() == 1
                         && !partnerResearchersJson.getJSONObject(0).has("name")) {
                     // Because the SPARQL has a GROUP BY, a lack of any results
                     // will return a single row with a 0 count but no name value.
@@ -1293,22 +1304,29 @@ public class DataService {
                 } else {
                     row.put("partner_researchers", partnerResearchersJson);
                 }
+                researcherCount++;
+                if (researcherCount == 20) {
+                    break;
+                }
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
-         }
-        return json;        
+        }
+        for(JSONObject row : deadRows) {
+            json.remove(row);
+        }
+        return json;
     }
-    
-    private String getPartnerResearcherQueryStr(String dtuResearcher, 
+
+    private String getPartnerResearcherQueryStr(String dtuResearcher,
             String org, Integer startYear, Integer endYear, StoreUtils storeUtils) {
         ParameterizedSparqlString queryStr = storeUtils.getQuery(
-                "SELECT DISTINCT " 
+                "SELECT DISTINCT "
                 + "?partnerResearcher (MIN(?partnerResearcherFullName) AS ?name)"
-                + " (COUNT(DISTINCT ?pub) as ?number) " 
+                + " (COUNT(DISTINCT ?pub) as ?number) "
                 + "WHERE { \n"
-                + "  ?org vivo:relatedBy ?address . \n" 
-                + "  ?address a wos:Address . \n" 
+                + "  ?org vivo:relatedBy ?address . \n"
+                + "  ?address a wos:Address . \n"
                 + "  ?pub vivo:relatedBy ?address . \n"
                 + "  ?pub a wos:Publication ; \n"
                 + "      vivo:relatedBy ?dtuAddress . \n"
@@ -1317,21 +1335,21 @@ public class DataService {
                 + "  ?dtuAddress vivo:relatedBy ?authorship . \n"
                 + "  ?pub vivo:relatedBy ?authorship . \n"
                 + "  ?authorship a vivo:Authorship . \n"
-                + "  # Better to use label rather than fullName in order \n" 
-                + "  # to distinguish people who differ only by middle initial. \n" 
-                + "  #?authorship wos:fullName ?fullName .\n" 
-                + "  ?authorship vivo:relates ?dtuResearcher . \n"   
+                + "  # Better to use label rather than fullName in order \n"
+                + "  # to distinguish people who differ only by middle initial. \n"
+                + "  #?authorship wos:fullName ?fullName .\n"
+                + "  ?authorship vivo:relates ?dtuResearcher . \n"
                 + "  ?address vivo:relatedBy ?partnerAuthorship . \n"
                 + "  ?pub vivo:relatedBy ?partnerAuthorship . \n"
                 + "  ?partnerAuthorship a vivo:Authorship . \n"
-                + "  ?partnerAuthorship vivo:relates ?partnerResearcher . \n"  
+                + "  ?partnerAuthorship vivo:relates ?partnerResearcher . \n"
                 + "  ?partnerResearcher a foaf:Person . \n"
                 + "  ?partnerResearcher rdfs:label ?partnerResearcherFullName . \n"
                 + "  FILTER(?partnerResearcher != ?dtuResearcher) \n"
-                + getYearDtv(startYear, endYear) 
-                + getDtvFilter(startYear, endYear) 
+                + getYearDtv(startYear, endYear)
+                + getDtvFilter(startYear, endYear)
                 + "} \n"
-                + "GROUP BY ?partnerResearcher \n" 
+                + "GROUP BY ?partnerResearcher \n"
                 + "ORDER BY DESC(?number) \n"
                 + "LIMIT 20 \n");
         queryStr.setIri("dtuResearcher", dtuResearcher);
