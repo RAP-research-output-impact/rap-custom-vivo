@@ -359,6 +359,16 @@
                 }
                 return false;
             }
+            if (hasClass(e.target, 'view-resea')) {
+                $(e.target).parents('tr').nextUntil('.copubresea-head').toggle();
+                label = $(e.target);
+                if (label.html()=="Expand to show details"){
+                    label.html('Collapse to hide details');
+                } else {
+                    label.html('Expand to show details');
+                }
+                return false;
+            }
         }, false);
     }
 </script>

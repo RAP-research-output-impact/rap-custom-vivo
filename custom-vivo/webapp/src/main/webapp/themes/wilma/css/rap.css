@@ -45,7 +45,7 @@
 }
 td.dtu-dept-num {
     text-align: right;
-    padding-right: 15px;
+    padding-right: 5px;
 }
 
 
@@ -221,6 +221,11 @@ div.copubdept-sub {
 }
 
 tr.copubdept-child {
+    display: none;
+    background: #e6e6e6;
+}
+
+tr.copubresea-child {
     display: none;
     background: #e6e6e6;
 }
@@ -445,7 +450,7 @@ table#rep5 th.col1 {
 table#rep5 th.col2 {
     width: 100px;
     text-align: right;
-    padding-right: 15px;
+    padding-right: 5px;
 }
 table#rep5 th.col3 {
     width: 412px;

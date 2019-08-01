@@ -382,10 +382,11 @@ function doDtuResearchersTable(totals, startYear, endYear) {
                 href += "&endYear=" + endYear;
             }
             var coPubLink = "<a href=\"" + href + "\" target=\"_blank\">" +  value.number + "</a>";
-            var row = "<tr class=\"rep-row\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td></tr>";
+            var row = "<tr class=\"copubresea-head\" id=\"cc-" + idkey(value.name) + "\"><td class=\"rep-label\">" + value.name + "</td><td class=\"rep-num\">" + coPubLink + "</td>";
+            row += "<td><a class=\"view-resea\">Expand to show details</a></td></tr>";
             html += row;
             $.each( value.partner_researchers, function( key2, partnerRes ) {
-                var row = "<tr class=\"rep-row\"><td>";
+                var row = "<tr class=\"copubresea-child\"><td>";
                 var clink = "<a href=\"" + href + "&partnerResearcherUri=" + encodeURIComponent(partnerRes.partnerResearcher) + "\" target=\"_blank\">" +  partnerRes.number + "</a>";
                 row +=  "</td><td class=\"rep-num\">" + clink + "</td><td>" + partnerRes.name + "</td></tr>";
                 html += row;
@@ -412,7 +413,7 @@ function doDepartmentTable(totals, name, startYear, endYear) {
             var coPubLink = "<a href=\"" + base + "/copubs-by-dept/" + value.org.split("/")[4] + "?collab=" + individualLocalName + yearParams + "\" target=\"_blank\">" +  value.num + "</a>";
             //link = value.name;
             var row = "<tr class=\"copubdept-head\"><td class=\"rep-label\">";
-            row += value.name + "</td><td class=\"dtu-dept-num\">" + coPubLink + "</td><td><a class=\"view-dept\">Expand to show details</a></td></tr>"
+            row += value.name + "</td><td class=\"dtu-dept-num\">" + coPubLink + "</td><td><a class=\"view-dept\">Expand to show details</a></td></tr>";
             html += row
         }
         $.each( value.sub_orgs, function( k2, subOrg ) {
