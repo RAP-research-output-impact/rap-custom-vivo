@@ -495,7 +495,7 @@ table#rep5 th.col3 {
     text-align: right;
 }
 #sort-main {
-    display: inline-block;
+    display: inline;
     height: 100%;
     cursor: pointer;
     color: white;

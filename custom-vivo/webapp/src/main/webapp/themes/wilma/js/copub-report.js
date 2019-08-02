@@ -863,9 +863,9 @@ function doPubCountTable(totals, DTUtotals, copubsTotal, copubs) {
     var html = '';
     $.each(years, function(key, value) {
         html += "<tr><td class=\"rep-label\">" + key;
-        if (key > 2017) {
-            html += "<sup>*</sup>";
-        }
+//      if (key > 2017) {
+//          html += "<sup>*</sup>";
+//      }
         html += "</td><td class=\"rep-num\">";
         if ("org" in years[key]) {
             html += years[key]["org"];

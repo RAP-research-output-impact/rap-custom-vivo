@@ -29,6 +29,9 @@
     <div id="collab-uni">
         <span id="collab-summary-uni"></span><span id="collab-summary-country" class="hidden"></span>
     </div>
+    <div id="collab-sub">
+        Collaboration reports cover all DTU departments – for a breakdown by department see section 6
+    </div>
     <h2>Contents:</h2>
     <ol id="copubs-rep-toc">
         <li><a onClick="scrollToID ('rep0-top');">Collaboration overview</a></li>
@@ -48,6 +51,7 @@
         In total: <span id="collab-summary-total"></span> co-publications <span id="collab-summary-cat"></span> during timespan
     </div>
     <h3>Number of co-publications per year</h3>
+    <h4 class="rep">Note: In Web of Science, the data for a particular publication year is not complete until the middle of the following year</h4>
     <div id="co-pub-per-year-chart">
     </div>
     <h3>Number of co-publications by top research subjects</h3>
@@ -83,7 +87,6 @@
         <tbody>
         </tbody>
     </table>
-    <sup>*</sup> <span class=\"footnote\">The number of publications for a year will not be complete until the middle of the following year due to latency of indexing publications in Web of Science.</span>
     <!-- Report 3 -->
     <hr id="rep3-top"/>
     <h2 class="rep">4. Compare partner’s top subjects with DTU and co-publications</h2>
@@ -259,6 +262,9 @@
 <div style="height: 60px;"></div>
 
 <style>
+    #co-pub-per-subject-chart .oy .tick text {
+        font-size: 14px;
+    }
     h3 {
         font-size: 18px;
         font-weight: bold;
@@ -267,7 +273,11 @@
         color: #b50404;
     }
     h2.rep {
-        margin-top: 0px;
+        margin-top: 20px;
+    }
+    h4.rep {
+        font-style: italic;
+        font-size: 1.0em;
     }
     #copubs-rep-toc {
         margin-left: 80px;
@@ -298,6 +308,10 @@
         font-size: 20px;
         font-weight: bold;
         color: #595B5B;
+    }
+    #collab-sub {
+        margin-top: 10px;
+        font-style: italic;
     }
     #export-report_form {
         float: right;
