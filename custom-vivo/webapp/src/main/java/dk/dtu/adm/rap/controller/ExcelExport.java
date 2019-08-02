@@ -114,7 +114,7 @@ public class ExcelExport extends VitroHttpServlet {
             "Compare partner's top subjects with DTU and co-publications",
             "Compare top collaboration subjects with partner and DTU subjects",
             "Collaboration by DTU department",
-            "Collaboration bu DTU researcher (top 20)",
+            "Collaboration by DTU researcher (top 20)",
             "Collaboration by funder (top 20)",
             "Notes and hints");
     
@@ -188,7 +188,7 @@ public class ExcelExport extends VitroHttpServlet {
         RowCreator rowCreator = new RowCreator(sheet);
         List<Integer> years = getYears(json);
         try {
-            addTitle(years, json, wbs, sheet, rowCreator, pt);
+            addTitle(years, json, wb, wbs, sheet, rowCreator, pt);
         } catch (Exception e) {
             log.error(e, e);
         }
@@ -206,6 +206,13 @@ public class ExcelExport extends VitroHttpServlet {
                 + getTotalCategories(json) + " subject categories", wb, sheet, rowCreator);
         rowCreator.createRow();
         addHeaderRow("Number of co-publications per year", wbs.getSubtitleStyle(), wb, sheet, rowCreator);
+        rowCreator.createRow();
+        XSSFRow noteRow = rowCreator.createRow();
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, HEADER_WIDTH - 1));
+        addItalicText(wb, noteRow, 0, "Note: In Web of Science, "
+                + "the data for a particular publication year is not complete "
+                + "until the middle of the following year");
         try {
             addSvg(svgStr2, sheet, wb, rowCreator.getRowIndex() - 1, rowCreator.getRowIndex() - 1 + 18, 0, 5);
             for(int i = 0; i < 11; i++) {
@@ -355,6 +362,7 @@ public class ExcelExport extends VitroHttpServlet {
         }
         sheet.addMergedRegion(new CellRangeAddress(
                 rowCreator.rowIndex, rowCreator.rowIndex, 0, HEADER_WIDTH - 1));
+        rowCreator.createRow();
     }
     
     private void addContentRow(String content, 
@@ -433,8 +441,8 @@ public class ExcelExport extends VitroHttpServlet {
         return summary.getInt("categories");
     }
     
-    private void addTitle(List<Integer> years, JSONObject data, WorkbookStyles wbs, 
-            XSSFSheet sheet, 
+    private void addTitle(List<Integer> years, JSONObject data, XSSFWorkbook wb, 
+            WorkbookStyles wbs, XSSFSheet sheet, 
             RowCreator rowCreator, PropertyTemplate pt) throws JSONException {
         XSSFRow titleRow = rowCreator.createRow();
         titleRow.setHeightInPoints(25);
@@ -458,6 +466,12 @@ public class ExcelExport extends VitroHttpServlet {
         XSSFCell subtitle = subtitleRow.createCell(0);
         subtitle.setCellStyle(wbs.getSubtitleStyle());
         subtitle.setCellValue(getOrgName(data) + ", " + getCountry(data));
+        rowCreator.createRow();
+        XSSFRow noteRow = rowCreator.createRow();
+        sheet.addMergedRegion(new CellRangeAddress(
+                rowCreator.rowIndex, rowCreator.rowIndex, 0, HEADER_WIDTH - 1));
+        addItalicText(wb, noteRow, 0, "Collaboration reports cover all DTU "
+                + "departments -- for a breakdown by department see section 6");
         rowCreator.createRow();
         XSSFRow contentsHeaderRow = rowCreator.createRow();
         sheet.addMergedRegion(new CellRangeAddress(
