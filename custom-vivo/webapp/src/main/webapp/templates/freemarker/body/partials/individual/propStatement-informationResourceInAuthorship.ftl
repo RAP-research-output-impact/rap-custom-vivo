@@ -16,10 +16,10 @@
 <#macro showAuthorship statement>
     <div class="pub_author-name">
     <#if statement.person??>
-            <a href="${profileUrl(statement.uri("person"))}">${statement.standardName}</a> (${statement.name})<#if statement.addressNumber??><sup>[ ${statement.addressNumber} ]</sup></#if>
+            <a href="${profileUrl(statement.uri("person"))}">${statement.standardName!statement.name}</a> (${statement.name})<#if statement.addressNumber??><sup>[ ${statement.addressNumber} ]</sup></#if>
     <#elseif statement.authorship??>
         	<#-- <a href="${profileUrl(statement.uri("authorship"))}" title="${i18n().author_name}">${statement.name}</a> -->
-            ${statement.standardName} (${statement.name})
+            ${statement.standardName!statement.name} (${statement.name})
             <#if statement.addressNumber??><sup>[ ${statement.addressNumber} ]</sup></#if>
             <#-- ${statement.name}</a><#if statement.address??>, ${statement.address}</#if> -->
     <#else>

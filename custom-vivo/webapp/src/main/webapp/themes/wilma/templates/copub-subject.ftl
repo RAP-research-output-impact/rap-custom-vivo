@@ -31,9 +31,11 @@
         <table id="copub-main-list">
             <thead>
                 <tr>
-                    <th id="sort-main" style="text-align: left; width: 600px;">
-                        Subjects
-                        <div class="sort-dir"></div>
+                    <th style="text-align: left; width: 600px;">
+                        <div id="sort-main">
+                            Subjects
+                            <div class="sort-dir"></div>
+                        </div>
                         <form class="copub-filter-form" onSubmit="return (false);">
                             <input id="copub-main-filter" type="text" size="30" placeholder="Type here to shorten list"/>
                         </form>

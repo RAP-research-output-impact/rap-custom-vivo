@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -164,32 +166,23 @@ public class DataService {
             @PathParam("endYear") String endYear,
             @Context Request request, @Context HttpServletRequest httpRequest) {
         VitroRequest vreq = new VitroRequest(httpRequest);
-
         Integer startYearInt = parseInt(startYear);
         Integer endYearInt = parseInt(endYear);
-
-        if (!LoginStatusBean.getBean(vreq).isLoggedIn()) {
+        if (!authorized(vreq)) {
             notAuthorizedResponse();
         }
-
         ConfigurationProperties props = ConfigurationProperties.getBean(httpRequest);
+        String cacheRoot = props.getProperty("DataCache.root");
         String namespace = props.getProperty("Vitro.defaultNamespace");
-        String wosDataVersion = props.getProperty("wos.dataVersion");
-        Boolean cacheActive = Boolean.parseBoolean(props.getProperty("wos.cacheActive"));
         String uri = namespace + vid;
-
-        ResponseBuilder builder = null;
-        EntityTag etag = new EntityTag(wosDataVersion + uri);
-        if (cacheActive.equals(true) && wosDataVersion != null) {
-            log.info("Etag caching active");
-            builder = request.evaluatePreconditions(etag);
-        }
         StoreUtils storeUtils = getStoreUtils(httpRequest);
-        String orgName = storeUtils.getFromStore(getQuery(
-                "SELECT ?name where { <" + uri + "> rdfs:label ?name }", storeUtils)).get(0).get(
-                        "name").toString();
-        // cached resource did change -> serve updated content
-        if (builder == null) {
+        String cachekey = "dept/" + vid + "." + Integer.toString(startYearInt) + "." + Integer.toString(endYearInt);
+        String data = cache.read(cacheRoot, cachekey);
+        if (data == null) {
+            long start = System.currentTimeMillis();
+            String orgName = storeUtils.getFromStore(getQuery(
+                    "SELECT ?name where { <" + uri + "> rdfs:label ?name }", storeUtils)).get(0).get(
+                            "name").toString();
             Model tmpModel = deptModel(uri, startYearInt, endYearInt, storeUtils);
             String rq = readQuery("coPubByDept/vds/dtuSubOrgCount.rq");
             log.debug("Dept query:\n" + rq);
@@ -215,17 +208,15 @@ public class DataService {
             }
             JSONObject jo = new JSONObject();
             try {
-                //jo.put("summary", getSummary(uri));
                 jo.put("name", orgName);
                 jo.put("departments", out);
             } catch (JSONException e) {
                 log.error(e, e);
             }
-            String outJson = jo.toString();
-            builder = Response.ok(outJson);
+            data = jo.toString();
+            cache.write(cacheRoot, cachekey, data, (System.currentTimeMillis() - start));
         }
-
-        builder.tag(etag);
+        ResponseBuilder builder = Response.ok(data);
         return builder.build();
     }
 
@@ -1252,7 +1243,7 @@ public class DataService {
         return storeUtils.getFromStoreJSON(query);
     }
 
-    private ArrayList getDtuResearchers(String orgUri, Integer startYear,
+    private ArrayList<JSONObject> getDtuResearchers(String orgUri, Integer startYear,
             Integer endYear, StoreUtils storeUtils) {
         log.debug("getDtuResearchers - " + orgUri);
         String rq = "" +
@@ -1279,12 +1270,91 @@ public class DataService {
                 "}\r\n" +
                 "GROUP BY ?dtuResearcher \r\n" +
                 "ORDER BY DESC(?number)\r\n" +
-                "LIMIT 20";
+                "LIMIT 40";
         ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
         q2.setIri("org", orgUri);
         String query = q2.toString();
         log.debug("DTU researchers query:\n" + query);
-        return storeUtils.getFromStoreJSON(query);
+        ArrayList<JSONObject> json = storeUtils.getFromStoreJSON(query);
+        Set<String> done = new HashSet<String>();
+        int researcherCount = 0;
+        ArrayList<JSONObject> deadRows = new ArrayList<JSONObject>();
+        for(JSONObject row : json) {
+            try {
+                String name = row.getString("name");
+                if (done.contains(name)) {
+                    deadRows.add(row);
+                    continue;
+                }
+                done.add(name);
+                String dtuResearcher = row.getString("dtuResearcher");
+                String partnerResearcherQueryStr = getPartnerResearcherQueryStr(
+                        dtuResearcher, orgUri, startYear, endYear, storeUtils);
+                log.debug("Partner researcher query:\n" + partnerResearcherQueryStr);
+                ArrayList<JSONObject> partnerResearchers = storeUtils.getFromStoreJSON(
+                        partnerResearcherQueryStr);
+                log.debug(partnerResearchers.size() + " partner researchers");
+                JSONArray partnerResearchersJson = new JSONArray(partnerResearchers);
+                if(partnerResearchersJson.length() == 1
+                        && !partnerResearchersJson.getJSONObject(0).has("name")) {
+                    // Because the SPARQL has a GROUP BY, a lack of any results
+                    // will return a single row with a 0 count but no name value.
+                    // We don't want this, so we will return an empty array instead.
+                    row.put("partner_researchers", new JSONArray());
+                } else {
+                    row.put("partner_researchers", partnerResearchersJson);
+                }
+                researcherCount++;
+                if (researcherCount == 20) {
+                    break;
+                }
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        for(JSONObject row : deadRows) {
+            json.remove(row);
+        }
+        return json;
+    }
+
+    private String getPartnerResearcherQueryStr(String dtuResearcher,
+            String org, Integer startYear, Integer endYear, StoreUtils storeUtils) {
+        ParameterizedSparqlString queryStr = storeUtils.getQuery(
+                "SELECT DISTINCT "
+                + "?partnerResearcher (MIN(?partnerResearcherFullName) AS ?name)"
+                + " (COUNT(DISTINCT ?pub) as ?number) "
+                + "WHERE { \n"
+                + "  ?org vivo:relatedBy ?address . \n"
+                + "  ?address a wos:Address . \n"
+                + "  ?pub vivo:relatedBy ?address . \n"
+                + "  ?pub a wos:Publication ; \n"
+                + "      vivo:relatedBy ?dtuAddress . \n"
+                + "  ?dtuAddress a wos:Address ; \n"
+                + "      vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> . \n"
+                + "  ?dtuAddress vivo:relatedBy ?authorship . \n"
+                + "  ?pub vivo:relatedBy ?authorship . \n"
+                + "  ?authorship a vivo:Authorship . \n"
+                + "  # Better to use label rather than fullName in order \n"
+                + "  # to distinguish people who differ only by middle initial. \n"
+                + "  #?authorship wos:fullName ?fullName .\n"
+                + "  ?authorship vivo:relates ?dtuResearcher . \n"
+                + "  ?address vivo:relatedBy ?partnerAuthorship . \n"
+                + "  ?pub vivo:relatedBy ?partnerAuthorship . \n"
+                + "  ?partnerAuthorship a vivo:Authorship . \n"
+                + "  ?partnerAuthorship vivo:relates ?partnerResearcher . \n"
+                + "  ?partnerResearcher a foaf:Person . \n"
+                + "  ?partnerResearcher rdfs:label ?partnerResearcherFullName . \n"
+                + "  FILTER(?partnerResearcher != ?dtuResearcher) \n"
+                + getYearDtv(startYear, endYear)
+                + getDtvFilter(startYear, endYear)
+                + "} \n"
+                + "GROUP BY ?partnerResearcher \n"
+                + "ORDER BY DESC(?number) \n"
+                + "LIMIT 20 \n");
+        queryStr.setIri("dtuResearcher", dtuResearcher);
+        queryStr.setIri("org", org);
+        return queryStr.toString();
     }
 
     private ArrayList getWorldwidePubs(String dept, String yearStart,

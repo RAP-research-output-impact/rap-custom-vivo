@@ -31,9 +31,11 @@
         <table id="copub-org-list" style="width: 800px;">
             <thead>
                 <tr>
-                    <th id="sort-org" style="text-align: left; width: 600px;">
-                        Collaboration partners
-                        <div class="sort-dir"></div>
+                    <th style="text-align: left; width: 600px;">
+                        <div id="sort-org">
+                            Collaboration partners
+                            <div class="sort-dir"></div>
+                        </div>
                         <form class="copub-filter-form" onSubmit="return (false);">
                             <input id="copub-org-filter" type="text" size="30" placeholder="Type here to shorten list"/>
                         </form>
