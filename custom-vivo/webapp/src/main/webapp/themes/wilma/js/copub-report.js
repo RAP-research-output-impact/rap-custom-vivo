@@ -97,12 +97,13 @@ function collabSummary(response, startYear, endYear) {
             left: 370 // if labels must be in 1 line, should be depending on max label width (label of styled font-size)
           },
           insertAt: tempChartHolder,
-          title: '  ',
+          title: '',
+          svgId: 'number-of-publications-by-top-research-subjects',
           createFn: createHBarchart,
           styleFn: styleHBarchart,
           styleFnOpt: {
             barFillColor: '#030F4F',
-            oyF: '15px',
+            oyF: '16px',
             oxF: '14px'
           }
         }
@@ -160,7 +161,7 @@ function collabSummary(response, startYear, endYear) {
     });
 
     $("#collab-summary-container").append('<div id="departmentTable"></div>');
-    
+
     loadPubInfoByStartYear(byDeptUrl, startYear, endYear, byDeptReport)
 
     if ((response.summary.coPubTotal > 0) && (response.dtu_researchers.length > 0)) {
@@ -743,11 +744,10 @@ function hBarchart(options) {
     data = options.data,
     insertAt = options.insertAt,
     svgTitle = options.title,
+    svgId = options.svgId,
     create = options.createFn,
     style = options.styleFn,
     styleFnOpt = options.styleFnOpt
-
-  let svgId = svgTitle.toLowerCase().split(' ').join('-')
 
 
   create({data, insertAt, svgId, width, maxWidth, height, maxHeight, minHeight, margin, title:svgTitle})
@@ -800,11 +800,12 @@ function lineChart(opt) {
       insertAt = opt.insertAt,
       margin = opt.margin,
       title = opt.svgTitle,
+      svgId = opt.svgId,
       label = opt.label
 
   let height = startHeight
   let width = insertAt.clientWidth || startWidth
-  let svgId = title.toLowerCase().split(' ').join('-')
+
 
   let styleOpt = opt.styleFnOpt || {}
   styleOpt.svgId = svgId
@@ -897,7 +898,7 @@ function doPubCountTable(totals, DTUtotals, copubsTotal, copubs) {
     tempChartHolder.className += 'chartDrawnButHidden'
     tempChartHolder.setAttribute("style", "position: absolute; top: -1000; left:-1000;")
     document.body.append(tempChartHolder)
-    
+
     let myData = []
     for(let year in years) {
         myData.push({
@@ -906,7 +907,7 @@ function doPubCountTable(totals, DTUtotals, copubsTotal, copubs) {
   	})
     }
     myData = myData.sort( (a,b) => (a.date - b.date) )
-    
+
     let copubsChartOpt = {
       data: myData,
       maxHeight: 500,
@@ -915,7 +916,8 @@ function doPubCountTable(totals, DTUtotals, copubsTotal, copubs) {
       startWidth: 800,
       maxWidth: 900,  // should be width of #collab-summary-container
 
-      svgTitle: '  ',
+      svgTitle: '',
+      svgId: 'number-of-co-publications-per-year',
       insertAt: tempChartHolder,
       margin: {
         top: 70,
