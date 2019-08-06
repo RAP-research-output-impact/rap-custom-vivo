@@ -52,6 +52,9 @@
                                     <filtering>true</filtering>
                                 </resource>
                             </webResources>
+                            <nonFilteredFileExtensions>
+                                <nonFilteredFileExtension>pdf</nonFilteredFileExtension>
+                            </nonFilteredFileExtensions>
                         </configuration>
                     </plugin>
                 </plugins>
