@@ -59,6 +59,7 @@ then
     cp custom-vivo/webapp/src/main/webapp/templates/freemarker/body/individual/*.ftl          $ROOT/templates/freemarker/body/individual/
     cp custom-vivo/webapp/src/main/webapp/templates/freemarker/body/partials/individual/*.ftl $ROOT/templates/freemarker/body/partials/individual/
     cp custom-vivo/webapp/src/main/webapp/templates/freemarker/body/search/*.ftl              $ROOT/templates/freemarker/body/search/
+    cp custom-vivo/webapp/src/main/webapp/templates/freemarker/widgets/*.ftl                  $ROOT/templates/freemarker/widgets/
     cp custom-vivo/webapp/src/main/webapp/themes/wilma/css/*.css                              $ROOT/themes/wilma/css/
     cp custom-vivo/webapp/src/main/webapp/themes/wilma/js/*.js                                $ROOT/themes/wilma/js/
 else
