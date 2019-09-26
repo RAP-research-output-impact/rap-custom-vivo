@@ -84,7 +84,7 @@
                     If you can’t log in but would like to learn about the RAP
                 </h2>
                 <ul style="list-style-type: disc; margin-left: 35px;">
-                    <li><a href="/PDF/DTU_RAP_Collaboration_7-Aug-2019.pdf">Download presentation of the Collaboration module (PDF)</a></li>
+                    <li><a href="/PDF/DTU_RAP_Collaboration_24-Sep-2019.pdf">Download presentation of the Collaboration module (PDF)</a></li>
                 </ul>
             </td>
         </tr>

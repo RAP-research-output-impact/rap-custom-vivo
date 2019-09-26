@@ -71,8 +71,8 @@
         <ul>
             <li><a href="https://www.deff.dk/english/">DEFF</a> – Denmark’s Electronic Research Library – has financially supported two projects encompassing VIVO-development activities from which DTU RAP has benefitted:</li>
             <ul>
-                <li><a href="http://libguides.sdu.dk/roi-av">ROI-AV</a> – Research Output & Impact – Analyzed & Visualized – 2016-2018 - with the Work package 3: VIVO as a Research Analytics Platform</li>
-                <li>OPERA – Open Research Analytics – with the Work Package 4: Open Research Analytics Platform</li>
+                <li><a href="http://libguides.sdu.dk/roi-av">ROI-AV</a> – Research Output & Impact – Analyzed & Visualized – 2016-2018 - with Work Package 3: VIVO as a Research Analytics Platform</li>
+                <li>OPERA – Open Research Analytics – with Work Package 1: Analytics Data &amp; Systems</li>
             </ul>
         </ul>
     </p>
@@ -107,7 +107,6 @@
             <li>
                 <a href="mailto:chste@dtu.dk">Christina Steensboe</a>,
                 <a href="mailto:kshi@dtu.dk">Karen Hytteballe Ibanez</a>,
-                <a href="mailto:macol@dtu.dk">Martin Collin</a>,
                 <a href="mailto:nidl@dtu.dk">Nikoline Dohm Lauridsen</a>,
                 <a href="mailto:mefj@dtu.dk">Mette Fjeldhagen</a> and
                 <a href="mailto:mosa@dtu.dk">Mogens Sandfær</a> – of the DTU Research Analytics Office
