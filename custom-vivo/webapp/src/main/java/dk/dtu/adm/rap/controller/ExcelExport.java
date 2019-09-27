@@ -640,11 +640,11 @@ public class ExcelExport extends VitroHttpServlet {
         for(Integer year : years) {
             XSSFRow row = rowCreator.createRow();
             XSSFCell cell = row.createCell(0);
-            if(year >= LATENCY_FOOTNOTE_START_YEAR) {
-                cell.setCellValue(year + " *");
-            } else {
+//            if(year >= LATENCY_FOOTNOTE_START_YEAR) {
+//                cell.setCellValue(year + " *");
+//            } else {
                 cell.setCellValue(year);
-            }
+//            }
             cell.setCellStyle(wbs.getDataStyleText());
             Integer orgTotal = getTotal(data, "org_totals", year);
             cell = row.createCell(1);
@@ -668,15 +668,15 @@ public class ExcelExport extends VitroHttpServlet {
             }
         }
         drawBorders(4, pt, startingIndex, rowCreator);
-        XSSFRow row = rowCreator.createRow();
-        row.setHeightInPoints(30);
-        sheet.addMergedRegion(new CellRangeAddress(
-                rowCreator.rowIndex, rowCreator.rowIndex, 0, 3));
-        addItalicText(wb, row, 0, LATENCY_FOOTNOTE);
-        CellStyle style = wb.createCellStyle();
-        style.setWrapText(true);
-        XSSFCell cell = row.getCell(0);
-        cell.setCellStyle(style);
+//        XSSFRow row = rowCreator.createRow();
+//        row.setHeightInPoints(30);
+//        sheet.addMergedRegion(new CellRangeAddress(
+//                rowCreator.rowIndex, rowCreator.rowIndex, 0, 3));
+//        addItalicText(wb, row, 0, LATENCY_FOOTNOTE);
+//        CellStyle style = wb.createCellStyle();
+//        style.setWrapText(true);
+//        XSSFCell cell = row.getCell(0);
+//        cell.setCellStyle(style);
     }
     
     private void addTopCategories(JSONObject data, XSSFWorkbook wb, WorkbookStyles wbs, XSSFSheet sheet, 
