@@ -32,13 +32,19 @@
             <thead>
                 <tr>
                     <th style="text-align: left; width: 600px;">
-                        <div id="sort-org">
+                        <div id="sort-org" style="line-height: 30%;">
                             Collaboration partners
                             <div class="sort-dir"></div>
+                            <br/>
+                            <font size="-1" style="margin-top: -5px;">with at least 3 co-publications</font>
                         </div>
                         <form class="copub-filter-form" onSubmit="return (false);">
-                            <input id="copub-org-filter" type="text" size="30" placeholder="Type here to shorten list"/>
+                            <input id="copub-org-filter" type="text" size="24" placeholder="Type here to shorten list"/>
                         </form>
+                    </th>
+                    <th id="sort-org-imp">
+                        Normalised citation impact
+                        <div class="sort-dir"></div>
                     </th>
                     <th id="sort-org-pub">
                         Co-publications

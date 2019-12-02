@@ -62,6 +62,7 @@ function dept_options(id) {
         {"uri":"dtusuborg-dtu-diplom",                 "name":"DTU Diplom"},
         {"uri":"dtusuborg-dtu-electrical-engineering", "name":"DTU Electrical Engineering"},
         {"uri":"dtusuborg-dtu-energy",                 "name":"DTU Energy"},
+        {"uri":"dtusuborg-dtu-entrepreneurship>",      "name":"DTU Entrepreneurship"},
         {"uri":"dtusuborg-dtu-environment",            "name":"DTU Environment"},
         {"uri":"dtusuborg-dtu-food",                   "name":"DTU Food"},
         {"uri":"dtusuborg-dtu-fotonik",                "name":"DTU Fotonik"},
@@ -247,10 +248,23 @@ function orgList(data) {
     var tbody = "";
     var range = "&year-from=" + range_from_val() + "&year-to=" + range_to_val();
     var n = 0;
-    for (var i = 0, j = data.orgs.length; i < j; i++){
-        tbody += "<tr><td class=\"copub-org-row sort-org\"><a href=\"" + urls_base + "/individual?uri=" + data.orgs[i].org + range + "\">" + data.orgs[i].name +
-                 "</a></td><td class=\"sort-org-pub\" style=\"text-align: right;\">" + data.orgs[i].publications + "</td></tr>";
-        n++;
+    if (data.orgs[0].impact) {
+        for (var i = 0, j = data.orgs.length; i < j; i++){
+            if (data.orgs[i].impact === undefined) {
+                console.log ("undifined indicator for: " + data.orgs[i].org);
+            } else {
+                tbody += "<tr><td class=\"copub-org-row sort-org\"><a href=\"" + urls_base + "/individual?uri=" + data.orgs[i].org + range + "\">" +
+                         data.orgs[i].name + "</a></td><td class=\"sort-org-imp\" style=\"text-align: right;\">" + data.orgs[i].impact + "</td>" + 
+                         "<td class=\"sort-org-pub\" style=\"text-align: right;\">" + data.orgs[i].publications + "</td></tr>";
+                n++;
+            }
+        }
+    } else {
+        for (var i = 0, j = data.orgs.length; i < j; i++){
+            tbody += "<tr><td class=\"copub-org-row sort-org\"><a href=\"" + urls_base + "/individual?uri=" + data.orgs[i].org + range + "\">" + data.orgs[i].name +
+                     "</a></td><td class=\"sort-org-pub\" style=\"text-align: right;\">" + data.orgs[i].publications + "</td></tr>";
+            n++;
+        }
     }
     console.log ("orgList - " + n + "rows");
     console.log ("orgList - writing tbody");
@@ -262,9 +276,11 @@ function orgList(data) {
 
 function setSort(name) {
     $("#" + name + "-pub .sort-dir").html (sortArrow (1, 1));
+    $("#" + name + "-imp .sort-dir").html (sortArrow (0, 0));
     $("#" + name + " .sort-dir").html (sortArrow (0, 0));
     var inverse1 = false;
     var inverse2 = false;
+    var inverse3 = false;
     $('#' + name).each(function() {
         $(this).click(function() {
             console.log("adding spinner");
@@ -282,8 +298,10 @@ function setSort(name) {
                 $("#" + name + " .sort-dir").html (sortArrow (0, 1));
             }
             $("#" + name + "-pub .sort-dir").html (sortArrow (0, 0));
+            $("#" + name + "-imp .sort-dir").html (sortArrow (0, 0));
             inverse1 = !inverse1;
             inverse2 = false;
+            inverse3 = false;
             console.log("remove spinner");
             $('#copub-container').removeClass('tab-spinner');
         });
@@ -305,8 +323,35 @@ function setSort(name) {
                 $("#" + name + "-pub .sort-dir").html (sortArrow (0, 1));
             }
             $("#" + name + " .sort-dir").html (sortArrow (0, 0));
+            $("#" + name + "-imp .sort-dir").html (sortArrow (0, 0));
             inverse2 = !inverse2;
             inverse1 = false;
+            inverse3 = false;
+            console.log("remove spinner");
+            $('#copub-container').removeClass('tab-spinner');
+        });
+    });
+    $('#' + name + '-imp').each(function() {
+        $(this).click(function() {
+            console.log("adding spinner");
+            $('#copub-container').addClass('tab-spinner');
+            $("td." + name + "-imp").sortElements(function(a, b) {
+                return Number($.text([a])) > Number($.text([b])) ?
+                       inverse3 ? -1 : 1
+                     : inverse3 ? 1 : -1;
+            }, function() {
+                return this.parentNode;
+            });
+            if (inverse3) {
+                $("#" + name + "-imp .sort-dir").html (sortArrow (1, 1));
+            } else {
+                $("#" + name + "-imp .sort-dir").html (sortArrow (0, 1));
+            }
+            $("#" + name + " .sort-dir").html (sortArrow (0, 0));
+            $("#" + name + "-pub .sort-dir").html (sortArrow (0, 0));
+            inverse3 = !inverse3;
+            inverse1 = false;
+            inverse2 = false;
             console.log("remove spinner");
             $('#copub-container').removeClass('tab-spinner');
         });
