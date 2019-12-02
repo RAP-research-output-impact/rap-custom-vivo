@@ -491,6 +491,14 @@ table#rep5 th.col3 {
     background-color: #3d423d;
     color: white;
 }
+#sort-org-imp {
+    cursor: pointer;
+    text-align: center;
+    vertical-align: middle;
+    min-width: 120px;
+    background-color: #3d423d;
+    color: white;
+}
 .sort-org-pub {
     text-align: right;
 }
