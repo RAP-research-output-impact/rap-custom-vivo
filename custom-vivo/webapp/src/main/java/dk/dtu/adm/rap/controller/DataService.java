@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Iterator; 
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -353,9 +354,9 @@ public class DataService {
             JSONObject jo = new JSONObject();
             try {
                 if (requestLabel == "partners_by_funder" || requestLabel == "partners" || requestLabel == "partners_by_subject") {
-                    jo.put("orgs", generator.getData(field, dept, yearStart, yearEnd, storeUtils));
+                    jo.put("orgs", generator.getData(props, field, dept, yearStart, yearEnd, storeUtils));
                 } else {
-                    jo.put(requestLabel, generator.getData(field, dept, yearStart, yearEnd, storeUtils));
+                    jo.put(requestLabel, generator.getData(props, field, dept, yearStart, yearEnd, storeUtils));
                 }
             } catch (JSONException e) {
                 log.error(e, e);
@@ -408,12 +409,13 @@ public class DataService {
     }
 
     private interface PartnerOrFunderJSONGenerator {
-        public ArrayList getData(String field, String dept, String yearStart, String yearEnd,
+        public ArrayList getData(ConfigurationProperties props, String field, String dept, String yearStart, String yearEnd,
                 StoreUtils storeUtils);
     }
 
     private class PartnerListGenerator implements PartnerOrFunderJSONGenerator {
         /**
+         * @param props Configuration properties
          * @param dept Department RDF local name. May be null.  If null, partners
          *             list will be generated for all of DTU.
          * @param yearStart May not be null.
@@ -421,7 +423,7 @@ public class DataService {
          * @param StoreUtils
          * @return
          */
-        public ArrayList getData(String field, String dept, String yearStart, String yearEnd,
+        public ArrayList getData(ConfigurationProperties props, String field, String dept, String yearStart, String yearEnd,
                 StoreUtils storeUtils) {
             String deptStr = (dept == null) ? "all of DTU" : dept;
             log.debug("Querying for partner list for " + deptStr);
@@ -456,12 +458,15 @@ public class DataService {
             }
             String query = q2.toString();
             log.debug("Partners query:\n" + query);
-            return storeUtils.getFromStoreJSON(query);
+            ArrayList<JSONObject> outRows = storeUtils.getFromStoreJSON(query);
+            AddOrgImpact (props, yearStart, yearEnd, outRows);
+            return outRows;
         }
     }
 
     private class FunderListGenerator implements PartnerOrFunderJSONGenerator {
         /**
+         * @param props Configuration properties
          * @param dept Department RDF local name. May be null.  If null, partners
          *             list will be generated for all of DTU.
          * @param yearStart May not be null.
@@ -469,7 +474,7 @@ public class DataService {
          * @param StoreUtils
          * @return
          */
-        public ArrayList getData(String field, String dept, String yearStart, String yearEnd,
+        public ArrayList getData(ConfigurationProperties props, String field, String dept, String yearStart, String yearEnd,
                 StoreUtils storeUtils) {
             String deptStr = (dept == null) ? "all of DTU" : dept;
             log.debug("Querying for funder list for " + deptStr);
@@ -509,6 +514,7 @@ public class DataService {
 
     private class PartnerByFunderListGenerator implements PartnerOrFunderJSONGenerator {
         /**
+         * @param props Configuration properties
          * @param funder Funder RDF local name. May be null.  If null, partners
          *             list will be generated for all of DTU.
          * @param yearStart May not be null.
@@ -516,7 +522,7 @@ public class DataService {
          * @param StoreUtils
          * @return
          */
-        public ArrayList getData(String funder, String dept, String yearStart, String yearEnd,
+        public ArrayList getData(ConfigurationProperties props, String funder, String dept, String yearStart, String yearEnd,
                 StoreUtils storeUtils) {
             if(funder == null) {
                 throw new RuntimeException("Parameter 'funder' is required");
@@ -565,6 +571,7 @@ public class DataService {
 
     private class SubjectListGenerator implements PartnerOrFunderJSONGenerator {
         /**
+         * @param props Configuration properties
          * @param dept Department RDF local name. May be null.  If null, partners
          *             list will be generated for all of DTU.
          * @param yearStart May not be null.
@@ -574,7 +581,7 @@ public class DataService {
          * @param StoreUtils
          * @return
          */
-        public ArrayList getData(String field, String dept, String yearStart, String yearEnd,
+        public ArrayList getData(ConfigurationProperties props, String field, String dept, String yearStart, String yearEnd,
                 StoreUtils storeUtils) {
             String deptStr = (dept == null) ? "all of DTU" : dept;
             log.debug("Querying for subject list for " + deptStr);
@@ -611,6 +618,7 @@ public class DataService {
 
     private class PartnerBySubjectListGenerator implements PartnerOrFunderJSONGenerator {
         /**
+         * @param props Configuration properties
          * @param subject Funder RDF local name. May be null.  If null, partners
          *                list will be generated for all of DTU.
          * @param yearStart May not be null.
@@ -618,7 +626,7 @@ public class DataService {
          * @param StoreUtils
          * @return
          */
-        public ArrayList getData(String subject, String dept, String yearStart, String yearEnd,
+        public ArrayList getData(ConfigurationProperties props, String subject, String dept, String yearStart, String yearEnd,
                 StoreUtils storeUtils) {
             if(subject == null) {
                 throw new RuntimeException("Parameter 'subject' is required");
@@ -770,17 +778,28 @@ public class DataService {
                                                "where org=" + Integer.toString (id) + " and year >= " + Integer.toString(startYear) +
                                                " and year <= " + Integer.toString(endYear));
             while (resultSet.next()) {
-                int total = Integer.parseInt(resultSet.getString("tot"));
-                int cites = Integer.parseInt(resultSet.getString("cit"));
-                int n     = Integer.parseInt(resultSet.getString("n"));
-                summary.put("orgTotal", total);
-                summary.put("orgCitesTotal", cites);
-                summary.put("orgImpact", (Float)((float)cites / total));
-                summary.put("orgimp",  Float.parseFloat(resultSet.getString("imp")) / n);
-                summary.put("orgt1",   Float.parseFloat(resultSet.getString("t1")) / n);
-                summary.put("orgt10",  Float.parseFloat(resultSet.getString("t10")) / n);
-                summary.put("orgcind", Float.parseFloat(resultSet.getString("cind")) / n);
-                summary.put("orgcint", Float.parseFloat(resultSet.getString("cint")) / n);
+                if (resultSet.getString("tot") == null) {
+                    summary.put("orgTotal", "");
+                    summary.put("orgCitesTotal", "");
+                    summary.put("orgImpact", "");
+                    summary.put("orgimp",  "");
+                    summary.put("orgt1",   "");
+                    summary.put("orgt10",  "");
+                    summary.put("orgcind", "");
+                    summary.put("orgcint", "");
+                } else {
+                    int total = Integer.parseInt(resultSet.getString("tot"));
+                    int cites = Integer.parseInt(resultSet.getString("cit"));
+                    int n     = Integer.parseInt(resultSet.getString("n"));
+                    summary.put("orgTotal", total);
+                    summary.put("orgCitesTotal", cites);
+                    summary.put("orgImpact", (Float)((float)cites / total));
+                    summary.put("orgimp",  Float.parseFloat(resultSet.getString("imp")) / n);
+                    summary.put("orgt1",   Float.parseFloat(resultSet.getString("t1")) / n);
+                    summary.put("orgt10",  Float.parseFloat(resultSet.getString("t10")) / n);
+                    summary.put("orgcind", Float.parseFloat(resultSet.getString("cind")) / n);
+                    summary.put("orgcint", Float.parseFloat(resultSet.getString("cint")) / n);
+                }
             }
         } catch (SQLException e) {
             logSQLException(e);
@@ -1063,6 +1082,56 @@ public class DataService {
             }
         }
         log.debug("done - AddCategoriesRanks");
+        return outRows;
+    }
+
+    private ArrayList AddOrgImpact(ConfigurationProperties props, String startYear, String endYear, ArrayList<JSONObject> outRows) {
+        log.debug("AddOrgImpact");
+        HashMap<String, String> impact = new HashMap<String, String>();
+
+        if (startYear == null) {
+            startYear = "2000";
+        }
+        if (endYear == null) {
+            endYear = "2030";
+        }
+        Statement statement = null;
+        ResultSet resultSet = null;
+        Connection mysql = sql_setup(props);
+        try {
+            statement = mysql.createStatement();
+            resultSet = statement.executeQuery("select name,format(avg(impact), 2) as impa from inds,orgs where org=id and year >= " + startYear +
+                                               " and year <= " + endYear + " group by org");
+            int rank = 1;
+            while (resultSet.next()) {
+                String name = resultSet.getString("name");
+                String impa = resultSet.getString("impa");
+                impact.put(name, impa);
+            }
+        } catch (SQLException e) {
+            logSQLException(e);
+        } finally {
+            sql_close(statement, resultSet);
+        }
+        Iterator itr = outRows.iterator();
+        while (itr.hasNext()) {
+            JSONObject r = (JSONObject)itr.next();
+            try {
+                Integer pubs = (Integer)r.get("publications");
+                if (pubs > 2) {
+                    String org = (String)r.get("org");
+                    String impa = impact.get(org.replaceAll(".*/", ""));
+                    if (impa != null) {
+                        r.put("impact", impa);
+                    }
+                } else {
+                    itr.remove();
+                }
+            } catch (Throwable var10) {
+                log.error(var10, var10);
+            }
+        }
+        log.debug("done - AddOrgImpact");
         return outRows;
     }
 
