@@ -260,6 +260,25 @@
 <hr />
 
 <div style="height: 60px;"></div>
+<div style="display: none;">
+    <div id="ind-nci-dialog" title="Normalised citation impact">
+        <p>
+            Citations per publication normalised for subject, year, and publication type.
+            The world average is equal to 1.
+            Example: A normalised citation impact of 1.23 means that the impact is 23% above the world average.
+        </p>
+    </div>
+    <div id="ind-top10-dialog" title="% of publications in top 10% most cited">
+        <p>
+            Proportion of the publications belonging to the top 10% most cited in a given subject category, year, and publication type.
+        </p>
+    </div>
+    <div id="ind-top1-dialog" title="% of publications in top 1% most cited">
+        <p>
+            Proportion of the publications belonging to the top 1% most cited in a given subject category, year, and publication type.
+        </p>
+    </div>
+</div>
 
 <style>
     #co-pub-per-subject-chart .oy .tick text {

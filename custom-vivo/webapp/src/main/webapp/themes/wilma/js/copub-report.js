@@ -216,25 +216,6 @@ function doSummaryTable(response) {
     html += doSummaryTableRow (0, 1, "% of publications in top 1% most cited",             'ind-top1',  response.summary.orgt1,         response.summary.dtut1);
     html += doSummaryTableRow (0, 1, "% of publications with industry collaboration",      '',          response.summary.orgcind,       response.summary.dtucind);
     html += doSummaryTableRow (0, 1, "% of publications with international collaboration", '',          response.summary.orgcint,       response.summary.dtucint);
-    html += `
-        <div id="ind-nci-dialog" title="Normalised citation impact">
-          <p>
-              Citations per publication normalised for subject, year, and publication type.
-              The world average is equal to 1.
-              Example: A normalised citation impact of 1.23 means that the impact is 23% above the world average.
-          </p>
-        </div>
-        <div id="ind-top10-dialog" title="% of publications in top 10% most cited">
-          <p>
-              Proportion of the publications belonging to the top 10% most cited in a given subject category, year, and publication type.
-          </p>
-        </div>
-        <div id="ind-top1-dialog" title="% of publications in top 1% most cited">
-          <p>
-              Proportion of the publications belonging to the top 1% most cited in a given subject category, year, and publication type.
-          </p>
-        </div>
-    `;
     $("#rep1 tbody").html(html);
 //  Setup information dialogs
     $("#ind-nci-dialog").hide();
