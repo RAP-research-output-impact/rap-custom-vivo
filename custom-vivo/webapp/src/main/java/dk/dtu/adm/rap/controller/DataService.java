@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator; 
+import java.text.DecimalFormat;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -773,8 +774,8 @@ public class DataService {
         ResultSet resultSet = null;
         try {
             statement = mysql.createStatement();
-            resultSet = statement.executeQuery("select sum(total) as tot,sum(cites) as cit,sum(collind) as cind,sum(collint) as cint," +
-                                               "sum(impact) as imp,sum(top1) as t1,sum(top10) as t10,count(*) as n from inds " +
+            resultSet = statement.executeQuery("select sum(total) as tot,sum(cites) as cit,sum(total*collind) as cind,sum(total*collint) as cint," +
+                                               "sum(total*impact) as imp,sum(total*top1) as t1,sum(total*top10) as t10 from inds " +
                                                "where org=" + Integer.toString (id) + " and year >= " + Integer.toString(startYear) +
                                                " and year <= " + Integer.toString(endYear));
             while (resultSet.next()) {
@@ -790,15 +791,14 @@ public class DataService {
                 } else {
                     int total = Integer.parseInt(resultSet.getString("tot"));
                     int cites = Integer.parseInt(resultSet.getString("cit"));
-                    int n     = Integer.parseInt(resultSet.getString("n"));
                     summary.put("orgTotal", total);
                     summary.put("orgCitesTotal", cites);
                     summary.put("orgImpact", (Float)((float)cites / total));
-                    summary.put("orgimp",  Float.parseFloat(resultSet.getString("imp")) / n);
-                    summary.put("orgt1",   Float.parseFloat(resultSet.getString("t1")) / n);
-                    summary.put("orgt10",  Float.parseFloat(resultSet.getString("t10")) / n);
-                    summary.put("orgcind", Float.parseFloat(resultSet.getString("cind")) / n);
-                    summary.put("orgcint", Float.parseFloat(resultSet.getString("cint")) / n);
+                    summary.put("orgimp",  Float.parseFloat(resultSet.getString("imp")) / total);
+                    summary.put("orgt1",   Float.parseFloat(resultSet.getString("t1")) / total);
+                    summary.put("orgt10",  Float.parseFloat(resultSet.getString("t10")) / total);
+                    summary.put("orgcind", Float.parseFloat(resultSet.getString("cind")) / total);
+                    summary.put("orgcint", Float.parseFloat(resultSet.getString("cint")) / total);
                 }
             }
         } catch (SQLException e) {
@@ -815,22 +815,21 @@ public class DataService {
         }
         try {
             statement = mysql.createStatement();
-            resultSet = statement.executeQuery("select sum(total) as tot,sum(cites) as cit,sum(collind) as cind,sum(collint) as cint," +
-                                               "sum(impact) as imp,sum(top1) as t1,sum(top10) as t10,count(*) as n from inds " +
+            resultSet = statement.executeQuery("select sum(total) as tot,sum(cites) as cit,sum(total*collind) as cind,sum(total*collint) as cint," +
+                                               "sum(total*impact) as imp,sum(total*top1) as t1,sum(total*top10) as t10 from inds " +
                                                "where org=" + Integer.toString (id) + " and year >= " + Integer.toString(startYear) +
                                                " and year <= " + Integer.toString(endYear));
             while (resultSet.next()) {
                 int total = Integer.parseInt(resultSet.getString("tot"));
                 int cites = Integer.parseInt(resultSet.getString("cit"));
-                int n     = Integer.parseInt(resultSet.getString("n"));
                 summary.put("dtuTotal", total);
                 summary.put("dtuCitesTotal", cites);
                 summary.put("dtuImpact", (Float)((float)cites / total));
-                summary.put("dtuimp",  Float.parseFloat(resultSet.getString("imp")) / n);
-                summary.put("dtut1",   Float.parseFloat(resultSet.getString("t1")) / n);
-                summary.put("dtut10",  Float.parseFloat(resultSet.getString("t10")) / n);
-                summary.put("dtucind", Float.parseFloat(resultSet.getString("cind")) / n);
-                summary.put("dtucint", Float.parseFloat(resultSet.getString("cint")) / n);
+                summary.put("dtuimp",  Float.parseFloat(resultSet.getString("imp")) / total);
+                summary.put("dtut1",   Float.parseFloat(resultSet.getString("t1")) / total);
+                summary.put("dtut10",  Float.parseFloat(resultSet.getString("t10")) / total);
+                summary.put("dtucind", Float.parseFloat(resultSet.getString("cind")) / total);
+                summary.put("dtucint", Float.parseFloat(resultSet.getString("cint")) / total);
             }
         } catch (SQLException e) {
             logSQLException(e);
@@ -1100,12 +1099,14 @@ public class DataService {
         Connection mysql = sql_setup(props);
         try {
             statement = mysql.createStatement();
-            resultSet = statement.executeQuery("select name,format(avg(impact), 2) as impa from inds,orgs where org=id and year >= " + startYear +
+            resultSet = statement.executeQuery("select name,sum(total) as tot,sum(total*impact) as impa from inds,orgs where org=id and year >= " + startYear +
                                                " and year <= " + endYear + " group by org");
             int rank = 1;
+            DecimalFormat decimalFormat = new DecimalFormat("#.00");
             while (resultSet.next()) {
-                String name = resultSet.getString("name");
-                String impa = resultSet.getString("impa");
+                String name  = resultSet.getString("name");
+                int    total = Integer.parseInt(resultSet.getString("tot"));
+                String impa  = decimalFormat.format(Float.parseFloat(resultSet.getString("impa")) / total);
                 impact.put(name, impa);
             }
         } catch (SQLException e) {
