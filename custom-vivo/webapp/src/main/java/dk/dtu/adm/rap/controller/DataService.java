@@ -1318,8 +1318,11 @@ public class DataService {
         log.debug("getDtuResearchers - " + orgUri);
 	// Wrap GROUP BY query in outer query to prevent row with null values if there are no results
         String rq = 
-                "SELECT DISTINCT ?dtuResearcher (MIN(?fullName) AS ?name) (COUNT(DISTINCT ?pub) as ?number)\r\n" +
+                "SELECT DISTINCT ?dtuResearcher ?name ?number\r\n" +
                 "WHERE {\r\n" +
+		"FILTER(BOUND(?dtuResearcher))\r\n" +
+		"FILTER(BOUND(?name))\r\n" +
+		"FILTER(BOUND(?number))\r\n" + 
                 "{ # begin subquery \r\n" +
 		"SELECT DISTINCT ?dtuResearcher (MIN(?fullName) AS ?name) (COUNT(DISTINCT ?pub) as ?number)\r\n" +
                 "WHERE {\r\n" +
@@ -1344,7 +1347,7 @@ public class DataService {
                 "}\r\n" +
                 "GROUP BY ?dtuResearcher \r\n" +
                 "ORDER BY DESC(?number)\r\n" +
-                "LIMIT 40" + 
+                "LIMIT 40\r\n" + 
 		"} # end subquery \r\n" +
 		"} ORDER BY DESC(?number)\r\n";
         ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
