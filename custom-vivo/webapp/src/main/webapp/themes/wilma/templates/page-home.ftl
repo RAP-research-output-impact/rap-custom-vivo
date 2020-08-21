@@ -74,8 +74,36 @@
                     </tr>
                     <tr height="50%">
                         <td width="50%" align="right" style="marging-right: 20px;">
+                            <div class="hbox">
+                                <p class="hbox-title">
+                                    DTU researchers
+                                </p>
+                                <p>
+                                    <a href="${urls.base}/dtu-researchers" title="Researchers"><img src="${urls.theme}/images/researchers.png"/></a>
+                                </p>
+                                <div class="page-home-go">
+                                    <button class="go-button" onClick="window.location.href='${urls.base}/dtu-researchers'">Go</button>
+                                </div>
+                                <div class="page-home-test">
+                                    &alpha; test
+                                <div>
+                            </div>
                         </td>
                         <td width="50%" align="left" style="marging-left: 20px;">
+                            <div class="hbox">
+                                <p class="hbox-title">
+                                    DTU units
+                                </p>
+                                <p>
+                                    <a href="${urls.base}/dtu-units" title="Units"><img src="${urls.theme}/images/units.png"/></a>
+                                </p>
+                                <div class="page-home-go">
+                                    <button class="go-button" onClick="window.location.href='${urls.base}/dtu-units'">Go</button>
+                                </div>
+                                <div class="page-home-test">
+                                    &alpha; test
+                                <div>
+                            </div>
                         </td>
                     </tr>
                 </table>
