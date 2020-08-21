@@ -1316,8 +1316,15 @@ public class DataService {
     private ArrayList<JSONObject> getDtuResearchers(String orgUri, Integer startYear,
             Integer endYear, StoreUtils storeUtils) {
         log.debug("getDtuResearchers - " + orgUri);
-        String rq = "" +
-                "SELECT DISTINCT ?dtuResearcher (MIN(?fullName) AS ?name) (COUNT(DISTINCT ?pub) as ?number)\r\n" +
+	// Wrap GROUP BY query in outer query to prevent row with null values if there are no results
+        String rq = 
+                "SELECT DISTINCT ?dtuResearcher ?name ?number\r\n" +
+                "WHERE {\r\n" +
+		"FILTER(BOUND(?dtuResearcher))\r\n" +
+		"FILTER(BOUND(?name))\r\n" +
+		"FILTER(BOUND(?number))\r\n" + 
+                "{ # begin subquery \r\n" +
+		"SELECT DISTINCT ?dtuResearcher (MIN(?fullName) AS ?name) (COUNT(DISTINCT ?pub) as ?number)\r\n" +
                 "WHERE {\r\n" +
                 "    ?org vivo:relatedBy ?address .\r\n" +
                 "    ?address a wos:Address .\r\n" +
@@ -1340,7 +1347,9 @@ public class DataService {
                 "}\r\n" +
                 "GROUP BY ?dtuResearcher \r\n" +
                 "ORDER BY DESC(?number)\r\n" +
-                "LIMIT 40";
+                "LIMIT 40\r\n" + 
+		"} # end subquery \r\n" +
+		"} ORDER BY DESC(?number)\r\n";
         ParameterizedSparqlString q2 = storeUtils.getQuery(rq);
         q2.setIri("org", orgUri);
         String query = q2.toString();

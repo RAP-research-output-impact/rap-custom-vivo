@@ -48,7 +48,7 @@ function collabSummary(response, startYear, endYear) {
         $("#collab-summary-total").html(0);
         return;
     }
-    if (response.summary.coPubTotal > 0) {
+    if (response.summary !== undefined && response.summary.coPubTotal > 0) {
         $("#collab-summary-total").html(response.summary.coPubTotal);
         if (response.categories.length > 0) {
             $("#collab-summary-cat").html(" in " + response.categories.length + " subject categories");
@@ -64,7 +64,7 @@ function collabSummary(response, startYear, endYear) {
     if (response.top_categories.length != 0) {
         doTopCategoryTable(response);
     }
-    if ((response.summary.coPubTotal > 0) && (response.categories.length > 0)) {
+    if ((response.summary !== undefined && response.summary.coPubTotal > 0) && (response.categories.length > 0)) {
         doPubCategoryTable(response.categories, startYear, endYear);
 
 
@@ -164,10 +164,10 @@ function collabSummary(response, startYear, endYear) {
 
     loadPubInfoByStartYear(byDeptUrl, startYear, endYear, byDeptReport)
 
-    if ((response.summary.coPubTotal > 0) && (response.dtu_researchers.length > 0)) {
+    if ((response.summary !== undefined && response.summary.coPubTotal > 0) && (response.dtu_researchers.length > 0)) {
         doDtuResearchersTable(response.dtu_researchers, startYear, endYear);
     }
-    if ((response.summary.coPubTotal > 0) && (response.funders.length > 0)) {
+    if ((response.summary !== undefined && response.summary.coPubTotal > 0) && (response.funders.length > 0)) {
         doFunderTable(response.funders, startYear, endYear);
     }
 }
@@ -205,7 +205,10 @@ function doCategories(response) {
 }
 
 function doSummaryTable(response) {
-    if (response.summary.country) {
+    if (response.summary === undefined) {
+        return;
+    }
+    if (response.summary !== undefined && response.summary.country) {
         $("#collab-summary-country").html(",&nbsp" + response.summary.country).removeClass("hidden");
     }
     html  = doSummaryTableRow (0, 0, "Number of publications",                             '',          response.summary.orgTotal,      response.summary.dtuTotal);

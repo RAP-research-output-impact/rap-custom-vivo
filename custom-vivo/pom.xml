@@ -133,6 +133,15 @@
 
   <dependencies>
 
+    <!-- The version of icu4j used by VIVO now fails at runtime with the current JVM (Aug. 2020) because the JVM's
+	 version number is greater than 255 and icu4j thinks it's invalid.  Adding a modern icu4j to this pom 
+         seems to take care of the problem, although ultimately the dependency at the VIVO level should be fixed. -->
+    <dependency>
+      <groupId>com.ibm.icu</groupId>
+      <artifactId>icu4j</artifactId>
+      <version>67.1</version>
+    </dependency>
+
     <dependency> 
       <groupId>javax.servlet</groupId> 
       <artifactId>servlet-api</artifactId> 
