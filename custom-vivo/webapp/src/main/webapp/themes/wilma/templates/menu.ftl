@@ -12,7 +12,13 @@
         <td class="dtu-menu" width="15%">
             <a href="${urls.base}/search?querytext=&classgroup=http%3A%2F%2Fvivoweb.org%2Fontology%23vitroClassGrouppublications" title="Publications">Publications</a>
         </td>
-        <td class="dtu-menu" width="40%">
+        <td class="dtu-menu" width="15%">
+            <a href="${urls.base}/dtu-researchers" title="Researchers">Researchers</a>
+        </td>
+        <td class="dtu-menu" width="15%">
+            <a href="${urls.base}/dtu-units" title="Units">Units</a>
+        </td>
+        <td class="dtu-menu" width="10%">
         </td>
         <td class="dtu-menu" width="15%">
             <a href="${urls.base}/aboutProject" title="About">About</a>
