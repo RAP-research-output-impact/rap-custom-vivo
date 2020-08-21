@@ -10,7 +10,7 @@
 
 <section class="home-sections" id="copub">
     <div id="copub-breadcrumbs">
-        <a href="../copub-choose">Ext. collaboration</a>
+        <a href="copub-choose">Ext. collaboration</a>
         &gt;
         <span id="bc-dept-container">
         </span>
