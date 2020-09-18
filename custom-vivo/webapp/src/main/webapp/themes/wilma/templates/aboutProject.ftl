@@ -21,7 +21,7 @@
     #toc ol {
         list-style-type: none;
         padding-inline-start: 20px;
-        background: #f1dfdf;
+        line-height: 1.1em;
         margin-top: 6px;
     }
     #toc li {
