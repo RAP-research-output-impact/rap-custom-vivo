@@ -582,13 +582,32 @@ function researcher_setup() {
 function records_process(res) {
     $("#records-content").children('li').remove();
     if (res.rapas.response.years) {
-        var year = $("#records-year").children("option:selected").val();
-        $("#records-year").children('option').remove();
-        $("#records-year").append(new Option("All", ""));
+        var yearStart = $("#records-year-start").children("option:selected").val();
+        var yearEnd = $("#records-year-end").children("option:selected").val();
+        $("#records-year-start").children('option').remove();
+        $("#records-year-end").children('option').remove();
+        var yearMin = 9999;
+        var yearMax = 0;
         $.each(res.rapas.response.years, function(index, val) {
-            $("#records-year").append(new Option(val, val));
+            if (val < yearMin) {
+                yearMin = val;
+            }
+            if (val > yearMax) {
+                yearMax = val;
+            }
+            $("#records-year-start").append(new Option(val, val));
+            $("#records-year-end").append(new Option(val, val));
         });
-        $("#records-year").val(year);
+        if ((yearStart != null) && (yearStart != "") && (yearStart >= yearMin)) {
+            $("#records-year-start").val(yearStart);
+        } else {
+            $("#records-year-start").val(yearMin);
+        }
+        if ((yearEnd != null) && (yearEnd != "") && (yearEnd <= yearMax)) {
+            $("#records-year-end").val(yearEnd);
+        } else {
+            $("#records-year-end").val(yearMax);
+        }
     }
     if (res.rapas.response.doctype) {
         var type = $("#records-doctype").children("option:selected").val();
@@ -672,7 +691,7 @@ function records_fetch_url(id, page, excel) {
         id = $("#records-id").val();
     } else {
         $("#records-id").val(id);
-        $.each(["year", "doctype", "dtu", 'impact', 'access', 'search'], function(index, fld) {
+        $.each(["year-start", "year-end", "doctype", "dtu", 'impact', 'access', 'search'], function(index, fld) {
             $("#records-" + fld).val("");
         });
     }
@@ -688,7 +707,7 @@ function records_fetch_url(id, page, excel) {
         $("#records-page").val(page);
     }
     args.push("page=" + page);
-    $.each(["year", "doctype", "dtu", 'impact', 'access'], function(index, fld) {
+    $.each(["year-start", "year-end", "doctype", "dtu", 'impact', 'access'], function(index, fld) {
         var arg = $("#records-" + fld).children("option:selected").val();
         if (arg != null) {
             if (arg != "") {
@@ -733,7 +752,20 @@ function records_setup() {
     $(".back-to-researcher").click(function() {
         state_set("researcher");
     });
-    $("#records-year").change(function() {
+    $("#records-year-start").change(function() {
+        var yearStart = $("#records-year-start").children("option:selected").val();
+        var yearEnd = $("#records-year-end").children("option:selected").val();
+        if (yearStart > yearEnd) {
+            $("#records-year-end").val(yearStart);
+        }
+        records_fetch(null, 1);
+    });
+    $("#records-year-end").change(function() {
+        var yearStart = $("#records-year-start").children("option:selected").val();
+        var yearEnd = $("#records-year-end").children("option:selected").val();
+        if (yearEnd < yearStart) {
+            $("#records-year-start").val(yearEnd);
+        }
         records_fetch(null, 1);
     });
     $("#records-doctype").change(function() {

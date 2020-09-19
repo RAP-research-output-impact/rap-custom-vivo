@@ -135,7 +135,7 @@
                 <input type="hidden" id="records-id" value="">
                 <input type="hidden" id="records-page" value="">
                 Year:
-                <select id="records-year">
+                <select id="records-year-start">
                     <option value="" selected="1">All</option>
                     <option value="2020">2020</option>
                     <option value="2019">2019</option>
@@ -144,6 +144,17 @@
                     <option value="2016">2016</option>
                     <option value="2015">2015</option>
                 </select>
+                -
+                <select id="records-year-end">
+                    <option value="" selected="1">All</option>
+                    <option value="2020">2020</option>
+                    <option value="2019">2019</option>
+                    <option value="2018">2018</option>
+                    <option value="2017">2017</option>
+                    <option value="2016">2016</option>
+                    <option value="2015">2015</option>
+                </select>
+            </td>
             </td>
             <td>
                 Type:
