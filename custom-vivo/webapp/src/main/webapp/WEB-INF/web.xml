@@ -1558,6 +1558,14 @@
     <servlet-name>StaticTemplateController</servlet-name>
     <url-pattern>/copub-subject</url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>StaticTemplateController</servlet-name>
+    <url-pattern>/dtu-researchers</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>StaticTemplateController</servlet-name>
+    <url-pattern>/dtu-units</url-pattern>
+  </servlet-mapping>
  
   <servlet>
     <servlet-name>ExcelExportController</servlet-name>

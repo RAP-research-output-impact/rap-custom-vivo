@@ -1,4 +1,22 @@
 /*
+   FIX for IE and old versions of EDGE
+*/
+(function (w) {
+    w.URLSearchParams = w.URLSearchParams || function (searchString) {
+        var self = this;
+        self.searchString = searchString;
+        self.get = function (name) {
+            var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(self.searchString);
+            if (results == null) {
+                return null;
+            } else {
+                return decodeURI(results[1]) || 0;
+            }
+        };
+    }
+})(window)
+
+/*
     DTU Departments
 */
 function bc_dept_dropdown(id) {
@@ -43,7 +61,13 @@ function bc_dept_view() {
 }
 
 function dept_val() {
-    return $("#dtu-dept").val();
+    var dept = $("#dtu-dept").val();
+
+    if (dept == null) {
+        return '';
+    } else {
+        return dept;
+    }
 }
 
 function dept_options(id) {

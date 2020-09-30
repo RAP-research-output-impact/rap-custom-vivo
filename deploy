@@ -62,6 +62,8 @@ then
     cp custom-vivo/webapp/src/main/webapp/templates/freemarker/widgets/*.ftl                  $ROOT/templates/freemarker/widgets/
     cp custom-vivo/webapp/src/main/webapp/themes/wilma/css/*.css                              $ROOT/themes/wilma/css/
     cp custom-vivo/webapp/src/main/webapp/themes/wilma/js/*.js                                $ROOT/themes/wilma/js/
+    cp custom-vivo/webapp/src/main/webapp/themes/wilma/images/*                               $ROOT/themes/wilma/images/
+
 else
     export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
     /etc/init.d/tomcat8 stop

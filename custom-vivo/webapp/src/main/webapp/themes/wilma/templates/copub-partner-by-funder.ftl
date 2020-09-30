@@ -9,7 +9,7 @@
 
 <section class="home-sections" id="worldmap">
     <div id="copub-breadcrumbs" style="margin-top: 20px;">
-        <a href="../copub-choose">Ext. collaboration</a>
+        <a href="copub-choose">Ext. collaboration</a>
         &gt;
         <span id="bc-dep">
             <select id="dtu-dep" name="dtu-dep">
