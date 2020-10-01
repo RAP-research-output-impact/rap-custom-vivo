@@ -4,6 +4,14 @@
 <section class="home-sections" id="copub-choose">
     <div id="copub-choose-heading">
         <h1 id="copub-choose-title">Explore our collaboration – by country, partner or subject</h1>
+        <div style="font-weight: bold; margin-bottom: 12px;">
+            Last DTU RAP Collaboration update: September 19<sup>th</sup> (based on InCites dataset updated August 27<sup>th</sup>)
+        </div>
+        <div style="font-weight: bold;">
+            Note: this site does not work with older versions of <i>Microsoft</i> browsers.
+            <br/>
+            Please use <i>Chrome</i>, <i>Firefox</i> or <i>Edge version 44.18362.449.0</i> or higher.
+        </div>
     </div>
     <div id="copub-choose-body">
         <table id="copub-choose-table" cellpadding="6" cellspacing="6" style="margin-left: auto; margin-right: auto; margin-top: 30px; margin-bottom: 60px;">
