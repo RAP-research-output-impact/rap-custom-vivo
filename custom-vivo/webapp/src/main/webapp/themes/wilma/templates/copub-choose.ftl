@@ -44,9 +44,10 @@
 </section>
 
 <script>
+    const urls_base = "${urls.base}";
     dept_options("DTUdepartment");
     function copub_link(base) {
-        window.location.href = '../' + base + '?dept=' + $("#DTUdepartment").val();
+        window.location.href = urls_base + '/' + base + '?dept=' + $("#DTUdepartment").val();
         return (false);
     }
 </script>
