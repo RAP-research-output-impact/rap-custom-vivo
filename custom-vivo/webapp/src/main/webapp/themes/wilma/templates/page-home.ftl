@@ -26,6 +26,15 @@
         <script src="${urls.theme}/js/topojson.min.js"></script>
         <script src="${urls.theme}/js/datamaps.world.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/datamaps/0.5.8/datamaps.world.hires.min.js"></script>
+        <script src="${urls.theme}/js/copub-util.js"></script>
+        <script src="${urls.theme}/js/assessment.js"></script>
+        <script>
+            const urls_base = "${urls.base}";
+            $(document).ready(function() {
+                copub_update ();
+                rapas_update ();
+            });
+        </script>
     </head>
 
     <body class="${bodyClasses!}" onload="${bodyOnload!}">
@@ -50,7 +59,7 @@
                                 <div class="page-home-go">
                                     <button class="go-button" onClick="window.location.href='${urls.base}/copub-choose'">Go</button>
                                 </div>
-                                <div class="page-home-test">
+                                <div class="page-home-copub-update">
                                 <div>
                             </div>
                         </td>
@@ -66,8 +75,7 @@
                                 <div class="page-home-go">
                                     <button class="go-button" onClick="window.location.href='${urls.base}/search?querytext=&classgroup=http%3A%2F%2Fvivoweb.org%2Fontology%23vitroClassGrouppublications'">Go</button>
                                 </div>
-                                <div class="page-home-test">
-                                    &beta; test
+                                <div class="page-home-copub-update">
                                 <div>
                             </div>
                         </td>
@@ -84,8 +92,7 @@
                                 <div class="page-home-go">
                                     <button class="go-button" onClick="window.location.href='${urls.base}/dtu-researchers'">Go</button>
                                 </div>
-                                <div class="page-home-test">
-                                    &alpha; test
+                                <div class="page-home-rapas-update">
                                 <div>
                             </div>
                         </td>
@@ -100,8 +107,7 @@
                                 <div class="page-home-go">
                                     <button class="go-button" onClick="window.location.href='${urls.base}/dtu-units'">Go</button>
                                 </div>
-                                <div class="page-home-test">
-                                    &alpha; test
+                                <div class="page-home-rapas-update">
                                 <div>
                             </div>
                         </td>

@@ -60,10 +60,10 @@
         </tbody>
     </table>
     <div id="researcher-pubs">
-        <h2>All Web of Science publications found using ORCID/ResearcherID</h2>
+        <h2><b>Publications</b> - found in Web of Science using ORCID/ResearcherID – a publication may belong to more than one type</h2>
         <table id="researcher-summary">
         </table>
-        <span>* Note that a publication can be assigned to more than one document type</span>
+        <button id="researcher-publications">View all publications</button>
         <div id='pubCite-researcher'>
         </div>
         <table id="researcher-indicator">
@@ -144,11 +144,6 @@
             </thead>
             <tbody>
             </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="7">Go to full list of researcher’s: <button id="researcher-publications">Publications</button></td>
-                </tr>
-            </tfoot>
         </table>
     </div>
     <div id="researcher-no-pubs" style="margin-top: 30px; width: 1032px; border: 2px solid black; padding: 6px; display: none;">

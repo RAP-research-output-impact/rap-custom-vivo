@@ -445,11 +445,15 @@ function researcher_process(res) {
         $('#researcher-no-pubs').hide();
         var row1 = '<tr class="label">';
         var row2 = '<tr>';
-        $.each(["article", "review", "proceedings paper", "abstract", "correction", "other"], function(index, fld) {
+        $.each(["all", "article", "review", "proceedings paper", "abstract", "correction", "other"], function(index, fld) {
             if (fld == 'other' && res.rapas.response.body.summary[fld] > 0) {
-                row1 += '<th title="Includes types: ' + res.rapas.response.body.summary.doctype_other + '">' + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
+                row1 += '<th width="13%" title="Includes types: ' + res.rapas.response.body.summary.doctype_other + '">' + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
             } else {
-                row1 += "<th>" + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
+                if (fld == "proceedings paper") {
+                    row1 += '<th width="22%">' + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
+                } else {
+                    row1 += '<th width="13%">' + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
+                }
             }
             row2 += "<td>" + res.rapas.response.body.summary[fld] + "</td>";
         });
@@ -542,7 +546,7 @@ function researcher_fetch(orcid) {
         var xhr = new XMLHttpRequest();
         console.log('GET /rap-adh/ws/researcher/' + orcid + "/" + ys + "/" + ye + "/" + doctype);
         xhr.open('GET', '/rap-adh/ws/researcher/' + orcid + "/" + ys + "/" + ye + "/" + doctype);
-        xhr.onload = function() {   
+        xhr.onload = function() {
             if (xhr.status === 200) {
                 var response = JSON.parse(xhr.response)
                 researcher_process(response);
@@ -733,7 +737,7 @@ function records_fetch(id, page) {
     var xhr = new XMLHttpRequest();
     console.log("GET " + url);
     xhr.open('GET', url);
-    xhr.onload = function() {   
+    xhr.onload = function() {
         if (xhr.status === 200) {
             var response = JSON.parse(xhr.response)
             records_process(response);
@@ -916,7 +920,7 @@ function record_process(res) {
             "hot_paper":        "Hot Paper",
             "ae_rate":          "Category Expected Citations",
             "impact_factor":    "Journal Impact Factor",
-            "jou_act_exp_cit":  "Journal Normalized Citation Impact (JNCI)", 
+            "jou_act_exp_cit":  "Journal Normalized Citation Impact (JNCI)",
             "jou_exp_cit":      "Journal Expected Citations"
         };
         html += '<table>';
@@ -943,7 +947,7 @@ function record_fetch(ut) {
     var url = "/rap-adh/ws/record/" + ut;
     console.log("GET " + url);
     xhr.open('GET', url);
-    xhr.onload = function() {   
+    xhr.onload = function() {
         if (xhr.status === 200) {
             var response = JSON.parse(xhr.response)
             record_process(response);
@@ -1030,7 +1034,7 @@ function departments_fetch() {
         var xhr = new XMLHttpRequest();
         console.log('GET /rap-adh/ws/departments/' + ys + "/" + ye + "/" + doctype);
         xhr.open('GET', '/rap-adh/ws/departments/' + ys + "/" + ye + "/" + doctype);
-        xhr.onload = function() {   
+        xhr.onload = function() {
             if (xhr.status === 200) {
                 var response = JSON.parse(xhr.response)
                 departments_process(response);
@@ -1123,32 +1127,10 @@ function unit_process(res) {
             html += '<span class="label">Head:</span><span class="value"><a onClick="' + "researcher_fetch('" + res.rapas.response.body.leader.orcid + "'); state_set('researcher');" + '">';
             html += res.rapas.response.body.leader.name;
             html += '</a></span>';
-            html += '<span class="label">ORCID:</span><span class="value">';
-            html += '<a href="https://orcid.org/' + res.rapas.response.body.leader.orcid + '" target="_blank">' + res.rapas.response.body.leader.orcid + '</a>';
         } else {
             html += '<span class="label">Head:</span><span class="value">';
             html += res.rapas.response.body.leader.name;
             html += '</span>';
-            html += '<span class="label">ORCID:</span><span class="value">';
-            if (res.rapas.response.body.leader.orcid == "NA") {
-                html += 'N/A';
-            } else {
-                html += '<a href="https://orcid.org/' + res.rapas.response.body.leader.orcid + '" target="_blank">' + res.rapas.response.body.leader.orcid + '</a>';
-            }
-        }
-        html += '</span>';
-        html += '<span class="label">ResearcherID:</span><span class="value">';
-        if (res.rapas.response.body.leader.rid && res.rapas.response.body.leader.rid != "NA") {
-            html += '<a href="http://researcherid.com/rid/' + res.rapas.response.body.leader.rid + '" target="_blank">' + res.rapas.response.body.leader.rid + '</a>';
-        } else {
-            html += 'N/A';
-        }
-        html += '</span>';
-        html += '<span class="label">Email:</span><span class="value">';
-        if (res.rapas.response.body.leader.email) {
-            html += res.rapas.response.body.leader.email;
-        } else {
-            html += 'N/A';
         }
         html += '</span>';
         $("#unit-leader").html(html);
@@ -1162,20 +1144,24 @@ function unit_process(res) {
         } else {
             Crumb.over.sec = "";
         }
-        var html = '<button onClick="researchers_setup(1); state_set(' + "'researchers'" + ');">Researchers</button>';
+        var html = '<button onClick="researchers_setup(1); state_set(' + "'researchers'" + ');">View list</button>';
         $("#unit-researchers").html(html);
     } else {
         $("#unit-researchers").html('');
     }
     var row1 = '<tr class="label">';
     var row2 = '<tr>';
-    $.each(["article", "review", "proceedings paper", "abstract", "correction", "other"], function(index, fld) {
+    $.each(["all", "article", "review", "proceedings paper", "abstract", "correction", "other"], function(index, fld) {
         if (fld == 'other' && res.rapas.response.body.summary[fld] > 0) {
-            row1 += '<th title="Includes types: ' + res.rapas.response.body.summary.doctype_other + '">' + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
+            row1 += '<th width="13%" title="Includes types: ' + res.rapas.response.body.summary.doctype_other + '">' + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
         } else {
-            row1 += "<th>" + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
+            if (fld == "proceedings paper") {
+                row1 += '<th width="22%">' + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
+            } else {
+                row1 += '<th width="13%">' + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
+            }
         }
-        row2 += '<td width="16%">' + res.rapas.response.body.summary[fld] + "</td>";
+        row2 += '<td>' + res.rapas.response.body.summary[fld] + "</td>";
     });
     row1 += '</tr>';
     row2 += '</tr>';
@@ -1256,7 +1242,7 @@ function unit_fetch(id) {
         var url = '/rap-adh/ws/unit?id=' + id + '&syear=' + ys + '&eyear=' + ye + '&doctype=' + doctype;
         console.log('GET ' + url);
         xhr.open('GET', url);
-        xhr.onload = function() {   
+        xhr.onload = function() {
             if (xhr.status === 200) {
                 var response = JSON.parse(xhr.response)
                 unit_process(response);
@@ -1421,9 +1407,19 @@ function graph_pubs_vs_cites(data, id, width, height, title, separateScale) {
     svg.append('rect')
         .attr('class', 'lcit')
         .attr('x', x)
-        .attr('y', 50)
-        .attr('height', 20)
+        .attr('y', 60)
+        .attr('height', 1)
         .attr('width', 60)
+    svg.append('circle')
+        .attr('class', 'point')
+        .attr("r", 3)
+        .attr('cx', x)
+        .attr('cy', 60)
+    svg.append('circle')
+        .attr('class', 'point')
+        .attr("r", 3)
+        .attr('cx', x + 60)
+        .attr('cy', 60)
     svg.append('text')
         .attr('class', 'leg')
         .attr('x', x + 66)
@@ -1585,4 +1581,20 @@ function graph_pubs_vs_cites(data, id, width, height, title, separateScale) {
         .attr('id', 'overlay')
         .attr('transform', `translate(${margin}, ${margin})`);
 }
-
+function rapas_update(res) {
+    if (res == null) {
+        var xhr = new XMLHttpRequest();
+        var url = '/rap-adh/ws/last_update';
+        console.log('GET ' + url);
+        xhr.open('GET', url);
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                var res = JSON.parse(xhr.response)
+                $(".page-home-rapas-update").html("updated: " + res.rapas.response.body.updlong);
+            } else {
+                alert('Request failed.  Returned status of ' + xhr.status);
+            }
+        };
+        xhr.send();
+    }
+}

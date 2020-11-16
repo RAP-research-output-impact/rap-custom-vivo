@@ -381,3 +381,12 @@ function setSort(name) {
         });
     });
 }
+function copub_update(data) {
+    if (data == null) {
+        var dataURL = urls_base + "/vds/report/lastUpdate";
+        console.log ("calling loadData: " + dataURL);
+        loadData(dataURL, copub_update);
+    } else {
+        $(".page-home-copub-update").html("updated: " + data.updlong);
+    }
+}
