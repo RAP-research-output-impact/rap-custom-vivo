@@ -302,6 +302,16 @@ ul.copubdept {
     color: #b50404;
     font-size: 24px;
 }
+.page-home-copub-update {
+    position: absolute;
+    top: 10px;
+    right: 36px;
+}
+.page-home-rapas-update {
+    position: absolute;
+    top: 10px;
+    right: 36px;
+}
 #search-home-field {
     width: 483px;
     height: 44px;

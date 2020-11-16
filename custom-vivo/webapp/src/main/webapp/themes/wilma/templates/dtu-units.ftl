@@ -27,12 +27,19 @@
     </table>
 </div>
 <div id="unit-section" style="display: none;">
-    <div id="unit-leader">
-    </div>
-    <h2 style="margin: 18px 0 6px 0;">All Web of Science publications found using ORCID/ResearcherID</h2>
+    <table>
+        <tr>
+            <td id="unit-leader">
+            </td>
+            <td><b>Researchers:</b></td>
+            <td id="unit-researchers" style="padding-left: 3px;">
+            </td>
+        </tr>
+    </table>
+    <h2 style="margin-bottom: 6px;"><b>Publications</b> - found in Web of Science using ORCID/ResearcherID – a publication may belong to more than one type</h2>
     <table id="unit-summary">
     </table>
-    <span>* Note that a publication can be assigned to more than one document type</span>
+    <button id="unit-publications">View all publications</button>
     <div id='pubCite-unit'>
     </div>
     <table id="unit-indicator">
@@ -117,15 +124,6 @@
         </thead>
         <tbody>
         </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="11">
-                    Go to full list of unit’s:
-                    <span id="unit-researchers"></span>
-                    <button id="unit-publications">Publications</button>
-                </td>
-            </tr>
-        </tfoot>
     </table>
 </div>
 <div id="records-section" style="display: none;">
@@ -294,10 +292,10 @@
         </tbody>
     </table>
     <div id="researcher-pubs">
-        <h2>All Web of Science publications found using ORCID/ResearcherID</h2>
+        <h2><b>Publications</b> - found in Web of Science using ORCID/ResearcherID – a publication may belong to more than one type</h2>
         <table id="researcher-summary">
         </table>
-        <span>* Note that a publication can be assigned to more than one document type</span>
+        <button id="researcher-publications">View all publications</button>
         <div id='pubCite-researcher'>
         </div>
         <table id="researcher-indicator">
@@ -378,11 +376,6 @@
             </thead>
             <tbody>
             </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="7">Go to full list of researcher’s: <button id="researcher-publications">Publications</button></td>
-                </tr>
-            </tfoot>
         </table>
     </div>
     <div id="researcher-no-pubs" style="margin-top: 30px; width: 1032px; border: 2px solid black; padding: 6px; display: none;">

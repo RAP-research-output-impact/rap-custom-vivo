@@ -369,6 +369,40 @@ public class DataService {
         return builder.build();
     }
 
+    @Path("/lastUpdate")
+    @GET
+    @Produces("application/json")
+    public Response lastUpdate(@Context HttpServletRequest request) {
+        ConfigurationProperties props = ConfigurationProperties.getBean(request);
+        Connection mysql = sql_setup(props);
+        String upd = "";
+        String updlong = "";
+        Statement statement = null;
+        ResultSet resultSet = null;
+        JSONObject jo = new JSONObject();
+        try {
+            statement = mysql.createStatement();
+            resultSet = statement.executeQuery("select upd,updlong from updates order by id desc limit 1");
+            while (resultSet.next()) {
+                String s;
+                if ((s = resultSet.getString("upd")) != null) {
+                    upd = s;
+                    updlong = resultSet.getString("updlong");
+                }
+            }
+            jo.put("upd", upd);
+            jo.put("updlong", updlong);
+        } catch (SQLException e) {
+            logSQLException(e);
+        } catch (JSONException e) {
+            log.error(e, e);
+        } finally {
+            sql_close(statement, resultSet);
+        }
+        ResponseBuilder builder = Response.ok(jo.toString());
+        return builder.build();
+    }
+
     @Path("/partners")
     @GET
     @Produces("application/json")
