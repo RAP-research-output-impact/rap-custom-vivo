@@ -382,7 +382,6 @@ function researchers_setup(partial) {
 }
 function researcher_process(res) {
     if (res.rapas.response.body.ind.absFirst) {
-        var dt = new Date();
         var ys = $("#researcher-year-start").children("option:selected").val();
         var ye = $("#researcher-year-end").children("option:selected").val();
         console.log("years: " + ys + '-' + ye);
@@ -390,10 +389,10 @@ function researcher_process(res) {
             ys = res.rapas.response.body.ind.absFirst;
         }
         if (ye > res.rapas.response.body.ind.absLast) {
-            if (ye > dt.getFullYear()) {
+            if (ye > year_end()) {
                 ye = res.rapas.response.body.ind.absLast;
             } else {
-                ye = dt.getFullYear();
+                ye = year_end();
             }
         }
         console.log("corrected years: " + ys + '-' + ye);
@@ -403,7 +402,7 @@ function researcher_process(res) {
             $("#researcher-year-start").append(new Option(year, year));
             $("#researcher-year-end").append(new Option(year, year));
         }
-        for (var year = res.rapas.response.body.ind.absLast + 1; year <= dt.getFullYear(); year++) {
+        for (var year = res.rapas.response.body.ind.absLast + 1; year <= ye; year++) {
             $("#researcher-year-end").append(new Option(year, year));
         }
         $("#researcher-year-start").val(ys);
@@ -509,9 +508,7 @@ function researcher_fetch(orcid) {
     }
     if (newORCID) {
         ys = 1900;
-        ye = 2030;
-        var dt = new Date();
-        ye = dt.getFullYear();
+        ye = year_end();
         $("#researcher-year-start").children('option').remove();
         $("#researcher-year-end").children('option').remove();
         $("#researcher-year-start").append(new Option(ys, ys));
@@ -1020,8 +1017,7 @@ function departments_fetch() {
     var ye = $("#departments-year-end").children("option:selected").val();
     console.log("researcher_fetch: year end: " + ye);
     if (ye == null) {
-        var dt = new Date();
-        ye = dt.getFullYear();
+        ye = year_end();
         console.log("researcher_fetch: year end: " + ye);
     }
     console.log("departments_fetch: years: " + ys + '-' + ye);
@@ -1094,17 +1090,16 @@ function units_setup() {
 }
 function unit_process(res) {
     if (res.rapas.response.body.yearmin) {
-        var dt = new Date();
         var ys = $("#unit-year-start").children("option:selected").val();
         var ye = $("#unit-year-end").children("option:selected").val();
         if (ys < res.rapas.response.body.yearmin) {
             ys = res.rapas.response.body.yearmin;
         }
         if (ye > res.rapas.response.body.yearmax) {
-            if (ye > dt.getFullYear()) {
+            if (ye > year_end()) {
                 ye = res.rapas.response.body.yearmax;
             } else {
-                ye = dt.getFullYear();
+                ye = year_end();
             }
         }
         $("#unit-year-start").children('option').remove();
@@ -1113,7 +1108,7 @@ function unit_process(res) {
             $("#unit-year-start").append(new Option(year, year));
             $("#unit-year-end").append(new Option(year, year));
         }
-        for (var year = res.rapas.response.body.yearmax + 1; year <= dt.getFullYear(); year++) {
+        for (var year = res.rapas.response.body.yearmax + 1; year <= year_end(); year++) {
             $("#unit-year-end").append(new Option(year, year));
         }
         $("#unit-year-start").val(ys);
@@ -1211,8 +1206,7 @@ function unit_fetch(id) {
     }
     if (newid) {
         ys = 1900;
-        var dt = new Date();
-        ye = dt.getFullYear();
+        ye = year_end();
         $("#unit-year-start").children('option').remove();
         $("#unit-year-end").children('option').remove();
         $("#unit-year-start").append(new Option(ys, ys));
@@ -1597,4 +1591,12 @@ function rapas_update(res) {
         };
         xhr.send();
     }
+}
+function year_end() {
+    var dt = new Date();
+    var ye = dt.getFullYear();
+    if (dt.getMonth() < 1) {
+        ye--;
+    }
+    return ye;
 }
