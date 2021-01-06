@@ -75,6 +75,7 @@ else
     cp build${EXT}.properties webapp/src/main/webapp/WEB-INF/resources/build.properties
     mvn $* -Dhttps.protocols=TLSv1.2 clean install -s settings${EXT}.xml
     /etc/init.d/tomcat8 start
+    cd -
 fi
 echo "info: updating cache versions" >&2
 find $ROOT -type f | xargs -d"\n" egrep -l 'ver=CACHEVERSION' | xargs -d"\n" ./deploy-version
