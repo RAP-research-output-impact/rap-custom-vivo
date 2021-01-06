@@ -130,7 +130,7 @@ function bc_range_dropdown(id) {
 }
 
 function bc_range_options() {
-    var last = new Date().getFullYear();
+    var last = year_last();
     var year;
     for(year = 2007; year <= last; year++) {
         $("#year-from").append(new Option(year, year));
@@ -142,7 +142,7 @@ function bc_range_setup(id, callback) {
     bc_range_dropdown(id);
     bc_range_options();
     var urlParams = new URLSearchParams(window.location.search);
-    var last = new Date().getFullYear();
+    var last = year_last();
     var year;
     year = urlParams.get('year-from');
     if (year) {
@@ -389,4 +389,12 @@ function copub_update(data) {
     } else {
         $(".page-home-copub-update").html("updated: " + data.updlong);
     }
+}
+function year_last() {
+    var dt = new Date();
+    var ye = dt.getFullYear();
+    if (dt.getMonth() < 1) {
+        ye--;
+    }
+    return ye;
 }
