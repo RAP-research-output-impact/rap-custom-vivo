@@ -884,10 +884,22 @@ function record_process(res) {
     }
     html = "";
     $.each(rec.grants, function(index, val) {
-        html += '<tr><td class="record-grant">' + val.id + '</td><td class="record-funder">' + val.name + '</td></tr>';
+        html += '<li class="record-funder">' + val.name + '</li>';
+        if (val.id) {
+            var ids = [];
+            var done = {};
+            $.each(val.id.split(','), function(i, v) {
+                v = v.trim();
+                if (!done[v]) {
+                    done[v] = 1;
+                    ids.push (v);
+                }
+            });
+            html += '<li class="record-grant">' + ids.join(', ') + '</li>';
+        }
     });
     if (html) {
-        $("#record-funding").html('<div class="pub-label">Funding</div><table>' + html + '</table>');
+        $("#record-funding").html('<div class="pub-label">Funding</div><ul>' + html + '</ul>');
     } else {
         $("#record-funding").html("");
     }
