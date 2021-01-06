@@ -52,9 +52,9 @@ then
     echo "       sudo ./deploy [--copy] <dev | update>" >&2
     exit 1
 fi
+ROOT="/var/lib/tomcat8/webapps/vivo$EXT"
 if [ $COPY = true ]
 then
-    ROOT="/var/lib/tomcat8/webapps/vivo$EXT"
     cp custom-vivo/webapp/src/main/webapp/themes/wilma/templates/*.ftl                        $ROOT/themes/wilma/templates/
     cp custom-vivo/webapp/src/main/webapp/templates/freemarker/body/individual/*.ftl          $ROOT/templates/freemarker/body/individual/
     cp custom-vivo/webapp/src/main/webapp/templates/freemarker/body/partials/individual/*.ftl $ROOT/templates/freemarker/body/partials/individual/
@@ -76,5 +76,7 @@ else
     mvn $* -Dhttps.protocols=TLSv1.2 clean install -s settings${EXT}.xml
     /etc/init.d/tomcat8 start
 fi
+echo "info: updating cache versions" >&2
+find $ROOT -type f | xargs -d"\n" egrep -l 'ver=CACHEVERSION' | xargs -d"\n" ./deploy-version
 exit 0
 

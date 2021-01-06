@@ -26,8 +26,8 @@
         <script src="${urls.theme}/js/topojson.min.js"></script>
         <script src="${urls.theme}/js/datamaps.world.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/datamaps/0.5.8/datamaps.world.hires.min.js"></script>
-        <script src="${urls.theme}/js/copub-util.js"></script>
-        <script src="${urls.theme}/js/assessment.js"></script>
+        <script src="${urls.theme}/js/copub-util.js?ver=CACHEVERSION"></script>
+        <script src="${urls.theme}/js/assessment.js?ver=CACHEVERSION"></script>
         <script>
             const urls_base = "${urls.base}";
             $(document).ready(function() {

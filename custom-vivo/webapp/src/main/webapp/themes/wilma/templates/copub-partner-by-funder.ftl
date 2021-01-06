@@ -4,7 +4,7 @@
 <script src="${urls.theme}/js/topojson.min.js"></script>
 <script src="${urls.theme}/js/datamaps.world.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/datamaps/0.5.8/datamaps.world.hires.min.js"></script>
-<script src="${urls.theme}/js/copub.js"></script>
+<script src="${urls.theme}/js/copub.js?ver=CACHEVERSION"></script>
 <script src="${urls.theme}/js/jquery.sortElements.js"></script>
 
 <section class="home-sections" id="worldmap">

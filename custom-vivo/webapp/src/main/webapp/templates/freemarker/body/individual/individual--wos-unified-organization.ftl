@@ -5,8 +5,8 @@
 <script src="${urls.theme}/js/jquery.corner.js"></script>
 <script src="${urls.theme}/js/jquery.sortElements.js"></script>
 <script src="${urls.theme}/js/d3-v5.min.js"></script>
-<script src="${urls.theme}/js/copub-util.js"></script>
-<script src="${urls.theme}/js/copub-report.js"></script>
+<script src="${urls.theme}/js/copub-util.js?ver=CACHEVERSION"></script>
+<script src="${urls.theme}/js/copub-report.js?ver=CACHEVERSION"></script>
 
 <#assign affiliatedResearchAreas>
     <#include "individual-affiliated-research-areas.ftl">

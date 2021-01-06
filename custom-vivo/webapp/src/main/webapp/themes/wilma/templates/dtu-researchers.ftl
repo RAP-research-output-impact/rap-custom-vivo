@@ -1,7 +1,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
-<script src="${urls.theme}/js/assessment.js"></script>
+<script src="${urls.theme}/js/assessment.js?ver=CACHEVERSION"></script>
 <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
 <link rel="stylesheet" href="${urls.theme}/css/assessment.css">
 <div id="crumb" style="margin: 12px 0px 6px 6px;"></div>

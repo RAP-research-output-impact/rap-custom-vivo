@@ -1,6 +1,6 @@
 <#import "lib-home-page.ftl" as lh>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="${urls.theme}/js/copub-util.js"></script>
+<script src="${urls.theme}/js/copub-util.js?ver=CACHEVERSION"></script>
 <section class="home-sections" id="copub-choose">
     <div id="copub-choose-heading">
         <h1 id="copub-choose-title">Explore our collaboration – by country, partner or subject</h1>

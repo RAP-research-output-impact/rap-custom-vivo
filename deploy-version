@@ -1,0 +1,27 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+my ($sec, $min, $hour, $day, $mon, $year, $wday, $yday) = localtime (time);
+my $ver = sprintf ('%03d-%02d-%02d.%02d', $yday, $hour, $min, $sec);
+foreach my $file (@ARGV) {
+    if (open (my $fin, $file)) {
+        if (open (my $fou, "> $file.$$.ver")) {
+            while (<$fin>) {
+                s/CACHEVERSION/$ver/g;
+                print ($fou $_);
+            }
+            close ($fou);
+            close ($fin);
+            if (!rename ("$file.$$.ver", $file)) {
+                die ("fatal: failed to rename '$file.$$.ver' to '$file': $!");
+            }
+        } else {
+            close ($fin);
+            die ("fatal: failed to open '$file.$$.ver' for writing: $!");
+        }
+    } else {
+        die ("fatal: failed to open '$file' for reading: $!");
+    }
+}
