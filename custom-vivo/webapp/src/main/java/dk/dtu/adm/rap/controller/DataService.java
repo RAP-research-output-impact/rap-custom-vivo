@@ -854,16 +854,27 @@ public class DataService {
                                                "where org=" + Integer.toString (id) + " and year >= " + Integer.toString(startYear) +
                                                " and year <= " + Integer.toString(endYear));
             while (resultSet.next()) {
-                int total = Integer.parseInt(resultSet.getString("tot"));
-                int cites = Integer.parseInt(resultSet.getString("cit"));
-                summary.put("dtuTotal", total);
-                summary.put("dtuCitesTotal", cites);
-                summary.put("dtuImpact", (Float)((float)cites / total));
-                summary.put("dtuimp",  Float.parseFloat(resultSet.getString("imp")) / total);
-                summary.put("dtut1",   Float.parseFloat(resultSet.getString("t1")) / total);
-                summary.put("dtut10",  Float.parseFloat(resultSet.getString("t10")) / total);
-                summary.put("dtucind", Float.parseFloat(resultSet.getString("cind")) / total);
-                summary.put("dtucint", Float.parseFloat(resultSet.getString("cint")) / total);
+                if (resultSet.getString("tot") == null) {
+                    summary.put("orgTotal", "");
+                    summary.put("orgCitesTotal", "");
+                    summary.put("orgImpact", "");
+                    summary.put("orgimp",  "");
+                    summary.put("orgt1",   "");
+                    summary.put("orgt10",  "");
+                    summary.put("orgcind", "");
+                    summary.put("orgcint", "");
+                } else {
+                    int total = Integer.parseInt(resultSet.getString("tot"));
+                    int cites = Integer.parseInt(resultSet.getString("cit"));
+                    summary.put("dtuTotal", total);
+                    summary.put("dtuCitesTotal", cites);
+                    summary.put("dtuImpact", (Float)((float)cites / total));
+                    summary.put("dtuimp",  Float.parseFloat(resultSet.getString("imp")) / total);
+                    summary.put("dtut1",   Float.parseFloat(resultSet.getString("t1")) / total);
+                    summary.put("dtut10",  Float.parseFloat(resultSet.getString("t10")) / total);
+                    summary.put("dtucind", Float.parseFloat(resultSet.getString("cind")) / total);
+                    summary.put("dtucint", Float.parseFloat(resultSet.getString("cint")) / total);
+                }
             }
         } catch (SQLException e) {
             logSQLException(e);
