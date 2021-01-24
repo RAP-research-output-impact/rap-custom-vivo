@@ -36,95 +36,108 @@
             </td>
         </tr>
     </table>
-    <h2 style="margin-bottom: 6px;"><b>Publications</b> - found in Web of Science using ORCID/ResearcherID – a publication may belong to more than one type</h2>
-    <table id="unit-summary">
-    </table>
-    <button id="unit-publications">View all publications</button>
-    <div id='pubCite-unit'>
+    <div id="unit-pubs">
+        <h2 style="margin-bottom: 6px;"><b>Publications</b> - found in Web of Science using ORCID/ResearcherID – a publication may belong to more than one type</h2>
+        <table id="unit-summary">
+        </table>
+        <button id="unit-publications">View all publications</button>
+        <div id='pubCite-unit'>
+        </div>
+        <table id="unit-indicator">
+            <thead>
+                <tr>
+                    <td colspan="4">
+                        <h2 style="margin-bottom: 0;">Metrics based on these publications </h2>
+                    </td>
+                    <td colspan="7" align="right">
+                        From
+                        <select id="unit-year-start" name="year-start" style="margin-bottom: 0;">
+                            <option value="1900">1900</option>
+                            <option value="2015">2015</option>
+                            <option value="2016">2016</option>
+                            <option value="2017">2017</option>
+                            <option value="2018">2018</option>
+                            <option value="2019">2019</option>
+                            <option value="2020">2020</option>
+                        </select>
+                        -
+                        <select id="unit-year-end" name="year-end" style="margin-bottom: 0;">
+                            <option value="2015">2015</option>
+                            <option value="2016">2016</option>
+                            <option value="2017">2017</option>
+                            <option value="2018">2018</option>
+                            <option value="2019">2019</option>
+                            <option value="2020">2020</option>
+                            <option value="2030" selected="1">2030</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="11" align="right">
+                        <table id="unit-doctype" style="width: 100%">
+                            <tr>
+                                <td>
+                                    Include publication types:
+                                    <input type="checkbox" class="unit-doctype" name="doctype" value="article" checked="checked">
+                                    Article
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="unit-doctype" name="doctype" value="review" checked="checked">
+                                    Review
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="unit-doctype" name="doctype" value="proceedings paper" checked="checked">
+                                    Proceedings paper
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="unit-doctype" name="doctype" value="abstract" checked="checked">
+                                    Abstracts
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="unit-doctype" name="doctype" value="correction" checked="checked">
+                                    Corrections
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="unit-doctype" name="doctype" value="other" checked="checked">
+                                    Other
+                                </td>
+                                <td>
+                                    <button class="doctype-button" onClick="flip_doctype('unit-doctype', unit_fetch);">All/None</button>
+                                </td>
+                            </tr>
+                            <input type="hidden" id="unit-id" value=""/>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Publications</th>
+                    <th>Citations</th>
+                    <th>Cit./Publ.</th>
+                    <th>Cit./Year</th>
+                    <th title="H-index of the set of publications. Is calculated by counting the number of publications that been cited at least that same number of times.">H-index</th>
+                    <th>% Publ. cited</th>
+                    <th>CNCI</th>
+                    <th>In top 10%</th>
+                    <th>In top 1%</th>
+                    <th title="Percentage of publications that have international co-authors">International Collab.</th>
+                    <th title="Percentage of publications that are identified as Open Access">Open Access</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </div>
-    <table id="unit-indicator">
-        <thead>
-            <tr>
-                <td colspan="4">
-                    <h2 style="margin-bottom: 0;">Metrics based on these publications </h2>
-                </td>
-                <td colspan="7" align="right">
-                    From
-                    <select id="unit-year-start" name="year-start" style="margin-bottom: 0;">
-                        <option value="1900">1900</option>
-                        <option value="2015">2015</option>
-                        <option value="2016">2016</option>
-                        <option value="2017">2017</option>
-                        <option value="2018">2018</option>
-                        <option value="2019">2019</option>
-                        <option value="2020">2020</option>
-                    </select>
-                    -
-                    <select id="unit-year-end" name="year-end" style="margin-bottom: 0;">
-                        <option value="2015">2015</option>
-                        <option value="2016">2016</option>
-                        <option value="2017">2017</option>
-                        <option value="2018">2018</option>
-                        <option value="2019">2019</option>
-                        <option value="2020">2020</option>
-                        <option value="2030" selected="1">2030</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="11" align="right">
-                    <table id="unit-doctype" style="width: 100%">
-                        <tr>
-                            <td>
-                                Include publication types:
-                                <input type="checkbox" class="unit-doctype" name="doctype" value="article" checked="checked">
-                                Article
-                            </td>
-                            <td>
-                                <input type="checkbox" class="unit-doctype" name="doctype" value="review" checked="checked">
-                                Review
-                            </td>
-                            <td>
-                                <input type="checkbox" class="unit-doctype" name="doctype" value="proceedings paper" checked="checked">
-                                Proceedings paper
-                            </td>
-                            <td>
-                                <input type="checkbox" class="unit-doctype" name="doctype" value="abstract" checked="checked">
-                                Abstracts
-                            </td>
-                            <td>
-                                <input type="checkbox" class="unit-doctype" name="doctype" value="correction" checked="checked">
-                                Corrections
-                            </td>
-                            <td>
-                                <input type="checkbox" class="unit-doctype" name="doctype" value="other" checked="checked">
-                                Other
-                            </td>
-                            <td>
-                                <button class="doctype-button" onClick="flip_doctype('unit-doctype', unit_fetch);">All/None</button>
-                            </td>
-                        </tr>
-                        <input type="hidden" id="unit-id" value=""/>
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <th>Publications</th>
-                <th>Citations</th>
-                <th>Cit./Publ.</th>
-                <th>Cit./Year</th>
-                <th title="H-index of the set of publications. Is calculated by counting the number of publications that been cited at least that same number of times.">H-index</th>
-                <th>% Publ. cited</th>
-                <th>CNCI</th>
-                <th>In top 10%</th>
-                <th>In top 1%</th>
-                <th title="Percentage of publications that have international co-authors">International Collab.</th>
-                <th title="Percentage of publications that are identified as Open Access">Open Access</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+    <div id="unit-no-pubs" style="margin-top: 30px; width: 1032px; border: 2px solid black; padding: 6px; display: none;">
+        <div style="font-size: 24px; text-align: center;">
+            We’re sorry
+        </div>
+        <div style="font-size: 18px; text-align: center;">
+            but we cannot retrieve any data for researchers in this unit
+        </div>
+        <div style="font-size: 18px; text-align: center;">
+            whether we use ORCIDs or ResearcherIDs
+        </div>
+    </div>
 </div>
 <div id="records-section" style="display: none;">
     <table id="records-filters">

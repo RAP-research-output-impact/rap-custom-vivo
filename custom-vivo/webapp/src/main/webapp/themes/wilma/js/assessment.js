@@ -1156,45 +1156,55 @@ function unit_process(res) {
     } else {
         $("#unit-researchers").html('');
     }
-    var row1 = '<tr class="label">';
-    var row2 = '<tr>';
-    $.each(["all", "article", "review", "proceedings paper", "abstract", "correction", "other"], function(index, fld) {
-        if (fld == 'other' && res.rapas.response.body.summary[fld] > 0) {
-            row1 += '<th width="13%" title="Includes types: ' + res.rapas.response.body.summary.doctype_other + '">' + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
-        } else {
-            if (fld == "proceedings paper") {
-                row1 += '<th width="22%">' + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
-            } else {
-                row1 += '<th width="13%">' + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
-            }
-        }
-        row2 += '<td>' + res.rapas.response.body.summary[fld] + "</td>";
-    });
-    row1 += '</tr>';
-    row2 += '</tr>';
-    $("#unit-summary").children('tr').remove();
-    $("#unit-summary").append(row1);
-    $("#unit-summary").append(row2);
-    var row1 = '<tr>';
-    $.each(["pubs","cites","citesPerPub","citesPerYear","hindex","pCited","cnci","top10","top1","pInt","pOA"], function(index, fld) {
-        if (fld.match(/(p(Cited|Int|OA)|top10|top1)/)) {
-            if (res.rapas.response.body.ind[fld] == 'NA') {
-                row1 += "<td>" + res.rapas.response.body.ind[fld] + "</td>";
-            } else {
-                row1 += "<td>" + res.rapas.response.body.ind[fld] + " % </td>";
-            }
-        } else {
-            row1 += "<td>" + res.rapas.response.body.ind[fld] + "</td>";
-        }
-    });
-    row1 += '</tr>';
-    $("#unit-indicator > tbody").children('tr').remove();
-    $("#unit-indicator > tbody").append(row1);
-    if (res.rapas.response.body.pubCite) {
-        $('#pubCite-unit').html('');
-        graph_pubs_vs_cites(res.rapas.response.body.pubCite, 'pubCite-unit', 1000, 600, "Annual publications and their citations", 1);
+
+
+
+    if (res.rapas.response.body.summary.all == 0) {
+        $('#unit-pubs').hide();
+        $('#unit-no-pubs').show();
     } else {
-        $('#pubCite-unit').html('<div class="pubCite-none">Insufficient data for graph.</div>');
+        $('#unit-pubs').show();
+        $('#unit-no-pubs').hide();
+        var row1 = '<tr class="label">';
+        var row2 = '<tr>';
+        $.each(["all", "article", "review", "proceedings paper", "abstract", "correction", "other"], function(index, fld) {
+            if (fld == 'other' && res.rapas.response.body.summary[fld] > 0) {
+                row1 += '<th width="13%" title="Includes types: ' + res.rapas.response.body.summary.doctype_other + '">' + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
+            } else {
+                if (fld == "proceedings paper") {
+                    row1 += '<th width="22%">' + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
+                } else {
+                    row1 += '<th width="13%">' + fld.replace(/^\w/, c => c.toUpperCase()) + "</th>";
+                }
+            }
+            row2 += '<td>' + res.rapas.response.body.summary[fld] + "</td>";
+        });
+        row1 += '</tr>';
+        row2 += '</tr>';
+        $("#unit-summary").children('tr').remove();
+        $("#unit-summary").append(row1);
+        $("#unit-summary").append(row2);
+        var row1 = '<tr>';
+        $.each(["pubs","cites","citesPerPub","citesPerYear","hindex","pCited","cnci","top10","top1","pInt","pOA"], function(index, fld) {
+            if (fld.match(/(p(Cited|Int|OA)|top10|top1)/)) {
+                if (res.rapas.response.body.ind[fld] == 'NA') {
+                    row1 += "<td>" + res.rapas.response.body.ind[fld] + "</td>";
+                } else {
+                    row1 += "<td>" + res.rapas.response.body.ind[fld] + " % </td>";
+                }
+            } else {
+                row1 += "<td>" + res.rapas.response.body.ind[fld] + "</td>";
+            }
+        });
+        row1 += '</tr>';
+        $("#unit-indicator > tbody").children('tr').remove();
+        $("#unit-indicator > tbody").append(row1);
+        if (res.rapas.response.body.pubCite) {
+            $('#pubCite-unit').html('');
+            graph_pubs_vs_cites(res.rapas.response.body.pubCite, 'pubCite-unit', 1000, 600, "Annual publications and their citations", 1);
+        } else {
+            $('#pubCite-unit').html('<div class="pubCite-none">Insufficient data for graph.</div>');
+        }
     }
 }
 function unit_process_na() {
