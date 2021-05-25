@@ -45,6 +45,13 @@
             <td>DTU affiliation:</td>
             <td id="researcher-info-start"></td>
         </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td class="researcher-info-spacer"></td>
+            <td>PhD year:</td>
+            <td id="researcher-info-phd"></td>
+        </tr>
     </table>
     <h2>DTU affiliations and positions since 2020 – as reported by the departments annually</h2>
     <table id="researcher-affiliation">

@@ -26,6 +26,8 @@ var Access = {
     "notoa": "Not OA",
 };
 var Crumb = {"dep": null, mapping: {}, over: {}};
+var url_base = "";
+var url_theme = "";
 function fetch_department_options(callback, arg) {
     console.log("GET /rap-adh/ws/department_options");
     var xhr = new XMLHttpRequest();
@@ -315,13 +317,16 @@ function flip_doctype(id, callback) {
     callback();
 }
 function researchers_process(retable, mod, res) {
+    start = performance.now();
     for (var i = 0, l = res.rapas.response.body.length; i < l; i++) {
         res.rapas.response.body[i].shift();
         if (res.rapas.response.body[i][1]) {
             res.rapas.response.body[i][0] = '<a onClick="researcher_fetch(' + "'" + res.rapas.response.body[i][1] + "'" + '); state_set(' + "'researcher'" + ');">' + res.rapas.response.body[i][0] + '</a>';
         }
-        retable.row.add(res.rapas.response.body[i]).draw(false);
+//      retable.row.add(res.rapas.response.body[i]).draw(false);
     }
+    retable.rows.add(res.rapas.response.body).draw();
+    console.log("loaded " + res.rapas.response.body.length + " records in " + (performance.now() - start) + " milliseconds");
     if (mod == "/head") {
         researchers_fetch(retable, "rest");
     } else {
@@ -371,7 +376,9 @@ function researchers_setup(partial) {
         retable = $('#researchers-content').DataTable({
             "lengthMenu": [20],
             "lengthChange": false,
-            "order": [[0, "asc"]]
+            "order": [[0, "asc"]],
+            "deferRender": true,
+            "orderClasses": false
         });
     }
     if (partial) {
@@ -425,6 +432,7 @@ function researcher_process(res) {
     }
     $("#researcher-info-email").html(res.rapas.response.body.person.email);
     $("#researcher-info-start").html(res.rapas.response.body.person.start + ' -');
+    $("#researcher-info-phd").html(res.rapas.response.body.person.phd);
     $("#researcher-info-first-pub").html(res.rapas.response.body.ind.absFirst);
     $("#researcher-info-last-pub").html(res.rapas.response.body.ind.absLast);
     $("#researcher-affiliation tbody").children('tr').remove();
@@ -1091,14 +1099,24 @@ function units_process(res) {
                     link = '';
                 }
             });
-            html += '</table></</td></tr>';
+            html += '</table></</td>';
+            if (res.sheet[dep[0]]) {
+                html += '<td class="unit-sheet"><a href="/sheets/' + res.sheet[dep[0]].sheet + '">' + 'Based on <img src="' + url_theme + '/images/excel.png" width="42" height="42"/></a><br/>Loaded: ' + res.sheet[dep[0]].upd + '</td>';
+            }
+            html += '</tr>';
         }
     });
     $("#units-content tbody").html(html);
 }
 function units_fetch() {
 }
-function units_setup() {
+function units_setup(base, theme) {
+    if (base != null) {
+        url_base = base;
+    }
+    if (theme != null) {
+        url_theme = theme;
+    }
 }
 function unit_process(res) {
     if (res.rapas.response.body.yearmin) {

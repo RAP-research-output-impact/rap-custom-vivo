@@ -18,6 +18,10 @@
     h2.toc {
         margin-block-end: 0;
     }
+    #toc {
+        display: grid;
+        grid-template-columns: 1fr minmax(260px, 300px);
+    }
     #toc ol {
         list-style-type: none;
         padding-inline-start: 20px;
@@ -62,42 +66,48 @@
     <h1>About the University Research Analytics Platform</h1>
     <h2 class="toc">Table of Contents</h2>
     <div id="toc">
-        <ol>
-            <li><a href="#ch-1">1. Introduction</a></li>
+        <div>
             <ol>
-                <li><a href="#ch-1.1">1.1. Motivation and aims</a></li>
-                <li><a href="#ch-1.2">1.2. Overall data and technology choices</a></li>
-                <li><a href="#ch-1.3">1.3. Acknowledgement of contributors and funders</a></li>
+                <li><a href="#ch-1">1. Introduction</a></li>
+                <ol>
+                    <li><a href="#ch-1.1">1.1. Motivation and aims</a></li>
+                    <li><a href="#ch-1.2">1.2. Overall data and technology choices</a></li>
+                    <li><a href="#ch-1.3">1.3. Acknowledgement of contributors and funders</a></li>
+                </ol>
+                <li><a href="#ch-2">2. External Collaboration Analytics Module</a></li>
+                <ol>
+                    <li><a href="#ch-2.1">2.1. Purpose of module</a></li>
+                    <li><a href="#ch-2.2">2.2. Data flow</a></li>
+                </ol>
+                <li><a href="#ch-3">3. Publication Search Module</a></li>
+                <ol>
+                    <li><a href="#ch-3.1">3.1. Purpose of module</a></li>
+                    <li><a href="#ch-3.2">3.2. Data flow</a></li>
+                </ol>
+                <li><a href="#ch-4">4. Researcher Profile Module (DTU Researches)</a></li>
+                <ol>
+                    <li><a href="#ch-4.1">4.1. Purpose of module</a></li>
+                    <li><a href="#ch-4.2">4.2. Data flow</a></li>
+                    <li><a href="#ch-4.3">4.3. All DTU Researchers</a></li>
+                    <li><a href="#ch-4.4">4.4. Single Researcher profile</a></li>
+                    <li><a href="#ch-4.5">4.5. List of publications</a></li>
+                    <li><a href="#ch-4.6">4.6. Full view of single publication</a></li>
+                </ol>
+                <li><a href="#ch-5">5. Organizational Unit Profile Module (DTU Units)</a></li>
+                <ol>
+                    <li><a href="#ch-5.1">5.1. Purpose of module</a></li>
+                    <li><a href="#ch-5.2">5.2. Data flow</a></li>
+                    <li><a href="#ch-5.3">5.3. All DTU Units</a></li>
+                    <li><a href="#ch-5.4">5.4. Single Unit Profile</a></li>
+                    <li><a href="#ch-5.5">5.5. List of publications</a></li>
+                    <li><a href="#ch-5.6">5.6. Full view of single publication</a></li>
+                </ol>
             </ol>
-            <li><a href="#ch-2">2. External Collaboration Analytics Module</a></li>
-            <ol>
-                <li><a href="#ch-2.1">2.1. Purpose of module</a></li>
-                <li><a href="#ch-2.2">2.2. Data flow</a></li>
-            </ol>
-            <li><a href="#ch-3">3. Publication Search Module</a></li>
-            <ol>
-                <li><a href="#ch-3.1">3.1. Purpose of module</a></li>
-                <li><a href="#ch-3.2">3.2. Data flow</a></li>
-            </ol>
-            <li><a href="#ch-4">4. Researcher Profile Module (DTU Researches)</a></li>
-            <ol>
-                <li><a href="#ch-4.1">4.1. Purpose of module</a></li>
-                <li><a href="#ch-4.2">4.2. Data flow</a></li>
-                <li><a href="#ch-4.3">4.3. All DTU Researchers</a></li>
-                <li><a href="#ch-4.4">4.4. Single Researcher profile</a></li>
-                <li><a href="#ch-4.5">4.5. List of publications</a></li>
-                <li><a href="#ch-4.6">4.6. Full view of single publication</a></li>
-            </ol>
-            <li><a href="#ch-5">5. Organizational Unit Profile Module (DTU Units)</a></li>
-            <ol>
-                <li><a href="#ch-5.1">5.1. Purpose of module</a></li>
-                <li><a href="#ch-5.2">5.2. Data flow</a></li>
-                <li><a href="#ch-5.3">5.3. All DTU Units</a></li>
-                <li><a href="#ch-5.4">5.4. Single Unit Profile</a></li>
-                <li><a href="#ch-5.5">5.5. List of publications</a></li>
-                <li><a href="#ch-5.6">5.6. Full view of single publication</a></li>
-            </ol>
-        </ol>
+        </div>
+        <div>
+            <a href="/PDF/Manual-RAP-Researchers-and-Units-2021-03-05.pdf">
+                <img src="${urls.theme}/images/download-manual.png"/></a>
+        </div>
     </div>
     <a name="ch-1"></a>
     <h2><div>1.</div>Introduction</h2>

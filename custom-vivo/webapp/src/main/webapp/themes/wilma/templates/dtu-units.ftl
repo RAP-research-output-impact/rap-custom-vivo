@@ -13,7 +13,7 @@
     <table id="units-content">
         <thead>
             <tr>
-                <th>
+                <th colspan="2">
                     <img src="${urls.theme}/images/DTU.png"/>
                     <div id="units-dtu">
                         <a onClick="unit_fetch('uni:dtu'); state_set('unit');">DTU – Technical University of Denmark</a>
@@ -290,6 +290,13 @@
             <td>DTU affiliation:</td>
             <td id="researcher-info-start"></td>
         </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td class="researcher-info-spacer"></td>
+            <td>PhD year:</td>
+            <td id="researcher-info-phd"></td>
+        </tr>
     </table>
     <h2>DTU affiliations and positions since 2020 – as reported by the departments annually</h2>
     <table id="researcher-affiliation">
@@ -406,7 +413,7 @@
 <script>
     $(document).ready(function() {
         state_set("units");
-        units_setup();
+        units_setup("${urls.base}", "${urls.theme}");
         unit_setup();
         records_setup();
         record_setup();
