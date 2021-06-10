@@ -1437,6 +1437,12 @@ function graph_pubs_vs_cites(data, id, width, height, title, separateScale) {
         .attr('y', 30)
         .attr('text-anchor', 'middle')
         .text(title);
+    svg.append('text')
+        .attr('class', 'note')
+        .attr('x', width / 2 + margin)
+        .attr('y', height + margin + 60)
+        .attr('text-anchor', 'middle')
+        .text('(*) Times cited = total number of citations received thus far for the publications published in a specific year.');
     var x = width / 2 + margin - 260;
     svg.append('rect')
         .attr('class', 'lcit')
@@ -1459,7 +1465,7 @@ function graph_pubs_vs_cites(data, id, width, height, title, separateScale) {
         .attr('x', x + 66)
         .attr('y', 65)
         .attr('text-anchor', 'left')
-        .text('Times Cited');
+        .text('Times Cited (*)');
     x += 160;
     svg.append('rect')
         .attr('class', 'lpub')
