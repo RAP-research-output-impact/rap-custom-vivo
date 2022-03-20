@@ -76,6 +76,7 @@ public class DataService {
             @PathParam("endYear") String endYear,
             @Context Request request, @Context HttpServletRequest httpRequest) {
 
+        log.debug("getOrg(" + vid + ", " + startYear + ", " + endYear + ")");
         VitroRequest vreq = new VitroRequest(httpRequest);
 
         Integer startYearInt = parseInt(startYear);
@@ -730,8 +731,8 @@ public class DataService {
     private String getYearDtv(Integer startYear, Integer endYear) {
         String yearDtv = "";
         if(startYear != null || endYear != null) {
-            yearDtv = "   ?pub vivo:dateTimeValue ?dtv . \n" +
-                      "   ?dtv vivo:dateTime ?dateTime .\n ";
+            yearDtv = "  ?pub vivo:dateTimeValue ?dtv . \n" +
+                      "  ?dtv vivo:dateTime ?dateTime . \n ";
         }
         return yearDtv;
     }
@@ -1040,7 +1041,7 @@ public class DataService {
     }
 
     private ArrayList AddCategoriesRanks(Connection mysql, HashMap<String, Integer> orgmap, String namespace, final String orgID, Integer startYear, Integer endYear, ArrayList<JSONObject> subjects) {
-        log.debug("AddCategoriesRanks: " + orgID);
+        log.debug("AddCategoriesRanks(namespace:" + namespace + ", orgID:" + orgID + ", startYear:" + Integer.toString(startYear) + ", endYear:" + Integer.toString(endYear) + ")");
         ArrayList<JSONObject> outRows = new ArrayList<JSONObject>();
         HashMap<Integer, HashMap> subs = subjects(mysql);
         HashMap<String, Integer> DTUranks = new HashMap<String, Integer>();
@@ -1106,6 +1107,7 @@ public class DataService {
         for(JSONObject s:subjects) {
             try {
                 String uri = (String)s.get("category");
+                log.debug("AddCategoriesRanks: subjects URI - " + uri);
                 Integer rank = DTUranks.get(uri);
                 if (rank != null) {
                     s.put("DTUrank", rank);
@@ -1442,8 +1444,8 @@ public class DataService {
         return json;
     }
 
-    private String getPartnerResearcherQueryStr(String dtuResearcher,
-            String org, Integer startYear, Integer endYear, StoreUtils storeUtils) {
+    private String getPartnerResearcherQueryStr(String dtuResearcher, String org, Integer startYear, Integer endYear, StoreUtils storeUtils) {
+/*
         ParameterizedSparqlString queryStr = storeUtils.getQuery(
                 "SELECT DISTINCT "
                 + "?partnerResearcher (MIN(?partnerResearcherFullName) AS ?name)"
@@ -1476,6 +1478,40 @@ public class DataService {
                 + "GROUP BY ?partnerResearcher \n"
                 + "ORDER BY DESC(?number) \n"
                 + "LIMIT 20 \n");
+*/
+        ParameterizedSparqlString queryStr = storeUtils.getQuery(
+            "SELECT DISTINCT ?partnerResearcher (MIN(?partnerResearcherFullName) AS ?name) (COUNT(DISTINCT ?pub) as ?number) WHERE { \n" +
+            "  { \n" +
+            "    SELECT ?pub WHERE { \n" +
+            "      ?authorship a vivo:Authorship ; \n" +
+            "        vivo:relates ?dtuResearcher ; \n" +
+            "        vivo:relates ?dtuAddress ; \n" +
+            "        vivo:relates ?pub . \n" +
+            "      ?dtuAddress a wos:Address ; \n" +
+            "        vivo:relates <http://rap.adm.dtu.dk/individual/org-technical-university-of-denmark> . \n" +
+            "      ?pub a wos:Publication ; \n" +
+            "        vivo:dateTimeValue ?dtv . \n" +
+            "      ?dtv vivo:dateTime ?dateTime . \n" +
+            getDtvFilter(startYear, endYear) +
+            "    } \n" +
+            "  } \n" +
+            "  ?pub vivo:relatedBy ?address ; \n" +
+            "    vivo:relatedBy ?partnerAuthorship . \n" +
+            "  ?address a wos:Address ; \n" +
+            "    vivo:relatedBy ?partnerAuthorship ; \n" +
+            "    vivo:relates ?org . \n" +
+            "  ?partnerAuthorship a vivo:Authorship ; \n" +
+            "    vivo:relates ?pub ; \n" +
+            "    vivo:relates ?partnerResearcher . \n" +
+            "  ?partnerResearcher a foaf:Person ; \n" +
+            "    vivo:relatedBy ?partnerAuthorship ; \n" + 
+            "    rdfs:label ?partnerResearcherFullName . \n" +
+            "  FILTER(?partnerResearcher != ?dtuResearcher) \n" +
+            "} \n" +
+            "GROUP BY ?partnerResearcher \n" +
+            "ORDER BY DESC(?number) \n" +
+            "LIMIT 20 \n"
+        );
         queryStr.setIri("dtuResearcher", dtuResearcher);
         queryStr.setIri("org", org);
         return queryStr.toString();
