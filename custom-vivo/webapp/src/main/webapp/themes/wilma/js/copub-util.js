@@ -20,7 +20,7 @@
     DTU Departments
 */
 function bc_dept_dropdown(id) {
-    var html = "<span id=\"bc-dept\">" + 
+    var html = "<span id=\"bc-dept\">" +
                "    <select id=\"dtu-dept\" name=\"dtu-dept\">" +
                "    </select>" +
                "    <select id=\"dtu-dept-tmp\" name=\"dtu-dept-tmp\" style=\"display: none;\">" +
@@ -110,15 +110,19 @@ function dept_options(id) {
     });
 }
 
-/*
-    Year ranges
-*/
 function bc_range_dropdown(id) {
     var html  = "<span id=\"bc-range\">";
     if (!window.location.pathname.match(/individual$/)) {
         html += "    From";
     }
-    html +=     "    <select id=\"year-from\" name=\"year-from\">" +
+    if (true) {
+        html += "    <select id=\"year-range\" name=\"year-range\">" +
+                "    </select>" +
+                "</span>" +
+                "<span id=\"bc-range-view\">" +
+                "</span>";
+    } else {
+        html += "    <select id=\"year-from\" name=\"year-from\">" +
                 "    </select>" +
                 "    -" +
                 "    <select id=\"year-to\" name=\"year-to\">" +
@@ -126,15 +130,23 @@ function bc_range_dropdown(id) {
                 "</span>" +
                 "<span id=\"bc-range-view\">" +
                 "</span>";
+    }
     $("#" + id).html(html);
 }
 
 function bc_range_options() {
     var last = year_last();
-    var year;
-    for(year = 2007; year <= last; year++) {
-        $("#year-from").append(new Option(year, year));
-        $("#year-to").append(new Option(year, year));
+    if (true) {
+        var range = year_first(5) + ' - ' + last;
+        $("#year-range").append(new Option(range, range));
+        range = year_first(10) + ' - ' + last;
+        $("#year-range").append(new Option(range, range));
+    } else {
+        var year;
+        for(year = 2007; year <= last; year++) {
+            $("#year-from").append(new Option(year, year));
+            $("#year-to").append(new Option(year, year));
+        }
     }
 }
 
@@ -142,32 +154,43 @@ function bc_range_setup(id, callback) {
     bc_range_dropdown(id);
     bc_range_options();
     var urlParams = new URLSearchParams(window.location.search);
-    var last = year_last();
-    var year;
-    year = urlParams.get('year-from');
-    if (year) {
-        $("#year-from").val(year);
+    if (true) {
+        var range = urlParams.get('year-from');
+        if (range) {
+            range += ' - ' + urlParams.get('year-to');
+            $("#year-range").val(range);
+        }
+        $("#year-range").change(function() {
+            callback();
+        });
     } else {
-        $("#year-from").val(last - 5);
+        var last = year_last();
+        var year;
+        year = urlParams.get('year-from');
+        if (year) {
+            $("#year-from").val(year);
+        } else {
+            $("#year-from").val(last - 5);
+        }
+        year = urlParams.get('year-to');
+        if (year) {
+            $("#year-to").val(year);
+        } else {
+            $("#year-to").val(last);
+        }
+        $("#year-from").change(function() {
+            if ($("#year-from").val() > $("#year-to").val()) {
+                $("#year-to").val($("#year-from").val());
+            }
+            callback();
+        });
+        $("#year-to").change(function() {
+            if ($("#year-to").val() < $("#year-from").val()) {
+                $("#year-from").val($("#year-to").val());
+            }
+            callback();
+        });
     }
-    year = urlParams.get('year-to');
-    if (year) {
-        $("#year-to").val(year);
-    } else {
-        $("#year-to").val(last);
-    }
-    $("#year-from").change(function() {
-        if ($("#year-from").val() > $("#year-to").val()) {
-            $("#year-to").val($("#year-from").val());
-        } 
-        callback();
-    });
-    $("#year-to").change(function() {
-        if ($("#year-to").val() < $("#year-from").val()) {
-            $("#year-from").val($("#year-to").val());
-        } 
-        callback();
-    });
 }
 
 function bc_range_edit() {
@@ -177,18 +200,46 @@ function bc_range_edit() {
 
 function bc_range_view() {
     $("#bc-range").hide();
-    $("#bc-range-view").html("From " + $('#year-from').val() + " - " + $('#year-to').val());
+    if (true) {
+        $("#bc-range-view").html("From " + $('#year-range').val());
+    } else {
+        $("#bc-range-view").html("From " + $('#year-from').val() + " - " + $('#year-to').val());
+    }
     $("#bc-range-view").show();
 }
 
 function range_from_val() {
-    return $("#year-from").val();
+    if (true) {
+        var years = $("#year-range").val().split(' - ');
+        return (years[0]);
+    } else {
+        return $("#year-from").val();
+    }
 }
 
 function range_to_val() {
-    return $("#year-to").val();
+    if (true) {
+        var years = $("#year-range").val().split(' - ');
+        return (years[1]);
+    } else {
+        return $("#year-to").val();
+    }
 }
 
+function year_first(range) {
+    var dt = new Date();
+    var ys = dt.getFullYear() - range;
+    return ys;
+}
+
+function year_last() {
+    var dt = new Date();
+    var ye = dt.getFullYear();
+    if (dt.getMonth() < 3) {
+        ye--;
+    }
+    return ye;
+}
 
 function filter_setup(type) {
     $("#copub-" + type + "-filter").keyup(function() {
@@ -277,8 +328,10 @@ function orgList(data) {
             if (data.orgs[i].impact === undefined) {
                 console.log ("undifined indicator for: " + data.orgs[i].org);
             } else {
+                var impact = data.orgs[i].impact.replaceAll(',', '.');
+                impact = impact.replace(/^\./, '0.');
                 tbody += "<tr><td class=\"copub-org-row sort-org\"><a href=\"" + urls_base + "/individual?uri=" + data.orgs[i].org + range + "\">" +
-                         data.orgs[i].name + "</a></td><td class=\"sort-org-imp\" style=\"text-align: right;\">" + data.orgs[i].impact + "</td>" + 
+                         data.orgs[i].name + "</a></td><td class=\"sort-org-imp\" style=\"text-align: right;\">" + impact + "</td>" +
                          "<td class=\"sort-org-pub\" style=\"text-align: right;\">" + data.orgs[i].publications + "</td></tr>";
                 n++;
             }
@@ -389,12 +442,4 @@ function copub_update(data) {
     } else {
         $(".page-home-copub-update").html("updated: " + data.updlong);
     }
-}
-function year_last() {
-    var dt = new Date();
-    var ye = dt.getFullYear();
-    if (dt.getMonth() < 1) {
-        ye--;
-    }
-    return ye;
 }
