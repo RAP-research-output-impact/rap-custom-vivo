@@ -33,6 +33,7 @@
             $(document).ready(function() {
                 copub_update ();
                 rapas_update ();
+                $("div.VivoAccount").hide();
             });
         </script>
     </head>
