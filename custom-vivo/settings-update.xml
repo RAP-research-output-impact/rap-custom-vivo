@@ -7,7 +7,7 @@
             <properties>
                 <app-name>vivo-update</app-name>
                 <vivo-dir>/var/lib/vivo-update</vivo-dir>
-                <tomcat-dir>/var/lib/tomcat8</tomcat-dir>
+                <tomcat-dir>/var/lib/tomcat9</tomcat-dir>
                 <default-theme>wilma</default-theme>
             </properties>
         </profile>
