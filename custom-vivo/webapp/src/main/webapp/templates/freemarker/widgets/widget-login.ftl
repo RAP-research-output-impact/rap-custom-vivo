@@ -52,11 +52,10 @@
                         
                             <p class="external-auth"><a class="blue button" href="${externalAuthUrl}" title="${i18n().external_auth_name}">${i18n().external_login_text}</a></p>
                             <!--<p class="or-auth">or</p>-->
-                            <h3 class="internal-auth"><!--Log in using your--> <b>${i18n().or}</b> ${siteName} ${i18n().account}</h3>
-                            
+                            <h3 class="internal-auth" style="margin-top: 100px;"><!--Log in using your--> <b>${i18n().or}</b> use ${siteName} ${i18n().account}</h3>
                         </#if>
                         
-                        <div ${infoClassHide} ${infoClassShow}>
+                        <div ${infoClassHide} ${infoClassShow} style="display: none">
                         
                             <label for="loginName">${i18n().email_capitalized}</label>
                             <input id="loginName" name="loginName" class="text-field focus" type="text" value="${loginName!}" autocapitalize="off" required autofocus />
@@ -85,7 +84,7 @@
                 </h2>
                 <ul style="list-style-type: disc; margin-left: 35px;">
                     <li><a href="/PDF/DTU_RAP_Collaboration_24-Sep-2019.pdf">Download presentation of the Collaboration module (PDF)</a></li>
-                    <li><a href="/PDF/About-RAP-2020-06-22.pdf">Download About RAP page (PDF)</a></li>
+                    <li><a href="/PDF/about-rap-2021-06-30.pdf">Download About RAP page (PDF)</a></li>
                 </ul>
             </td>
         </tr>
@@ -124,3 +123,8 @@
 <#macro error>
     <p>${i18n().we_have_an_error}</p>
 </#macro>
+<script>
+    $(document).ready(function() {
+        $("div.VivoAccount").hide();
+    });
+</script>
